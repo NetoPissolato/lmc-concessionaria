@@ -370,9 +370,7 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
                     {form.role === "admin" ? "Este perfil tem acesso total ao sistema." : "Este perfil possui acesso limitado às áreas do sistema."}
                   </p>
                 </div>
-                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#F5A623", background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.2)", padding: "5px 12px", borderRadius: 8, whiteSpace: "nowrap", flexShrink: 0 }}>
-                  Gerenciar permissões <ChevronRight size={11} />
-                </span>
+
               </div>
 
               {form.role === "admin" && (
