@@ -1,0 +1,53 @@
+# ─── Python / Backend ──────────────────────────────────────────────────────────
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/.env
+backend/.env.production
+backend/.env.local
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# ─── Node / Frontend ───────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# ─── Docker / Deploy ───────────────────────────────────────────────────────────
+*.tar.gz
+*.tar
+lmc-deploy.tar.gz
+lmc-frontend.tar.gz
+
+# ─── Secrets / Certs ───────────────────────────────────────────────────────────
+certbot/
+*.pem
+*.key
+*.crt
+*.p12
+
+# ─── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+*.bak
+
+# ─── Temporários criados durante troubleshooting ───────────────────────────────
+emoji_report.json
+emoji_report.txt
+find_emojis.py
+
+# ─── Uploads (ficam no volume Docker da VPS, não no git) ───────────────────────
+backend/uploads/

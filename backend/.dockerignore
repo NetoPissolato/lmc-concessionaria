@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+ENV/
+
+# Tests
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Docs
+*.md
+
+# Uploads (volume montado externamente)
+uploads/
+
+# Alembic versions (incluídas)
+# alembic/versions/  <- não ignorar, precisamos das migrations
+
+# Scripts de setup local
+scripts/setup_db.py
+scripts/check_db.py
+delete_user.py
+list_users.py
+fix_enum.py
+unlock_admin.py
