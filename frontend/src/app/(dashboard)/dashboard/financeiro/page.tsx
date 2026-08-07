@@ -9,7 +9,8 @@ import {
   DollarSign, TrendingUp, TrendingDown, ArrowUpRight,
   ArrowDownRight, ChevronLeft, ChevronRight,
 } from "lucide-react";
-import { financialApi } from "@/lib/api";
+import { financialApi, reportsApi } from "@/lib/api";
+import { Car } from "lucide-react";
 import { FinancialEntry } from "@/types";
 import {
   ComposedChart, Area, XAxis, YAxis, CartesianGrid,
@@ -63,6 +64,21 @@ export default function FinanceiroPage() {
     queryKey: ["financial-entries", typeFilter, year],
     queryFn: () => financialApi.list({ year, limit: 500, tipo: typeFilter || undefined }),
   });
+
+  // ── Lucratividade por veículo no mês selecionado ──────────────────────────
+  const firstDay = `${year}-${String(month).padStart(2, "0")}-01`;
+  const lastDayDate = new Date(year, month, 0);
+  const lastDay = `${year}-${String(month).padStart(2, "0")}-${String(lastDayDate.getDate()).padStart(2, "0")}`;
+
+  const { data: lucratividadeData, isLoading: lucLoading } = useQuery({
+    queryKey: ["lucratividade-mes", year, month],
+    queryFn: () => reportsApi.lucratividade({ data_inicio: firstDay, data_fim: lastDay }),
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const veiculosLucro: any[] = lucratividadeData?.veiculos ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const resumoLucro: any = lucratividadeData?.resumo ?? null;
 
   const lucro    = Number(summary?.lucro_liquido   ?? 0);
   const entradas = Number(summary?.total_entradas  ?? 0);
@@ -301,6 +317,145 @@ export default function FinanceiroPage() {
           </ComposedChart>
         </ResponsiveContainer>
       </motion.div>
+
+      {/* Lucro por Veículo */}
+      {(lucLoading || veiculosLucro.length > 0) && (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobileOrTablet ? "14px 16px" : "18px 22px", borderBottom: "1px solid var(--border)", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Lucratividade</span>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.3px" }}>
+                Lucro por Veículo — {MONTHS[month - 1]} {year}
+              </h3>
+            </div>
+            {resumoLucro && (
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>Veículos vendidos</p>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>{resumoLucro.total_vendidos}</p>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>Lucro total do mês</p>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: resumoLucro.lucro_total >= 0 ? "#22c55e" : "#ef4444" }}>
+                    {resumoLucro.lucro_total >= 0 ? "+" : ""}{fmt(resumoLucro.lucro_total)}
+                  </p>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>Margem média</p>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: "#F5A623" }}>{resumoLucro.margem_media?.toFixed(1)}%</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {lucLoading ? (
+            <div style={{ padding: "12px 0" }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{ display: "flex", gap: 12, padding: isMobileOrTablet ? "12px 16px" : "14px 22px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div className="skeleton" style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div className="skeleton" style={{ height: 13, width: "50%", marginBottom: 8 }} />
+                    <div className="skeleton" style={{ height: 11, width: "80%" }} />
+                  </div>
+                  <div className="skeleton" style={{ width: 80, height: 20, borderRadius: 6 }} />
+                </div>
+              ))}
+            </div>
+          ) : veiculosLucro.length === 0 ? (
+            <div style={{ padding: "40px 24px", textAlign: "center" }}>
+              <Car size={28} color="var(--text-muted)" style={{ opacity: 0.4, marginBottom: 8 }} />
+              <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Nenhum veículo vendido em {MONTHS[month - 1]}</p>
+            </div>
+          ) : (
+            <div>
+              {/* Header Row (desktop only) */}
+              {!isMobileOrTablet && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px 100px 90px", gap: 8, padding: "8px 22px", borderBottom: "1px solid rgba(255,255,255,0.04)", background: "rgba(255,255,255,0.02)" }}>
+                  {["Veículo", "Preço Compra", "Gastos", "Custo Total", "Vendido por", "Lucro"].map(h => (
+                    <span key={h} style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</span>
+                  ))}
+                </div>
+              )}
+              {veiculosLucro.map((v, i) => {
+                const isProfit = v.lucro_bruto >= 0;
+                return (
+                  <motion.div key={v.placa + i}
+                    initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                    style={{
+                      display: isMobileOrTablet ? "flex" : "grid",
+                      gridTemplateColumns: isMobileOrTablet ? undefined : "1fr 100px 100px 100px 100px 90px",
+                      flexDirection: isMobileOrTablet ? "column" : undefined,
+                      gap: isMobileOrTablet ? 6 : 8,
+                      padding: isMobileOrTablet ? "14px 16px" : "12px 22px",
+                      borderBottom: i < veiculosLucro.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                      transition: "background 0.15s",
+                    }}
+                    whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
+                  >
+                    {/* Veículo */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 9, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Car size={15} color="#F5A623" />
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {v.veiculo}
+                        </p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>
+                          {v.placa} · Vendido em {v.data_venda}
+                        </p>
+                      </div>
+                    </div>
+
+                    {isMobileOrTablet ? (
+                      /* Mobile: grid de valores */
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 16px", marginTop: 4, paddingLeft: 46 }}>
+                        {[
+                          { label: "Preço de compra", value: v.valor_compra, color: "#3b82f6" },
+                          { label: "Gastos", value: v.total_despesas, color: "#f59e0b" },
+                          { label: "Custo total", value: v.custo_total, color: "#8b5cf6" },
+                          { label: "Vendido por", value: v.valor_vendido, color: "#10b981" },
+                        ].map(row => (
+                          <div key={row.label}>
+                            <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>{row.label}</p>
+                            <p style={{ fontSize: 12, fontWeight: 700, color: row.color }}>{fmt(row.value)}</p>
+                          </div>
+                        ))}
+                        <div style={{ gridColumn: "span 2", marginTop: 4, padding: "6px 10px", borderRadius: 8, background: isProfit ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${isProfit ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: isProfit ? "#10b981" : "#ef4444" }}>Lucro real</span>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: isProfit ? "#10b981" : "#ef4444" }}>
+                            {isProfit ? "+" : ""}{fmt(v.lucro_bruto)}
+                            {v.margem_pct !== 0 && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>({v.margem_pct?.toFixed(1)}%)</span>}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Desktop: colunas */
+                      <>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#3b82f6", alignSelf: "center" }}>{fmt(v.valor_compra)}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#f59e0b", alignSelf: "center" }}>{fmt(v.total_despesas)}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#8b5cf6", alignSelf: "center" }}>{fmt(v.custo_total)}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#10b981", alignSelf: "center" }}>{fmt(v.valor_vendido)}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, alignSelf: "center" }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: isProfit ? "#22c55e" : "#ef4444" }}>
+                            {isProfit ? "+" : ""}{fmt(v.lucro_bruto)}
+                          </span>
+                          {v.margem_pct !== 0 && (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: isProfit ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: isProfit ? "#22c55e" : "#ef4444" }}>
+                              {v.margem_pct?.toFixed(1)}%
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {/* Entries Feed */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
