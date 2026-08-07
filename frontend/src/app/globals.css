@@ -832,11 +832,13 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 /* ─── Touch Targets (min 44×44px on mobile) ─────────────────────────────────── */
+/* Aplicado apenas em classes específicas para não distorcer botões pequenos */
 @media (max-width: 639px) {
-  .btn, button, [role="button"] { min-height: 44px; }
+  .btn { min-height: 44px; }
   .btn-sm  { min-height: 38px; }
-  .btn-icon { width: 44px; height: 44px; }
+  .btn-icon { min-width: 44px; min-height: 44px; }
   .nav-item { min-height: 44px; padding: 10px 12px; }
+  .bottom-nav-item { min-height: 48px; }
 }
 
 /* ─── Sidebar — Desktop: sticky column ──────────────────────────────────────── */
@@ -1631,81 +1633,7 @@ input[type="number"] { -moz-appearance: textfield; }
   }
 }
 
-/* ─── Bottom Navigation Bar (mobile only) ───────────────────────────────────── */
-.bottom-nav {
-  display: none;
-}
-
-@media (max-width: 639px) {
-  .bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 45;
-    background: rgba(10, 10, 10, 0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-    padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
-    gap: 0;
-    align-items: stretch;
-  }
-
-  .bottom-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    padding: 6px 4px;
-    text-decoration: none;
-    color: rgba(255, 255, 255, 0.35);
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: color var(--transition-fast);
-    position: relative;
-    background: none;
-    border: none;
-    font-family: inherit;
-    min-height: 52px;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .bottom-nav-item.active {
-    color: var(--brand);
-  }
-
-  .bottom-nav-item.active::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px;
-    height: 2px;
-    background: var(--brand);
-    border-radius: 0 0 3px 3px;
-    box-shadow: 0 0 8px rgba(245, 166, 35, 0.7);
-  }
-
-  .bottom-nav-icon {
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .bottom-nav-item.active .bottom-nav-icon {
-    filter: drop-shadow(0 0 6px rgba(245, 166, 35, 0.5));
-  }
-}
+/* ─── Bottom Navigation: duplicate removida — definição canônica em linha ~1173 ─── */
 
 /* ─── Login Responsive ──────────────────────────────────────────────────────── */
 .login-left {
@@ -1749,75 +1677,7 @@ input[type="number"] { -moz-appearance: textfield; }
   display: none;
 }
 
-/* ─── Mobile Bottom Navigation ──────────────────────────────────────────────── */
-.bottom-nav {
-  display: none; /* hidden on desktop */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: rgba(10, 10, 10, 0.92);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border-top: 1px solid rgba(255,255,255,0.07);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  align-items: stretch;
-  justify-content: space-around;
-  height: calc(60px + env(safe-area-inset-bottom, 0px));
-}
-
-@media (max-width: 1023px) {
-  .bottom-nav { display: flex; }
-}
-
-.bottom-nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 8px 4px 4px;
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: color 0.15s;
-  position: relative;
-}
-
-.bottom-nav-item.active {
-  color: var(--brand);
-}
-
-.bottom-nav-item.active::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 32px;
-  height: 2px;
-  background: var(--brand);
-  border-radius: 0 0 3px 3px;
-}
-
-.bottom-nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  transition: background 0.15s, transform 0.15s;
-}
-
-.bottom-nav-item.active .bottom-nav-icon {
-  background: rgba(245, 166, 35, 0.12);
-  transform: translateY(-1px);
-}
+/* ─── Mobile Bottom Navigation: duplicate removida — definição canônica em linha ~1173 ─── */
 
 /* ─── Page Transitions ──────────────────────────────────────────────────────── */
 .page-enter {

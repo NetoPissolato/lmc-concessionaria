@@ -50,8 +50,11 @@ function getState(width: number): BreakpointState {
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 export function useBreakpoint(): BreakpointState {
-  // SSR-safe: start with a large default so desktop renders fine on server
-  const [state, setState] = useState<BreakpointState>(() => getState(1280));
+  // Mobile-first: iniciar com 0 no servidor evita o flash onde o layout
+  // aparece brevemente como desktop em celulares antes do useEffect corrigir.
+  const [state, setState] = useState<BreakpointState>(() =>
+    getState(typeof window !== "undefined" ? window.innerWidth : 0)
+  );
 
   useEffect(() => {
     // Set real width on client mount
