@@ -16,7 +16,7 @@ import { financialApi, reportsApi } from "@/lib/api";
 import { FinancialEntry } from "@/types";
 import {
   ComposedChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer,
+  Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
 
 import { fmtCurrencyFull as fmt } from "@/lib/formatters";
@@ -94,9 +94,11 @@ export default function FinanceiroPage() {
   const [period,    setPeriod]    = useState<"mensal" | "Diário">("mensal");
   const [visEntradas, setVisEntradas] = useState(true);
   const [visSaidas,   setVisSaidas]   = useState(true);
+  const [visLucro,    setVisLucro]    = useState(true);
 
   const toggleEntradas = () => setVisEntradas(v => !v);
   const toggleSaidas   = () => setVisSaidas  (v => !v);
+  const toggleLucro    = () => setVisLucro   (v => !v);
 
   const handleTypeFilter = (t: "" | "entrada" | "saida") => { setTypeFilter(t); setPage(1); };
   const handleYear       = (y: number)                   => { setYear(y);       setPage(1); };
@@ -144,7 +146,9 @@ export default function FinanceiroPage() {
     const mes = idx + 1;
     const e = allYearEntries.filter(en => new Date(en.data + "T12:00:00").getMonth() + 1 === mes && en.tipo === "entrada");
     const s = allYearEntries.filter(en => new Date(en.data + "T12:00:00").getMonth() + 1 === mes && en.tipo === "saida");
-    return { name, entradas: e.reduce((a, b) => a + Number(b.valor), 0), saidas: s.reduce((a, b) => a + Number(b.valor), 0) };
+    const entr = e.reduce((a, b) => a + Number(b.valor), 0);
+    const said = s.reduce((a, b) => a + Number(b.valor), 0);
+    return { name, entradas: entr, saidas: said, lucro: entr - said };
   });
 
   const dailyChartData = useMemo(() => {
@@ -159,7 +163,9 @@ export default function FinanceiroPage() {
       const dia = i + 1;
       const e = monthEntries.filter(en => new Date(en.data + "T12:00:00").getDate() === dia && en.tipo === "entrada");
       const s = monthEntries.filter(en => new Date(en.data + "T12:00:00").getDate() === dia && en.tipo === "saida");
-      return { name: String(dia), entradas: e.reduce((a, b) => a + Number(b.valor), 0), saidas: s.reduce((a, b) => a + Number(b.valor), 0) };
+      const entr = e.reduce((a, b) => a + Number(b.valor), 0);
+      const said = s.reduce((a, b) => a + Number(b.valor), 0);
+      return { name: String(dia), entradas: entr, saidas: said, lucro: entr - said };
     });
   }, [allYearEntries, year, month]);
 
@@ -337,10 +343,11 @@ export default function FinanceiroPage() {
                 }}>{p === "mensal" ? "Mensal" : "Diário"}</button>
               ))}
             </div>
-            <div style={{ display: "flex", gap: "6px" }}>
+            <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
               {([
                 { key: "entradas", label: "Entradas", color: "#22c55e", vis: visEntradas, toggle: toggleEntradas },
-                { key: "Saídas",   label: "Saídas",   color: "#ef4444", vis: visSaidas,   toggle: toggleSaidas   },
+                { key: "saidas",   label: "Saídas",   color: "#ef4444", vis: visSaidas,   toggle: toggleSaidas   },
+                { key: "lucro",    label: "Lucro",    color: "#6366f1", vis: visLucro,    toggle: toggleLucro    },
               ]).map(({ key, label, color, vis, toggle }) => (
                 <button key={key} onClick={toggle} style={{
                   display: "flex", alignItems: "center", gap: "5px",
@@ -368,8 +375,13 @@ export default function FinanceiroPage() {
                 <stop offset="0%"   stopColor="#ef4444" stopOpacity={0.22} />
                 <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
               </linearGradient>
+              <linearGradient id="gradLucro" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor="#6366f1" stopOpacity={0.2} />
+                <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+              </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.03)" vertical={false} />
+            <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
             <XAxis dataKey="name" tick={{ fontSize: isMobileOrTablet ? 9 : 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
               interval={isMobileOrTablet ? (period === "mensal" ? 1 : 4) : 0} />
             <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
@@ -377,31 +389,37 @@ export default function FinanceiroPage() {
             <Tooltip
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null;
+                const entradasVal = Number(payload.find(p => p.dataKey === "entradas")?.value ?? 0);
+                const saidasVal   = Number(payload.find(p => p.dataKey === "saidas")?.value ?? 0);
+                const lucroVal    = entradasVal - saidasVal;
                 return (
                   <div style={{
                     background: "var(--surface-3)", border: "1px solid rgba(255,255,255,0.08)",
                     borderRadius: "10px", padding: "10px 14px",
                     fontSize: "12px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                    minWidth: 170,
                   }}>
-                    <p style={{ color: "var(--text-muted)", marginBottom: "7px", fontWeight: "600", fontSize: "11px" }}>{label}</p>
-                    {payload.map((p, i) => (
-                      <p key={i} style={{ color: p.color as string, fontWeight: "700", display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: p.color as string, display: "inline-block" }} />
-                        {p.name === "entradas" ? "Entradas" : "Saídas"}: {fmt(Number(p.value ?? 0))}
+                    <p style={{ color: "var(--text-muted)", marginBottom: "8px", fontWeight: "600", fontSize: "11px" }}>{label}</p>
+                    {visEntradas && (
+                      <p style={{ color: "#22c55e", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+                        Entradas: {fmt(entradasVal)}
                       </p>
-                    ))}
-                    {visEntradas && visSaidas && (() => {
-                        const entradasVal = Number(payload.find(p => p.name === "entradas")?.value ?? 0);
-                        const saidasVal   = Number(payload.find(p => p.name === "Saídas")?.value ?? 0);
-                        const saldo = entradasVal - saidasVal;
-                        return (
-                          <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "6px", paddingTop: "6px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                            Saldo: <strong style={{ color: saldo >= 0 ? "#22c55e" : "#ef4444" }}>
-                              {saldo >= 0 ? "+" : ""}{fmt(saldo)}
-                            </strong>
-                          </p>
-                        );
-                      })()}
+                    )}
+                    {visSaidas && (
+                      <p style={{ color: "#ef4444", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
+                        Saídas: {fmt(saidasVal)}
+                      </p>
+                    )}
+                    <div style={{ marginTop: "7px", paddingTop: "7px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                      <p style={{ fontWeight: "800", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                        <span style={{ fontSize: 10, color: "var(--text-muted)" }}>Lucro</span>
+                        <span style={{ color: lucroVal >= 0 ? "#6366f1" : "#ef4444", fontSize: 13 }}>
+                          {lucroVal >= 0 ? "+" : ""}{fmt(lucroVal)}
+                        </span>
+                      </p>
+                    </div>
                   </div>
                 );
               }}
@@ -412,10 +430,16 @@ export default function FinanceiroPage() {
                 activeDot={{ r: 4, fill: "#22c55e", stroke: "var(--surface)", strokeWidth: 2 }} />
             )}
             {visSaidas && (
-              <Area type="monotone" dataKey="Saídas" name="Saídas"
+              <Area type="monotone" dataKey="saidas" name="saidas"
                 stroke="#ef4444" strokeWidth={1.5} fill="url(#gradSaidasFin)" dot={false}
                 strokeDasharray="4 2"
                 activeDot={{ r: 4, fill: "#ef4444", stroke: "var(--surface)", strokeWidth: 2 }} />
+            )}
+            {visLucro && (
+              <Area type="monotone" dataKey="lucro" name="lucro"
+                stroke="#6366f1" strokeWidth={2} fill="url(#gradLucro)" dot={false}
+                strokeDasharray="6 2"
+                activeDot={{ r: 4, fill: "#6366f1", stroke: "var(--surface)", strokeWidth: 2 }} />
             )}
           </ComposedChart>
         </ResponsiveContainer>
