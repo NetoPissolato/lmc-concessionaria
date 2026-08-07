@@ -8,9 +8,11 @@ import { useQuery } from "@tanstack/react-query";
 import {
   DollarSign, TrendingUp, TrendingDown, ArrowUpRight,
   ArrowDownRight, ChevronLeft, ChevronRight,
+  Car, ShoppingCart, User, Wrench, FileText, Briefcase,
+  Home, Zap, Truck, CreditCard, Shield, AlertTriangle,
+  Plus, Minus,
 } from "lucide-react";
 import { financialApi, reportsApi } from "@/lib/api";
-import { Car } from "lucide-react";
 import { FinancialEntry } from "@/types";
 import {
   ComposedChart, Area, XAxis, YAxis, CartesianGrid,
@@ -23,14 +25,62 @@ const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","A
 const MONTHS_SHORT = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  venda:          "#22c55e",
+  venda_veiculo:  "#22c55e",
+  compra_veiculo: "#ef4444",
   comissao:       "#f59e0b",
   manutencao:     "#f97316",
-  administrativo: "#38bdf8",
-  outros:         "#a78bfa",
+  documentacao:   "#38bdf8",
+  salario:        "#818cf8",
+  aluguel:        "#fb923c",
+  utilidades:     "#34d399",
+  marketing:      "#e879f9",
+  guincho:        "#fb923c",
+  ipva:           "#60a5fa",
+  licenciamento:  "#a3e635",
+  multa:          "#f43f5e",
+  outros_entrada: "#22c55e",
+  outros_saida:   "#ef4444",
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  venda_veiculo:  "Venda de Veículo",
+  compra_veiculo: "Compra de Veículo",
+  comissao:       "Comissão",
+  manutencao:     "Manutenção",
+  documentacao:   "Documentação",
+  salario:        "Salário",
+  aluguel:        "Aluguel",
+  utilidades:     "Utilidades",
+  marketing:      "Marketing",
+  guincho:        "Guincho",
+  ipva:           "IPVA",
+  licenciamento:  "Licenciamento",
+  multa:          "Multa",
+  outros_entrada: "Outros",
+  outros_saida:   "Outros",
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CATEGORY_ICONS: Record<string, any> = {
+  venda_veiculo:  Car,
+  compra_veiculo: ShoppingCart,
+  comissao:       User,
+  manutencao:     Wrench,
+  documentacao:   FileText,
+  salario:        Briefcase,
+  aluguel:        Home,
+  utilidades:     Zap,
+  marketing:      TrendingUp,
+  guincho:        Truck,
+  ipva:           CreditCard,
+  licenciamento:  Shield,
+  multa:          AlertTriangle,
+  outros_entrada: Plus,
+  outros_saida:   Minus,
 };
 
 const PAGE_SIZE = 10;
+const LUCRO_PAGE_SIZE = 5;
 
 export default function FinanceiroPage() {
   const now = new Date();
@@ -40,6 +90,7 @@ export default function FinanceiroPage() {
   const { isMobile, isMobileOrTablet } = useBreakpoint();
 
   const [page, setPage] = useState(1);
+  const [lucroPage, setLucroPage] = useState(1);
   const [period,    setPeriod]    = useState<"mensal" | "Diário">("mensal");
   const [visEntradas, setVisEntradas] = useState(true);
   const [visSaidas,   setVisSaidas]   = useState(true);
@@ -76,9 +127,14 @@ export default function FinanceiroPage() {
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const veiculosLucro: any[] = lucratividadeData?.veiculos ?? [];
+  const veiculosLucroAll: any[] = lucratividadeData?.veiculos ?? [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const resumoLucro: any = lucratividadeData?.resumo ?? null;
+
+  // Paginação da lucratividade
+  const lucroTotalPages = Math.ceil(veiculosLucroAll.length / LUCRO_PAGE_SIZE);
+  const safeLucroPage = Math.min(lucroPage, Math.max(lucroTotalPages, 1));
+  const veiculosLucro = veiculosLucroAll.slice((safeLucroPage - 1) * LUCRO_PAGE_SIZE, safeLucroPage * LUCRO_PAGE_SIZE);
 
   const lucro    = Number(summary?.lucro_liquido   ?? 0);
   const entradas = Number(summary?.total_entradas  ?? 0);
@@ -540,6 +596,30 @@ export default function FinanceiroPage() {
               })}
             </div>
           )}
+
+          {/* Paginação lucratividade */}
+          {!lucLoading && lucroTotalPages > 1 && (
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: isMobileOrTablet ? "10px 16px" : "10px 22px",
+              borderTop: "1px solid var(--border)",
+              background: "rgba(255,255,255,0.015)",
+            }}>
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                {(safeLucroPage - 1) * LUCRO_PAGE_SIZE + 1}–{Math.min(safeLucroPage * LUCRO_PAGE_SIZE, veiculosLucroAll.length)} de{" "}
+                <strong style={{ color: "var(--text-secondary)" }}>{veiculosLucroAll.length}</strong> veículos
+              </span>
+              <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                <PaginationBtn onClick={() => setLucroPage(p => Math.max(1, p - 1))} disabled={safeLucroPage === 1} aria-label="Pagina anterior lucratividade">
+                  <ChevronLeft size={13} />
+                </PaginationBtn>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", padding: "0 6px" }}>{safeLucroPage}/{lucroTotalPages}</span>
+                <PaginationBtn onClick={() => setLucroPage(p => Math.min(lucroTotalPages, p + 1))} disabled={safeLucroPage === lucroTotalPages} aria-label="Proxima pagina lucratividade">
+                  <ChevronRight size={13} />
+                </PaginationBtn>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -626,6 +706,9 @@ export default function FinanceiroPage() {
                 const isEntrada = e.tipo === "entrada";
                 const color     = isEntrada ? "#22c55e" : "#ef4444";
                 const d         = new Date(e.data + "T12:00:00");
+                const catColor  = CATEGORY_COLORS[e.categoria] ?? (isEntrada ? "#22c55e" : "#ef4444");
+                const CatIcon   = CATEGORY_ICONS[e.categoria] ?? (isEntrada ? ArrowUpRight : ArrowDownRight);
+                const catLabel  = CATEGORY_LABELS[e.categoria] ?? e.categoria;
                 return (
                   <motion.div key={e.id}
                     initial={{ opacity: 0, x: -6 }}
@@ -633,50 +716,58 @@ export default function FinanceiroPage() {
                     transition={{ delay: i * 0.03, duration: 0.2 }}
                     style={{
                       display: "flex", alignItems: "center", gap: isMobileOrTablet ? "10px" : "14px",
-                      padding: isMobileOrTablet ? "12px 16px 12px 0" : "13px 22px 13px 0",
+                      padding: isMobileOrTablet ? "12px 16px 12px 0" : "14px 22px 14px 0",
                       borderBottom: i < pageEntries.length - 1 ? "1px solid rgba(255,255,255,0.035)" : "none",
                       transition: "background 0.15s",
                     }}
                     whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
                   >
-                    <div style={{ width: 3, height: 38, borderRadius: "0 3px 3px 0", background: color, flexShrink: 0, opacity: 0.75 }} />
-                    {!isMobile && (
-                      <div style={{
-                        width: 38, height: 38, borderRadius: 11,
-                        background: color + "12", border: `1px solid ${color}22`,
-                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      }}>
-                        {isEntrada
-                          ? <ArrowUpRight size={17} color={color} strokeWidth={2.2} />
-                          : <ArrowDownRight size={17} color={color} strokeWidth={2.2} />}
-                      </div>
-                    )}
+                    {/* Barra lateral colorida */}
+                    <div style={{ width: 3, alignSelf: "stretch", borderRadius: "0 3px 3px 0", background: catColor, flexShrink: 0, opacity: 0.8, minHeight: 36 }} />
+
+                    {/* Ícone da categoria */}
+                    <div style={{
+                      width: isMobile ? 34 : 40, height: isMobile ? 34 : 40, borderRadius: 11,
+                      background: `${catColor}14`, border: `1px solid ${catColor}22`,
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <CatIcon size={isMobile ? 14 : 17} color={catColor} />
+                    </div>
+
+                    {/* Descrição e detalhes */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: isMobileOrTablet ? "12px" : "13px", fontWeight: "600", color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "3px" }}>
+                      <p style={{ fontSize: isMobileOrTablet ? "12px" : "13px", fontWeight: "600", color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>
                         {e.descricao}
                       </p>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{d.toLocaleDateString("pt-BR")}</span>
-                        <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "inline-block" }} />
-                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: CATEGORY_COLORS[e.categoria] ?? "rgba(255,255,255,0.3)" }} />
-                          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{e.categoria}</span>
-                        </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{d.toLocaleDateString("pt-BR")}</span>
+                        {/* Badge categoria */}
+                        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}25`, letterSpacing: "0.02em" }}>
+                          {catLabel}
+                        </span>
+                        {/* Badge tipo */}
+                        {!isMobile && (
+                          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: `${color}10`, color, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                            {isEntrada ? "Entrada" : "Saída"}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div style={{ textAlign: "right", flexShrink: 0, maxWidth: isMobileOrTablet ? "110px" : "160px" }}>
+
+                    {/* Valor */}
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
                       <p style={{
-                        fontSize: "clamp(11px, 2.5vw, 14px)",
+                        fontSize: "clamp(12px, 2.5vw, 15px)",
                         fontWeight: "800",
                         color,
                         letterSpacing: "-0.5px",
                         lineHeight: 1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
                       }}>
                         {isEntrada ? "+" : "-"}{fmt(Number(e.valor))}
                       </p>
+                      {isMobile && (
+                        <span style={{ fontSize: 9, color, opacity: 0.7, fontWeight: 600 }}>{isEntrada ? "Entrada" : "Saída"}</span>
+                      )}
                     </div>
                   </motion.div>
                 );
