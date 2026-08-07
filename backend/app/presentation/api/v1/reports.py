@@ -14,6 +14,7 @@ from app.core.database import get_db
 from app.presentation.dependencies.auth import get_current_user_payload
 from app.domain.models.vehicle import Vehicle, VehicleType
 from app.domain.models.vehicle_expense import VehicleExpense
+from app.domain.models.sale import Sale
 from app.infrastructure.repositories.sale_customer_repository import (
     SaleRepository, CustomerRepository,
 )
@@ -443,7 +444,11 @@ async def report_lucratividade(
     di, df = _resolve_period(data_inicio, data_fim)
     result = await db.execute(
         select(Vehicle)
-        .options(selectinload(Vehicle.sale), selectinload(Vehicle.expenses))
+        .options(
+            selectinload(Vehicle.sale).selectinload(Sale.cliente),
+            selectinload(Vehicle.sale).selectinload(Sale.vendedor),
+            selectinload(Vehicle.expenses),
+        )
         .where(Vehicle.deleted_at.is_(None), Vehicle.valor_vendido.isnot(None))
     )
     vehicles = result.scalars().all()
