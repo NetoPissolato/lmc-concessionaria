@@ -22,3 +22,11 @@ class FinancialRepository:
             .limit(limit)
         )
         return list(result.scalars().all())
+
+    async def delete_by_venda_id(self, venda_id: str) -> int:
+        """Remove todas as entradas financeiras vinculadas a uma venda (ex: ao cancelar)."""
+        from sqlalchemy import delete as sql_delete
+        result = await self.db.execute(
+            sql_delete(FinancialEntry).where(FinancialEntry.venda_id == venda_id)
+        )
+        return result.rowcount

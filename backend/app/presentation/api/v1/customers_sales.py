@@ -23,6 +23,7 @@ from app.domain.models.sale import Sale, SaleStatus
 from app.domain.models.user import User as UserModel
 from app.domain.models.vehicle import Vehicle, VehicleStatus
 from app.domain.models.vehicle_photo import VehiclePhoto
+from app.infrastructure.repositories.financial_repository import FinancialRepository
 
 # ─── Customers ────────────────────────────────────────────────────────────────
 customers_router = APIRouter(prefix="/customers", tags=["Clientes"])
@@ -298,22 +299,28 @@ async def update_sale_status(
             vehicle.status = VehicleStatus.VENDIDO
             vehicle.valor_vendido = s.valor_venda
         # Create financial entries only when coming from pendente (first conclusion)
-        # When coming from cancelada, financial entries already exist
-        if old_status == "pendente":
+        # When coming from cancelada, financial entries were deleted on cancel — recreate them
+        if old_status in ("pendente", "cancelada"):
             svc = SaleService(db)
             await svc.create_financial_for_sale(s, user["sub"])
 
-    # any → cancelada: revert vehicle to DISPONIVEL
+    # any → cancelada: revert vehicle to DISPONIVEL + apaga entradas financeiras
     elif new_status == "cancelada":
         if vehicle:
             veh_val = vehicle.status.value if hasattr(vehicle.status, "value") else str(vehicle.status)
             if veh_val == "vendido":
                 vehicle.status = VehicleStatus.DISPONIVEL
+            vehicle.valor_vendido = None  # apaga valor vendido — não aparece mais na lucratividade
+        # Apaga todas as entradas financeiras desta venda
+        fin_repo = FinancialRepository(db)
+        await fin_repo.delete_by_venda_id(s.id)
 
-    # concluida → pendente: revert vehicle to DISPONIVEL
+    # concluida → pendente: revert vehicle to DISPONIVEL + apaga entradas financeiras
     elif old_status == "concluida" and new_status == "pendente":
         if vehicle:
             vehicle.status = VehicleStatus.DISPONIVEL
+        fin_repo = FinancialRepository(db)
+        await fin_repo.delete_by_venda_id(s.id)
 
     s.status = SaleStatus(new_status)
     await db.commit()

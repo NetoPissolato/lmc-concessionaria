@@ -95,6 +95,7 @@ class SaleService:
                 status=VehicleStatus.VENDIDO,
                 valor_vendido=data.valor_venda,
             )
+            # Entrada: receita da venda
             await self.financial_repo.create(
                 tipo=EntryType.ENTRADA,
                 categoria=FinancialCategory.VENDA_VEICULO,
@@ -105,7 +106,20 @@ class SaleService:
                 vehicle_id=vehicle.id,
                 created_by=created_by,
             )
-            # If commission exists, create SAIDA entry
+            # Saída: custo de aquisição do veículo (compra + multas)
+            custo_veiculo = (vehicle.valor_compra or Decimal("0")) + (vehicle.valor_multas or Decimal("0"))
+            if custo_veiculo > 0:
+                await self.financial_repo.create(
+                    tipo=EntryType.SAIDA,
+                    categoria=FinancialCategory.COMPRA_VEICULO,
+                    descricao=f"Custo: {vehicle.marca} {vehicle.modelo} {vehicle.ano} - {vehicle.placa}",
+                    valor=custo_veiculo,
+                    data=data.data_venda,
+                    venda_id=sale.id,
+                    vehicle_id=vehicle.id,
+                    created_by=created_by,
+                )
+            # Se tem comissão, cria SAIDA
             if comissao_valor > 0:
                 await self.financial_repo.create(
                     tipo=EntryType.SAIDA,
@@ -134,6 +148,7 @@ class SaleService:
         if not vehicle:
             return
 
+        # Entrada: receita da venda
         await self.financial_repo.create(
             tipo=EntryType.ENTRADA,
             categoria=FinancialCategory.VENDA_VEICULO,
@@ -144,6 +159,20 @@ class SaleService:
             vehicle_id=vehicle.id,
             created_by=created_by,
         )
+        # Saída: custo de aquisição do veículo (compra + multas)
+        custo_veiculo = (vehicle.valor_compra or Decimal("0")) + (vehicle.valor_multas or Decimal("0"))
+        if custo_veiculo > 0:
+            await self.financial_repo.create(
+                tipo=EntryType.SAIDA,
+                categoria=FinancialCategory.COMPRA_VEICULO,
+                descricao=f"Custo: {vehicle.marca} {vehicle.modelo} {vehicle.ano} - {vehicle.placa}",
+                valor=custo_veiculo,
+                data=sale.data_venda,
+                venda_id=sale.id,
+                vehicle_id=vehicle.id,
+                created_by=created_by,
+            )
+        # Comissão
         comissao_valor = sale.comissao_valor or Decimal("0")
         if comissao_valor > 0:
             await self.financial_repo.create(
