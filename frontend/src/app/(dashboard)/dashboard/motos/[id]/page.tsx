@@ -392,7 +392,7 @@ export default function MotoDetailPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: (status: string) => vehiclesApi.update(id, { status }),
-    onSuccess: () => { toast.success("Status atualizado!"); queryClient.invalidateQueries({ queryKey: ["vehicle", id] }); setPendingStatus(null); },
+    onSuccess: () => { toast.success("Status atualizado!"); queryClient.invalidateQueries({ queryKey: ["vehicle", id] }); queryClient.invalidateQueries({ queryKey: ["vehicles"] }); queryClient.invalidateQueries({ queryKey: ["dashboard"] }); setPendingStatus(null); },
     onError: () => toast.error("Erro ao atualizar status"),
   });
 

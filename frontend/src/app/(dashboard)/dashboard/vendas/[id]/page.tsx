@@ -60,9 +60,22 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
     onMutate: () => setStatusLoading(true),
     onSettled: () => setStatusLoading(false),
     onSuccess: (_data, newStatus) => {
+      // Venda e listas
       queryClient.invalidateQueries({ queryKey: ["sale", id] });
       queryClient.invalidateQueries({ queryKey: ["sales-carros"] });
       queryClient.invalidateQueries({ queryKey: ["sales-motos"] });
+      queryClient.invalidateQueries({ queryKey: ["sales-carros-page"] });
+      queryClient.invalidateQueries({ queryKey: ["sales-motos-page"] });
+      // Financeiro (entradas/saídas mudam ao concluir/cancelar)
+      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-chart"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-lucratividade"] });
+      // Veículos (status muda)
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      if (sale?.vehicle_id) queryClient.invalidateQueries({ queryKey: ["vehicle", sale.vehicle_id] });
+      // Dashboard
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       if (newStatus === "cancelada") {
         router.back();
       }

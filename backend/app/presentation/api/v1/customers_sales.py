@@ -319,6 +319,7 @@ async def update_sale_status(
     elif old_status == "concluida" and new_status == "pendente":
         if vehicle:
             vehicle.status = VehicleStatus.DISPONIVEL
+            vehicle.valor_vendido = None  # remove da lucratividade
         fin_repo = FinancialRepository(db)
         await fin_repo.delete_by_venda_id(s.id)
 
