@@ -210,6 +210,11 @@ export interface FinancialEntry {
   valor: number;
   data: string;
   observacoes?: string;
+  vehicle_id?: string | null;
+  venda_id?: string | null;
+  expense_id?: string | null;
+  foto_url?: string | null;
+  created_at?: string;
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
