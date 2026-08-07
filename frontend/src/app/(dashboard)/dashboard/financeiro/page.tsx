@@ -159,47 +159,94 @@ export default function FinanceiroPage() {
         </div>
       </motion.div>
 
-      {/* Summary KPI Cards */}
+      {/* Summary KPI Cards — 5 métricas financeiras */}
       <div style={{
         display: "grid",
         gridTemplateColumns: isMobile
-          ? "1fr"
-          : "repeat(auto-fill, minmax(min(100%, 220px), 1fr))",
-        gap: isMobileOrTablet ? "10px" : "14px",
+          ? "1fr 1fr"
+          : "repeat(5, 1fr)",
+        gap: isMobileOrTablet ? "10px" : "12px",
       }}>
-        {[
-          { title: "Total de Entradas", subtitle: `${MONTHS[month - 1]} ${year}`, value: entradas, icon: TrendingUp,   color: "#22c55e", badge: <span className="badge badge-success"><ArrowUpRight size={9} /> Receitas</span> },
-          { title: "Total de Saídas",   subtitle: `${MONTHS[month - 1]} ${year}`, value: saidas,   icon: TrendingDown, color: "#ef4444", badge: <span className="badge badge-error"><ArrowDownRight size={9} /> Despesas</span> },
-          { title: "Lucro Líquido", subtitle: "Resultado do período", value: lucro, icon: DollarSign, color: lucro >= 0 ? "#22c55e" : "#ef4444", badge: lucro >= 0 ? <span className="badge badge-success">Positivo</span> : <span className="badge badge-error">Negativo</span> },
-        ].map(({ title, subtitle, value, icon: Icon, color, badge }, i) => (
-          <motion.div key={title} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className="kpi-card"
-            style={{ overflow: "hidden" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-              <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: `${color}12`, border: `1px solid ${color}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Icon size={18} color={color} strokeWidth={1.8} />
-              </div>
-              {badge}
+        {/* Receita Bruta */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} className="kpi-card" style={{ overflow: "hidden" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ArrowUpRight size={16} color="#22c55e" />
             </div>
-            {summaryLoading ? (
-              <div className="skeleton" style={{ height: "28px", width: "70%", marginBottom: "8px" }} />
-            ) : (
-              <p style={{
-                fontSize: "clamp(14px, 3vw, 26px)",
-                fontWeight: "800",
-                color,
-                letterSpacing: "-1px",
-                marginBottom: "6px",
-                lineHeight: 1,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                minWidth: 0,
-              }}>{fmt(value)}</p>
-            )}
-            <p style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>{title}</p>
-            <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>{subtitle}</p>
-          </motion.div>
-        ))}
+            <span style={{ fontSize: 9, fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(34,197,94,0.2)" }}>ENTRADAS</span>
+          </div>
+          {summaryLoading ? <div className="skeleton" style={{ height: 24, width: "70%", marginBottom: 6 }} /> : (
+            <p style={{ fontSize: "clamp(13px,2.5vw,22px)", fontWeight: 800, color: "#22c55e", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fmt(entradas)}</p>
+          )}
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Receita Bruta</p>
+          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>{MONTHS[month - 1]} {year}</p>
+        </motion.div>
+
+        {/* Total Saídas */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="kpi-card" style={{ overflow: "hidden" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ArrowDownRight size={16} color="#ef4444" />
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 700, color: "#ef4444", background: "rgba(239,68,68,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(239,68,68,0.2)" }}>SAÍDAS</span>
+          </div>
+          {summaryLoading ? <div className="skeleton" style={{ height: 24, width: "70%", marginBottom: 6 }} /> : (
+            <p style={{ fontSize: "clamp(13px,2.5vw,22px)", fontWeight: 800, color: "#ef4444", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fmt(saidas)}</p>
+          )}
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Total Saídas</p>
+          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>Custos e despesas</p>
+        </motion.div>
+
+        {/* Lucro Líquido */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="kpi-card" style={{ overflow: "hidden", gridColumn: isMobile ? "span 2" : undefined, border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: lucro >= 0 ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <DollarSign size={16} color={lucro >= 0 ? "#22c55e" : "#ef4444"} />
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 700, color: lucro >= 0 ? "#22c55e" : "#ef4444", background: lucro >= 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", padding: "2px 7px", borderRadius: 20, border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>{lucro >= 0 ? "POSITIVO" : "NEGATIVO"}</span>
+          </div>
+          {summaryLoading ? <div className="skeleton" style={{ height: 24, width: "70%", marginBottom: 6 }} /> : (
+            <p style={{ fontSize: "clamp(13px,2.5vw,22px)", fontWeight: 800, color: lucro >= 0 ? "#22c55e" : "#ef4444", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {lucro >= 0 ? "+" : ""}{fmt(lucro)}
+            </p>
+          )}
+          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)" }}>Lucro Líquido</p>
+          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>Resultado do período</p>
+        </motion.div>
+
+        {/* Veículos Vendidos */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="kpi-card" style={{ overflow: "hidden" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Car size={16} color="#F5A623" />
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 700, color: "#F5A623", background: "rgba(245,166,35,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(245,166,35,0.2)" }}>VENDAS</span>
+          </div>
+          {lucLoading ? <div className="skeleton" style={{ height: 24, width: "50%", marginBottom: 6 }} /> : (
+            <p style={{ fontSize: "clamp(16px,3vw,28px)", fontWeight: 800, color: "#F5A623", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1 }}>
+              {resumoLucro?.total_vendidos ?? 0}
+            </p>
+          )}
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Veículos Vendidos</p>
+          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>{MONTHS[month - 1]} {year}</p>
+        </motion.div>
+
+        {/* Margem Média */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="kpi-card" style={{ overflow: "hidden" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <TrendingUp size={16} color="#6366f1" />
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 700, color: "#6366f1", background: "rgba(99,102,241,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(99,102,241,0.2)" }}>MARGEM</span>
+          </div>
+          {lucLoading ? <div className="skeleton" style={{ height: 24, width: "50%", marginBottom: 6 }} /> : (
+            <p style={{ fontSize: "clamp(16px,3vw,28px)", fontWeight: 800, color: "#6366f1", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1 }}>
+              {resumoLucro?.margem_media?.toFixed(1) ?? "0,0"}%
+            </p>
+          )}
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Margem Média</p>
+          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>Por veículo vendido</p>
+        </motion.div>
       </div>
 
       {/* Chart */}
@@ -318,137 +365,176 @@ export default function FinanceiroPage() {
         </ResponsiveContainer>
       </motion.div>
 
-      {/* Lucro por Veículo */}
+      {/* Lucro por Veículo — redesenhado com fotos e cards premium */}
       {(lucLoading || veiculosLucro.length > 0) && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", overflow: "hidden" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobileOrTablet ? "14px 16px" : "18px 22px", borderBottom: "1px solid var(--border)", gap: 10, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Lucratividade</span>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.3px" }}>
-                Lucro por Veículo — {MONTHS[month - 1]} {year}
-              </h3>
-            </div>
-            {resumoLucro && (
-              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                <div style={{ textAlign: "center" }}>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>Veículos vendidos</p>
-                  <p style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>{resumoLucro.total_vendidos}</p>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>Lucro total do mês</p>
-                  <p style={{ fontSize: 16, fontWeight: 800, color: resumoLucro.lucro_total >= 0 ? "#22c55e" : "#ef4444" }}>
-                    {resumoLucro.lucro_total >= 0 ? "+" : ""}{fmt(resumoLucro.lucro_total)}
-                  </p>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>Margem média</p>
-                  <p style={{ fontSize: 16, fontWeight: 800, color: "#F5A623" }}>{resumoLucro.margem_media?.toFixed(1)}%</p>
-                </div>
+
+          {/* Header */}
+          <div style={{ padding: isMobileOrTablet ? "16px 16px 14px" : "20px 22px 16px", borderBottom: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+              <div>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Lucratividade</span>
+                <h3 style={{ fontSize: isMobile ? 14 : 16, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.4px", marginTop: 2 }}>
+                  Lucro por Veículo — {MONTHS[month - 1]} {year}
+                </h3>
               </div>
-            )}
+              {resumoLucro && (
+                <div style={{ display: "flex", gap: isMobile ? 12 : 20, flexWrap: "wrap" }}>
+                  {[
+                    { label: "Vendidos", value: String(resumoLucro.total_vendidos), color: "#F5A623" },
+                    { label: "Lucro total", value: (resumoLucro.lucro_total >= 0 ? "+" : "") + fmt(resumoLucro.lucro_total), color: resumoLucro.lucro_total >= 0 ? "#22c55e" : "#ef4444" },
+                    { label: "Margem média", value: resumoLucro.margem_media?.toFixed(1) + "%", color: "#6366f1" },
+                  ].map(s => (
+                    <div key={s.label} style={{ textAlign: "right" }}>
+                      <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{s.label}</p>
+                      <p style={{ fontSize: isMobile ? 13 : 15, fontWeight: 800, color: s.color }}>{s.value}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
+          {/* Content */}
           {lucLoading ? (
-            <div style={{ padding: "12px 0" }}>
-              {[1,2,3].map(i => (
-                <div key={i} style={{ display: "flex", gap: 12, padding: isMobileOrTablet ? "12px 16px" : "14px 22px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                  <div className="skeleton" style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0 }} />
+            <div style={{ padding: "8px 0" }}>
+              {[1, 2, 3].map(i => (
+                <div key={i} style={{ display: "flex", gap: 14, padding: isMobileOrTablet ? "14px 16px" : "16px 22px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div className="skeleton" style={{ width: 72, height: 56, borderRadius: 10, flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
-                    <div className="skeleton" style={{ height: 13, width: "50%", marginBottom: 8 }} />
-                    <div className="skeleton" style={{ height: 11, width: "80%" }} />
+                    <div className="skeleton" style={{ height: 14, width: "45%", marginBottom: 8 }} />
+                    <div className="skeleton" style={{ height: 10, width: "30%", marginBottom: 10 }} />
+                    <div className="skeleton" style={{ height: 4, width: "100%", borderRadius: 2 }} />
                   </div>
-                  <div className="skeleton" style={{ width: 80, height: 20, borderRadius: 6 }} />
+                  <div className="skeleton" style={{ width: 90, height: 32, borderRadius: 8, flexShrink: 0 }} />
                 </div>
               ))}
             </div>
           ) : veiculosLucro.length === 0 ? (
-            <div style={{ padding: "40px 24px", textAlign: "center" }}>
-              <Car size={28} color="var(--text-muted)" style={{ opacity: 0.4, marginBottom: 8 }} />
-              <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Nenhum veículo vendido em {MONTHS[month - 1]}</p>
+            <div style={{ padding: "48px 24px", textAlign: "center" }}>
+              <Car size={32} color="var(--text-muted)" style={{ opacity: 0.35, marginBottom: 10 }} />
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>Nenhum veículo vendido em {MONTHS[month - 1]}</p>
+              <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>Selecione outro período ou registre uma venda</p>
             </div>
           ) : (
             <div>
-              {/* Header Row (desktop only) */}
-              {!isMobileOrTablet && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px 100px 90px", gap: 8, padding: "8px 22px", borderBottom: "1px solid rgba(255,255,255,0.04)", background: "rgba(255,255,255,0.02)" }}>
-                  {["Veículo", "Preço Compra", "Gastos", "Custo Total", "Vendido por", "Lucro"].map(h => (
-                    <span key={h} style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</span>
-                  ))}
-                </div>
-              )}
               {veiculosLucro.map((v, i) => {
                 const isProfit = v.lucro_bruto >= 0;
+                const profitColor = isProfit ? "#22c55e" : "#ef4444";
+                const custoBarPct = v.valor_vendido > 0 ? Math.min((v.custo_total / v.valor_vendido) * 100, 100) : 100;
+                const lucroBarPct = Math.max(100 - custoBarPct, 0);
+                const isMoto = v.tipo === "moto";
+                const placeholderSrc = isMoto ? "/moto-placeholder.svg" : "/car-placeholder.svg";
+
                 return (
                   <motion.div key={v.placa + i}
-                    initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                     style={{
-                      display: isMobileOrTablet ? "flex" : "grid",
-                      gridTemplateColumns: isMobileOrTablet ? undefined : "1fr 100px 100px 100px 100px 90px",
-                      flexDirection: isMobileOrTablet ? "column" : undefined,
-                      gap: isMobileOrTablet ? 6 : 8,
-                      padding: isMobileOrTablet ? "14px 16px" : "12px 22px",
-                      borderBottom: i < veiculosLucro.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                      display: "flex", alignItems: isMobile ? "flex-start" : "center",
+                      gap: isMobileOrTablet ? 12 : 16,
+                      padding: isMobileOrTablet ? "14px 16px" : "16px 22px",
+                      borderBottom: i < veiculosLucro.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
                       transition: "background 0.15s",
                     }}
                     whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
                   >
-                    {/* Veículo */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 9, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Car size={15} color="#F5A623" />
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {v.veiculo}
-                        </p>
-                        <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>
-                          {v.placa} · Vendido em {v.data_venda}
-                        </p>
-                      </div>
+                    {/* Foto do veículo */}
+                    <div style={{
+                      width: isMobile ? 64 : 80, height: isMobile ? 48 : 60,
+                      borderRadius: 10, overflow: "hidden",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "rgba(255,255,255,0.03)",
+                      flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <img
+                        src={v.foto_url || placeholderSrc}
+                        alt={v.veiculo}
+                        onError={e => { (e.target as HTMLImageElement).src = placeholderSrc; }}
+                        style={{ width: "100%", height: "100%", objectFit: v.foto_url ? "cover" : "contain",
+                          opacity: v.foto_url ? 1 : 0.4, padding: v.foto_url ? 0 : 8 }}
+                      />
                     </div>
 
-                    {isMobileOrTablet ? (
-                      /* Mobile: grid de valores */
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 16px", marginTop: 4, paddingLeft: 46 }}>
-                        {[
-                          { label: "Preço de compra", value: v.valor_compra, color: "#3b82f6" },
-                          { label: "Gastos", value: v.total_despesas, color: "#f59e0b" },
-                          { label: "Custo total", value: v.custo_total, color: "#8b5cf6" },
-                          { label: "Vendido por", value: v.valor_vendido, color: "#10b981" },
-                        ].map(row => (
-                          <div key={row.label}>
-                            <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>{row.label}</p>
-                            <p style={{ fontSize: 12, fontWeight: 700, color: row.color }}>{fmt(row.value)}</p>
-                          </div>
-                        ))}
-                        <div style={{ gridColumn: "span 2", marginTop: 4, padding: "6px 10px", borderRadius: 8, background: isProfit ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${isProfit ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: isProfit ? "#10b981" : "#ef4444" }}>Lucro real</span>
-                          <span style={{ fontSize: 14, fontWeight: 800, color: isProfit ? "#10b981" : "#ef4444" }}>
-                            {isProfit ? "+" : ""}{fmt(v.lucro_bruto)}
-                            {v.margem_pct !== 0 && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>({v.margem_pct?.toFixed(1)}%)</span>}
+                    {/* Info + barra */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+                        <p style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: isMobile ? "180px" : "none" }}>
+                          {v.veiculo}
+                        </p>
+                        <span style={{ fontSize: 10, fontWeight: 600, padding: "1px 6px", borderRadius: 4, background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                          {v.placa}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: isMobile ? 8 : 10 }}>
+                        Vendido em {v.data_venda}{v.vendedor && v.vendedor !== "—" ? ` · ${v.vendedor}` : ""}
+                      </p>
+
+                      {/* Barra visual custo vs lucro */}
+                      <div style={{ marginBottom: isMobile ? 6 : 8 }}>
+                        <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden", display: "flex" }}>
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${custoBarPct}%` }} transition={{ delay: i * 0.05 + 0.3, duration: 0.6, ease: "easeOut" }}
+                            style={{ height: "100%", background: "linear-gradient(90deg, #ef4444, #f97316)", borderRadius: "3px 0 0 3px" }} />
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${lucroBarPct}%` }} transition={{ delay: i * 0.05 + 0.3, duration: 0.6, ease: "easeOut" }}
+                            style={{ height: "100%", background: "linear-gradient(90deg, #10b981, #22c55e)" }} />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                          <span style={{ fontSize: 9, color: "var(--text-muted)" }}>
+                            <span style={{ color: "#f97316" }}>&#9632;</span> Custo {custoBarPct.toFixed(0)}%
+                          </span>
+                          <span style={{ fontSize: 9, color: isProfit ? "#22c55e" : "#ef4444" }}>
+                            Lucro {lucroBarPct.toFixed(0)}% <span style={{ color: isProfit ? "#22c55e" : "#ef4444" }}>&#9632;</span>
                           </span>
                         </div>
                       </div>
-                    ) : (
-                      /* Desktop: colunas */
-                      <>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#3b82f6", alignSelf: "center" }}>{fmt(v.valor_compra)}</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#f59e0b", alignSelf: "center" }}>{fmt(v.total_despesas)}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "#8b5cf6", alignSelf: "center" }}>{fmt(v.custo_total)}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "#10b981", alignSelf: "center" }}>{fmt(v.valor_vendido)}</span>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, alignSelf: "center" }}>
-                          <span style={{ fontSize: 13, fontWeight: 800, color: isProfit ? "#22c55e" : "#ef4444" }}>
-                            {isProfit ? "+" : ""}{fmt(v.lucro_bruto)}
-                          </span>
-                          {v.margem_pct !== 0 && (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: isProfit ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: isProfit ? "#22c55e" : "#ef4444" }}>
-                              {v.margem_pct?.toFixed(1)}%
-                            </span>
-                          )}
+
+                      {/* Detalhes em linha — só desktop */}
+                      {!isMobile && (
+                        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                          {[
+                            { label: "Compra", value: fmt(v.valor_compra), color: "#3b82f6" },
+                            { label: "Gastos", value: fmt(v.total_despesas), color: "#f59e0b" },
+                            { label: "Custo total", value: fmt(v.custo_total), color: "#f97316", bold: true },
+                            { label: "Vendido por", value: fmt(v.valor_vendido), color: "#10b981", bold: true },
+                          ].map(d => (
+                            <div key={d.label}>
+                              <p style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 1 }}>{d.label}</p>
+                              <p style={{ fontSize: 11, fontWeight: d.bold ? 700 : 600, color: d.color }}>{d.value}</p>
+                            </div>
+                          ))}
                         </div>
-                      </>
-                    )}
+                      )}
+
+                      {/* Mobile: valores resumidos */}
+                      {isMobile && (
+                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                          <div>
+                            <p style={{ fontSize: 9, color: "var(--text-muted)" }}>Custo total</p>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#f97316" }}>{fmt(v.custo_total)}</p>
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 9, color: "var(--text-muted)" }}>Vendido por</p>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#10b981" }}>{fmt(v.valor_vendido)}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Lucro em destaque */}
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ padding: isMobile ? "8px 10px" : "10px 14px", borderRadius: 10, background: isProfit ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${isProfit ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>
+                        <p style={{ fontSize: 9, fontWeight: 600, color: "var(--text-muted)", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Lucro</p>
+                        <p style={{ fontSize: isMobile ? 16 : 20, fontWeight: 900, color: profitColor, letterSpacing: "-0.5px", lineHeight: 1 }}>
+                          {isProfit ? "+" : ""}{fmt(v.lucro_bruto)}
+                        </p>
+                        {v.margem_pct !== 0 && (
+                          <p style={{ fontSize: 10, fontWeight: 700, color: profitColor, marginTop: 3, opacity: 0.8 }}>
+                            {v.margem_pct?.toFixed(1)}% margem
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </motion.div>
                 );
               })}

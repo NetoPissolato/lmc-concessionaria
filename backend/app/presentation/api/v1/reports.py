@@ -448,6 +448,7 @@ async def report_lucratividade(
             selectinload(Vehicle.sale).selectinload(Sale.cliente),
             selectinload(Vehicle.sale).selectinload(Sale.vendedor),
             selectinload(Vehicle.expenses),
+            selectinload(Vehicle.photos),
         )
         .where(Vehicle.deleted_at.is_(None), Vehicle.valor_vendido.isnot(None))
     )
@@ -482,6 +483,10 @@ async def report_lucratividade(
         else:
             dias_estoque = 0
 
+        # Foto principal
+        main_photo = next((p for p in v.photos if p.is_main), None) or (v.photos[0] if v.photos else None)
+        foto_url = main_photo.url if main_photo else None
+
         rows.append({
             "veiculo":        f"{v.marca} {v.modelo} {v.versao or ''} {v.ano}".strip(),
             "marca":          v.marca or "—",
@@ -514,6 +519,8 @@ async def report_lucratividade(
             "banco":          banco_fin,
             "com_pct":        _m(sale.comissao_percentual) if sale else 0,
             "com_valor":      _m(sale.comissao_valor)      if sale else 0,
+            # Foto
+            "foto_url":       foto_url,
         })
 
     rows.sort(key=lambda x: x["lucro_bruto"], reverse=True)
