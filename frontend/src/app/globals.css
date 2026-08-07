@@ -104,6 +104,25 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* ─── Previne zoom automático do iOS Safari nos inputs ───────────────────────── */
+/* iOS zooma quando font-size < 16px — essa regra neutraliza isso em todos os dispositivos */
+@media (max-width: 1024px) {
+  input,
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
 /* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

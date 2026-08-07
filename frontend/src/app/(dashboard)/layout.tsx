@@ -1304,7 +1304,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!mounted) return null;
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "var(--background)", overflow: "hidden" }}>
+    <div style={{ display: "flex", height: "100dvh", background: "var(--background)", overflow: "hidden" }}>
       {/* Sidebar - sticky on desktop, fixed drawer on mobile/tablet */}
       {!isMobileOrTablet && (
         <Sidebar
