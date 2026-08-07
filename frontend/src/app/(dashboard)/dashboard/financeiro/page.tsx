@@ -749,13 +749,29 @@ export default function FinanceiroPage() {
                     {/* Barra lateral colorida */}
                     <div style={{ width: 3, alignSelf: "stretch", borderRadius: "0 3px 3px 0", background: catColor, flexShrink: 0, opacity: 0.8, minHeight: 36 }} />
 
-                    {/* Ícone da categoria */}
+                    {/* Foto do veículo ou ícone da categoria */}
                     <div style={{
-                      width: isMobile ? 34 : 40, height: isMobile ? 34 : 40, borderRadius: 11,
-                      background: `${catColor}14`, border: `1px solid ${catColor}22`,
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      width: isMobile ? 38 : 46, height: isMobile ? 38 : 46, borderRadius: 10,
+                      flexShrink: 0, overflow: "hidden", position: "relative",
+                      border: `1px solid ${catColor}22`,
                     }}>
-                      <CatIcon size={isMobile ? 14 : 17} color={catColor} />
+                      {e.foto_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={e.foto_url}
+                          alt="Foto do veículo"
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          onError={(ev) => { (ev.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: "100%", height: "100%",
+                          background: `${catColor}14`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <CatIcon size={isMobile ? 15 : 18} color={catColor} />
+                        </div>
+                      )}
                     </div>
 
                     {/* Descrição e detalhes */}

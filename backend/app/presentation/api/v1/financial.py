@@ -21,6 +21,7 @@ async def list_entries(
     """List financial entries with optional tipo, year, month filters."""
     from sqlalchemy import select, extract
     from app.domain.models.financial import FinancialEntry, EntryType
+    from app.domain.models.vehicle_photo import VehiclePhoto
 
     stmt = select(FinancialEntry).order_by(FinancialEntry.data.desc())
 
@@ -37,7 +38,26 @@ async def list_entries(
     result = await db.execute(stmt)
     entries = list(result.scalars().all())
 
-    # Serialize to dict so all fields are properly returned
+    # Busca fotos principais dos veículos vinculados
+    vehicle_ids = list({e.vehicle_id for e in entries if e.vehicle_id})
+    foto_map: dict = {}
+    if vehicle_ids:
+        photos_result = await db.execute(
+            select(VehiclePhoto)
+            .where(VehiclePhoto.vehicle_id.in_(vehicle_ids), VehiclePhoto.is_main == True)  # noqa: E712
+        )
+        for photo in photos_result.scalars().all():
+            foto_map[photo.vehicle_id] = photo.url
+        # Para veículos sem foto principal, pega a primeira foto disponível
+        missing = [vid for vid in vehicle_ids if vid not in foto_map]
+        if missing:
+            first_photos = await db.execute(
+                select(VehiclePhoto).where(VehiclePhoto.vehicle_id.in_(missing))
+            )
+            for photo in first_photos.scalars().all():
+                if photo.vehicle_id not in foto_map:
+                    foto_map[photo.vehicle_id] = photo.url
+
     return [
         {
             "id":          e.id,
@@ -48,6 +68,7 @@ async def list_entries(
             "data":        e.data.isoformat(),
             "venda_id":    e.venda_id,
             "vehicle_id":  e.vehicle_id,
+            "foto_url":    foto_map.get(e.vehicle_id) if e.vehicle_id else None,
             "expense_id":  e.expense_id,
             "observacoes": e.observacoes,
             "created_at":  e.created_at.isoformat(),
