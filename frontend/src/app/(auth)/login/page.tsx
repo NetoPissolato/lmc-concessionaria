@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
-import { Eye, EyeOff, Loader2, Lock, User, Shield, ArrowRight, Car, BarChart3, DollarSign, FileText, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, User, Shield, ArrowRight, Car, BarChart3, DollarSign, FileText, CheckCircle2, AlertTriangle, Clock, XCircle } from "lucide-react";
 import { authApi } from "@/lib/api";
 import { toast } from "@/lib/toast";
 
@@ -69,8 +69,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading]       = useState(false);
   const [success, setSuccess]           = useState(false);
   const [error, setError]               = useState("");
+  const [errorType, setErrorType]       = useState<"credentials" | "locked" | "rate" | "generic" | "">("");
   const [mounted, setMounted]           = useState(false);
+  const [capsLock, setCapsLock]         = useState(false);
+  const [shake, setShake]               = useState(false);
+  const [attempts, setAttempts]         = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const identifierRef = useRef<HTMLInputElement>(null);
 
   // Mouse parallax
   const mouseX = useMotionValue(0);
@@ -85,41 +90,92 @@ export default function LoginPage() {
     mouseY.set((e.clientY - rect.top) / rect.height);
   }, [mouseX, mouseY]);
 
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (authApi.isAuthenticated()) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
+  // Load remembered email + mount
   useEffect(() => {
     setMounted(true);
+    const saved = localStorage.getItem("lmc_remember_email");
+    if (saved) {
+      setIdentifier(saved);
+      setRememberMe(true);
+    }
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [handleMouseMove]);
 
+  // Caps Lock detection
+  const handleKeyEvent = useCallback((e: React.KeyboardEvent) => {
+    setCapsLock(e.getModifierState("CapsLock"));
+  }, []);
+
+  // Trigger shake animation
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier || !senha) { setError("Preencha todos os campos"); return; }
+    if (!identifier || !senha) {
+      setError("Preencha todos os campos");
+      setErrorType("generic");
+      triggerShake();
+      return;
+    }
     setError("");
+    setErrorType("");
     setIsLoading(true);
     try {
       await authApi.login(identifier, senha);
+      // Save or clear remembered email
+      if (rememberMe) {
+        localStorage.setItem("lmc_remember_email", identifier);
+      } else {
+        localStorage.removeItem("lmc_remember_email");
+      }
+      setAttempts(0);
       setSuccess(true);
       await new Promise(r => setTimeout(r, 900));
       router.push("/dashboard");
     } catch (err: any) {
       let msg = "Erro ao fazer login. Tente novamente.";
+      let type: typeof errorType = "generic";
       if (err?.response?.data?.detail) {
         const detail = err.response.data.detail;
         if (typeof detail === "string") {
           if (detail.toLowerCase().includes("bloqueada") || detail.toLowerCase().includes("bloqueado")) {
-            msg = "🔒 Conta bloqueada por excesso de tentativas. Aguarde alguns minutos.";
+            msg = "Conta bloqueada por excesso de tentativas. Aguarde alguns minutos.";
+            type = "locked";
           } else if (detail.toLowerCase().includes("credenciais") || detail.toLowerCase().includes("inválid")) {
-            msg = "E-mail/usuário ou senha incorretos.";
+            const remaining = 5 - (attempts + 1);
+            msg = remaining > 0
+              ? `E-mail/usuário ou senha incorretos. ${remaining} tentativa${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}.`
+              : "E-mail/usuário ou senha incorretos.";
+            type = "credentials";
           } else {
             msg = detail;
           }
         }
       } else if (err?.response?.status === 429) {
-        msg = "⏳ Muitas tentativas. Aguarde um momento antes de tentar novamente.";
+        msg = "Muitas tentativas. Aguarde um momento antes de tentar novamente.";
+        type = "rate";
       } else if (err?.response?.status === 401 || err?.response?.status === 403) {
-        msg = "E-mail/usuário ou senha incorretos.";
+        const remaining = 5 - (attempts + 1);
+        msg = remaining > 0
+          ? `E-mail/usuário ou senha incorretos. ${remaining} tentativa${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}.`
+          : "E-mail/usuário ou senha incorretos.";
+        type = "credentials";
       }
+      setAttempts(a => a + 1);
       setError(msg);
+      setErrorType(type);
+      triggerShake();
       setIsLoading(false);
     }
   };
@@ -377,7 +433,8 @@ export default function LoginPage() {
             </motion.div>
           ) : (
             <motion.form key="form" onSubmit={handleSubmit}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              initial={{ opacity: 0 }} animate={shake ? { x: [0, -10, 10, -10, 10, 0], opacity: 1 } : { opacity: 1 }}
+              transition={shake ? { duration: 0.4 } : undefined}
               style={{ display: "flex", flexDirection: "column", gap: "18px", position: "relative", zIndex: 1 }}>
 
               {/* Usuario */}
@@ -407,6 +464,7 @@ export default function LoginPage() {
                     style={{ position: "absolute", left: "15px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                   <input type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={senha}
                     onChange={e => { setSenha(e.target.value); setError(""); }}
+                    onKeyDown={handleKeyEvent} onKeyUp={handleKeyEvent}
                     style={{ width: "100%", boxSizing: "border-box", padding: "13px 46px 13px 44px",
                       background: "rgba(255,255,255,0.05)", border: `1px solid ${error ? "#ef4444" : "rgba(255,255,255,0.1)"}`,
                       borderRadius: "12px", color: "#fff", fontSize: "14px", outline: "none",
@@ -426,19 +484,35 @@ export default function LoginPage() {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </motion.button>
                 </div>
+                {/* Caps Lock warning */}
+                <AnimatePresence>
+                  {capsLock && (
+                    <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      style={{ fontSize: "11px", color: "#f59e0b", margin: "6px 0 0",
+                        display: "flex", alignItems: "center", gap: "5px" }}>
+                      <AlertTriangle size={12} /> Caps Lock está ativado
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </motion.div>
 
               {/* Error */}
               <AnimatePresence>
                 {error && (
-                  <motion.p initial={{ opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: "auto" }}
+                  <motion.div initial={{ opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: "auto" }}
                     exit={{ opacity: 0, y: -8, height: 0 }}
-                    style={{ fontSize: "12px", color: "#ef4444", margin: 0,
-                      display: "flex", alignItems: "center", gap: "6px" }}>
-                    <motion.span animate={{ scale: [1,1.4,1] }} transition={{ duration: 0.3 }}
-                      style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />
-                    {error}
-                  </motion.p>
+                    style={{ fontSize: "12px", margin: 0, padding: "10px 12px", borderRadius: "8px",
+                      display: "flex", alignItems: "center", gap: "8px",
+                      color: errorType === "locked" ? "#f59e0b" : errorType === "rate" ? "#60a5fa" : "#ef4444",
+                      background: errorType === "locked" ? "rgba(245,158,11,0.08)" : errorType === "rate" ? "rgba(96,165,250,0.08)" : "rgba(239,68,68,0.08)",
+                      border: `1px solid ${errorType === "locked" ? "rgba(245,158,11,0.2)" : errorType === "rate" ? "rgba(96,165,250,0.2)" : "rgba(239,68,68,0.2)"}`,
+                    }}>
+                    {errorType === "locked" ? <Lock size={14} style={{ flexShrink: 0 }} /> 
+                     : errorType === "rate" ? <Clock size={14} style={{ flexShrink: 0 }} />
+                     : <XCircle size={14} style={{ flexShrink: 0 }} />}
+                    <span>{error}</span>
+                  </motion.div>
                 )}
               </AnimatePresence>
 
