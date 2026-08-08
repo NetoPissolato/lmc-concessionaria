@@ -1974,10 +1974,20 @@ input[type="number"] { -moz-appearance: textfield; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  padding: 20px;
 }
-@media (max-width: 540px) {
+/* Abaixo de 520px: 1 coluna — nenhum campo fica cortado */
+@media (max-width: 520px) {
   .expense-form-grid {
     grid-template-columns: 1fr !important;
+    padding: 14px 14px !important;
+    gap: 10px !important;
+  }
+  /* Remover span 2 em mobile — volta para 1 coluna total */
+  .expense-form-grid > [style*="gridColumn: span 2"],
+  .expense-form-grid > [style*="grid-column: span 2"],
+  .expense-form-grid > div[style*="span 2"] {
+    grid-column: 1 !important;
   }
 }
 

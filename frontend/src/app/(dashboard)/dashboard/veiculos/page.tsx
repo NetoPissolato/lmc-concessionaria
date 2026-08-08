@@ -473,26 +473,26 @@ export default function VeiculosPage() {
         {deleteTarget && (
           <motion.div key="bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={e => { if (e.target === e.currentTarget) setDeleteTarget(null); }}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)", zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(4px)", zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 16px calc(16px + env(safe-area-inset-bottom, 60px))" }}>
             <motion.div initial={{ scale: 0.95, y: 8 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 8 }}
-              style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "400px" }}>
+              style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "22px", width: "100%", maxWidth: "400px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Trash2 size={18} color="#ef4444" />
                 </div>
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>Excluir Veículo</p>
                   <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: 2 }}>Esta ação não pode ser desfeita</p>
                 </div>
-                <button onClick={() => setDeleteTarget(null)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex" }}><X size={16} /></button>
+                <button type="button" onClick={() => setDeleteTarget(null)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", width: 36, height: 36, alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={16} /></button>
               </div>
               <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: "20px" }}>
                 Confirmar exclusão de <strong style={{ color: "var(--text-primary)" }}>{deleteTarget.marca} {deleteTarget.modelo} {deleteTarget.ano}</strong>?
               </p>
-              <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                <button onClick={() => setDeleteTarget(null)} style={{ height: "36px", padding: "0 16px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "10px", cursor: "pointer", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>Cancelar</button>
-                <button onClick={() => deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending}
-                  style={{ height: "36px", padding: "0 16px", background: "#ef4444", border: "none", borderRadius: "10px", cursor: "pointer", fontSize: "13px", fontWeight: "700", color: "#fff", opacity: deleteMutation.isPending ? 0.7 : 1 }}>
+              <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", flexWrap: "wrap" }}>
+                <button type="button" onClick={() => setDeleteTarget(null)} style={{ height: "44px", padding: "0 16px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "10px", cursor: "pointer", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", flex: "0 1 auto" }}>Cancelar</button>
+                <button type="button" onClick={() => deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending}
+                  style={{ height: "44px", padding: "0 16px", background: "#ef4444", border: "none", borderRadius: "10px", cursor: "pointer", fontSize: "13px", fontWeight: "700", color: "#fff", opacity: deleteMutation.isPending ? 0.7 : 1, flex: "1 1 auto" }}>
                   {deleteMutation.isPending ? "Excluindo..." : "Confirmar Exclusão"}
                 </button>
               </div>

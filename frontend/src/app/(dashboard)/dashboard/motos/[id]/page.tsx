@@ -260,15 +260,20 @@ function ExpenseModal({ vehicleId, expense, onClose, onSuccess }: {
   const lbl = { style: { fontSize: "12px", color: "var(--text-muted)", display: "block" as const, marginBottom: 4 } };
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", zIndex: 9000,
+        display: "flex", alignItems: "flex-start", justifyContent: "center",
+        overflowY: "auto", WebkitOverflowScrolling: "touch" as "touch",
+        padding: "16px 16px calc(16px + env(safe-area-inset-bottom, 60px))",
+      }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-        className="glass" style={{ width: "100%", maxWidth: 540, borderRadius: "var(--radius-xl)", overflow: "hidden" }}>
-        <div style={{ padding: "18px 22px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>{isEdit ? "Editar Despesa" : "Registrar Despesa"}</h2>
-          <button className="btn btn-ghost" style={{ width: 30, height: 30, padding: 0 }} onClick={onClose}><X size={15} /></button>
+      <motion.div initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 16 }}
+        className="glass" style={{ width: "100%", maxWidth: 540, borderRadius: "var(--radius-xl)", overflow: "hidden", marginTop: "auto", marginBottom: "auto" }}>
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>{isEdit ? "Editar Despesa" : "Registrar Despesa"}</h2>
+          <button type="button" className="btn btn-ghost" style={{ width: 36, height: 36, padding: 0, flexShrink: 0 }} onClick={onClose}><X size={16} /></button>
         </div>
-        <form onSubmit={handleSubmit} className="expense-form-grid" style={{ padding: "20px 22px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <form onSubmit={handleSubmit} className="expense-form-grid">
           <div><label {...lbl}>Data *</label><input type="date" required value={form.data} onChange={e => setForm(f => ({ ...f, data: e.target.value }))} {...inp} /></div>
           <div><label {...lbl}>Categoria *</label>
             <Select
@@ -320,10 +325,10 @@ function ExpenseModal({ vehicleId, expense, onClose, onSuccess }: {
           <div><label {...lbl}>KM atual</label><input value={form.km_atual} onChange={e => setForm(f => ({ ...f, km_atual: maskKM(e.target.value) }))} placeholder="Ex: 50.000" inputMode="numeric" {...inp} /></div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}><label {...lbl}>Observações</label>
             <textarea value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))} {...inp} rows={2} style={{ ...inp.style, height: "auto", paddingTop: 8 }} placeholder="Detalhes adicionais..." /></div>
-          <div style={isMobile ? {} : { gridColumn: "span 2", display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancelar</button>
+          <div style={{ gridColumn: "span 2", display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+            <button type="button" className="btn btn-secondary" style={{ flex: "0 1 auto" }} onClick={onClose}>Cancelar</button>
             <motion.button type="submit" whileTap={{ scale: 0.97 }} disabled={loading}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: "var(--radius-md)", background: `linear-gradient(135deg, ${ACCENT}, #ea580c)`, color: "#fff", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flex: "1 1 auto", padding: "9px 18px", borderRadius: "var(--radius-md)", background: `linear-gradient(135deg, ${ACCENT}, #ea580c)`, color: "#fff", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
               {loading ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Salvando...</> : isEdit ? <><Check size={14} /> Salvar</> : <><Plus size={14} /> Registrar</>}
             </motion.button>
           </div>

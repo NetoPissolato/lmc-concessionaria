@@ -896,7 +896,9 @@ function CustomerModal({ customer, onClose, onSuccess }: {
         position: "fixed", inset: 0, zIndex: 9100,
         background: "rgba(0,0,0,0.82)",
         backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-        display: "flex", alignItems: "center", justifyContent: "center", padding: "24px",
+        display: "flex", alignItems: "flex-start", justifyContent: "center",
+        overflowY: "auto", WebkitOverflowScrolling: "touch" as "touch",
+        padding: "16px 16px calc(16px + env(safe-area-inset-bottom, 64px))",
       }}>
       <motion.div
         initial={{ scale: 0.94, opacity: 0, y: 16 }}
@@ -907,8 +909,10 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           width: "100%", maxWidth: "600px",
           background: "var(--surface)", border: "1px solid rgba(255,255,255,0.09)",
           borderRadius: "18px", overflow: "hidden",
-          maxHeight: "92vh", display: "flex", flexDirection: "column",
+          maxHeight: "calc(100dvh - 32px - env(safe-area-inset-bottom, 64px))",
+          display: "flex", flexDirection: "column",
           boxShadow: "0 40px 100px rgba(0,0,0,0.8)",
+          marginTop: "auto", marginBottom: "auto",
         }}
       >
         <div style={{

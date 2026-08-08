@@ -84,9 +84,11 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
         style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)",
           backdropFilter: "blur(6px)", zIndex: 9000,
-          display: "flex", alignItems: "center", justifyContent: "center", padding: "16px",
+          display: "flex", alignItems: "flex-start", justifyContent: "center",
+          overflowY: "auto", WebkitOverflowScrolling: "touch" as "touch",
+          padding: "16px 16px calc(16px + env(safe-area-inset-bottom, 64px))",
         }}
       >
         <motion.div
@@ -99,26 +101,31 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
             background: "#131313", border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: "20px", width: "100%", maxWidth: "480px",
             boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+            marginTop: "auto", marginBottom: "auto",
+            maxHeight: "calc(100dvh - 32px - env(safe-area-inset-bottom, 64px))",
+            display: "flex", flexDirection: "column", overflow: "hidden",
           }}
         >
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)",
+            padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
+            flexShrink: 0,
           }}>
             <h2 style={{ fontSize: "15px", fontWeight: "700", color: "#fff", margin: 0 }}>{title}</h2>
             <button
+              type="button"
               onClick={onClose}
               style={{
-                width: "28px", height: "28px", borderRadius: "8px",
+                width: "36px", height: "36px", borderRadius: "8px",
                 background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)",
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(255,255,255,0.5)",
+                color: "rgba(255,255,255,0.5)", flexShrink: 0,
               }}
             >
-              <X size={13} />
+              <X size={15} />
             </button>
           </div>
-          <div style={{ padding: "24px" }}>{children}</div>
+          <div style={{ padding: "20px", overflowY: "auto", flex: 1 }}>{children}</div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
