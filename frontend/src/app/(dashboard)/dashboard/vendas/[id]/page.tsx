@@ -306,28 +306,31 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* ── Status Actions ── */}
       <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
-        style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", padding: "14px 18px",
+        style={{ display: "flex", flexDirection: "column", gap: 10, padding: "14px 18px",
           background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14 }}>
-        <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", marginRight: 4 }}>Alterar status:</span>
-        {st !== "concluida" && (
-          <button disabled={statusLoading} onClick={() => statusMutation.mutate("concluida")}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, fontSize: "12px", fontWeight: 700, cursor: "pointer", background: "rgba(34,197,94,0.12)", border: "1.5px solid rgba(34,197,94,0.35)", color: "#22c55e", opacity: statusLoading ? 0.6 : 1 }}>
-            <CheckCircle2 size={13} /> Concluir
-          </button>
-        )}
-        {st !== "pendente" && st !== "cancelada" && (
-          <button disabled={statusLoading} onClick={() => statusMutation.mutate("pendente")}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, fontSize: "12px", fontWeight: 700, cursor: "pointer", background: "rgba(245,158,11,0.1)", border: "1.5px solid rgba(245,158,11,0.3)", color: "#f59e0b", opacity: statusLoading ? 0.6 : 1 }}>
-            <Clock size={13} /> Marcar como Pendente
-          </button>
-        )}
-        {st !== "cancelada" && (
-          <button disabled={statusLoading} onClick={() => setShowCancelConfirm(true)}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, fontSize: "12px", fontWeight: 700, cursor: "pointer", background: "rgba(239,68,68,0.08)", border: "1.5px solid rgba(239,68,68,0.25)", color: "#ef4444", opacity: statusLoading ? 0.6 : 1 }}>
-            <XCircle size={13} /> Cancelar Venda
-          </button>
-        )}
-        {statusLoading && <RefreshCw size={14} color="var(--text-muted)" style={{ animation: "spin 1s linear infinite" }} />}
+        <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Alterar status</span>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", paddingBottom: 2 }}
+          className="scroll-x-hide">
+          {st !== "concluida" && (
+            <button type="button" disabled={statusLoading} onClick={() => statusMutation.mutate("concluida")}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, fontSize: "12px", fontWeight: 700, cursor: "pointer", background: "rgba(34,197,94,0.12)", border: "1.5px solid rgba(34,197,94,0.35)", color: "#22c55e", opacity: statusLoading ? 0.6 : 1, whiteSpace: "nowrap", flexShrink: 0 }}>
+              <CheckCircle2 size={13} /> Concluir
+            </button>
+          )}
+          {st !== "pendente" && st !== "cancelada" && (
+            <button type="button" disabled={statusLoading} onClick={() => statusMutation.mutate("pendente")}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, fontSize: "12px", fontWeight: 700, cursor: "pointer", background: "rgba(245,158,11,0.1)", border: "1.5px solid rgba(245,158,11,0.3)", color: "#f59e0b", opacity: statusLoading ? 0.6 : 1, whiteSpace: "nowrap", flexShrink: 0 }}>
+              <Clock size={13} /> Marcar como Pendente
+            </button>
+          )}
+          {st !== "cancelada" && (
+            <button type="button" disabled={statusLoading} onClick={() => setShowCancelConfirm(true)}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, fontSize: "12px", fontWeight: 700, cursor: "pointer", background: "rgba(239,68,68,0.08)", border: "1.5px solid rgba(239,68,68,0.25)", color: "#ef4444", opacity: statusLoading ? 0.6 : 1, whiteSpace: "nowrap", flexShrink: 0 }}>
+              <XCircle size={13} /> Cancelar Venda
+            </button>
+          )}
+          {statusLoading && <RefreshCw size={14} color="var(--text-muted)" style={{ animation: "spin 1s linear infinite", flexShrink: 0, alignSelf: "center" }} />}
+        </div>
       </motion.div>
 
       {/* ── 3-column detail grid ── */}

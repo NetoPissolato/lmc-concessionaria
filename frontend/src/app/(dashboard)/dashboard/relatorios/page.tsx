@@ -231,7 +231,7 @@ function ReportCard({
         </div>
 
         {/* Tags */}
-        <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", marginBottom: "14px" }}>
+        <div className="filter-chip-row" style={{ marginBottom: "14px" }}>
           {report.tags.map(tag => (
             <span key={tag} style={{
               fontSize: "10px", fontWeight: "600", padding: "2px 8px", borderRadius: "20px",

@@ -516,7 +516,9 @@ export default function VendasCarrosPage() {
 
       {/* ── STATUS FILTER TABS ───────────────────────────────────── */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-        style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+        style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20,
+          overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
+        className="scroll-x-hide">
         <div style={{ display: "flex", alignItems: "center", gap: 5, marginRight: 4 }}>
           <SlidersHorizontal size={12} color="var(--text-muted)" />
           <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Status</span>

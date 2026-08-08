@@ -331,8 +331,8 @@ export default function FinanceiroPage() {
               Fluxo de Caixa — {period === "mensal" ? year : `${MONTHS[month - 1]} ${year}`}
             </h3>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.06)", padding: "2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", overflow: "hidden", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.06)", padding: "2px", flexShrink: 0 }}>
               {(["mensal", "Diário"] as const).map(p => (
                 <button key={p} onClick={() => setPeriod(p)} style={{
                   padding: "4px 10px", borderRadius: "6px", border: "none", cursor: "pointer",
@@ -343,7 +343,7 @@ export default function FinanceiroPage() {
                 }}>{p === "mensal" ? "Mensal" : "Diário"}</button>
               ))}
             </div>
-            <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+            <div className="filter-chip-row" style={{ flex: 1 }}>
               {([
                 { key: "entradas", label: "Entradas", color: "#22c55e", vis: visEntradas, toggle: toggleEntradas },
                 { key: "saidas",   label: "Saídas",   color: "#ef4444", vis: visSaidas,   toggle: toggleSaidas   },
@@ -831,7 +831,7 @@ export default function FinanceiroPage() {
               {(safePage - 1) * PAGE_SIZE + 1} ao {Math.min(safePage * PAGE_SIZE, entries.length)} de{" "}
               <strong style={{ color: "var(--text-secondary)" }}>{entries.length}</strong> registros
             </span>
-            <div style={{ display: "flex", alignItems: "center", gap: "3px", flexWrap: "wrap", justifyContent: "center" }}>
+            <div className="filter-chip-row" style={{ justifyContent: "center" }}>
               <PaginationBtn onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} aria-label="Pagina anterior"><ChevronLeft size={13} /></PaginationBtn>
               {pageNumbers.map((p, idx) =>
                 p === "..." ? (

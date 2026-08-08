@@ -2767,3 +2767,143 @@ img { max-width: 100%; height: auto; }
 }
 .scroll-x::-webkit-scrollbar { display: none; }
 .scroll-x > * { flex-shrink: 0; }
+
+/* ── scroll-x-hide: scroll horizontal sem scrollbar visível ─────────────── */
+.scroll-x-hide {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll-x-hide::-webkit-scrollbar { display: none; }
+.scroll-x-hide > * { flex-shrink: 0; }
+
+/* ── Filtros de status (chip row) — nunca quebram linha ─────────────────── */
+.filter-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.filter-chip-row::-webkit-scrollbar { display: none; }
+.filter-chip-row > * { flex-shrink: 0; }
+
+/* ── Botão de status/ação — tamanho toque mínimo garantido ──────────────── */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 40px;
+}
+
+/* ── Barra de ações de status (label + botões) ───────────────────────────── */
+.status-action-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.status-action-bar__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.status-action-bar__buttons {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.status-action-bar__buttons::-webkit-scrollbar { display: none; }
+.status-action-bar__buttons > * { flex-shrink: 0; }
+
+/* ── Seção 3 colunas — empilha em mobile ────────────────────────────────── */
+.detail-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 1023px) {
+  .detail-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 639px) {
+  .detail-grid-3 { grid-template-columns: 1fr; }
+}
+
+/* ── Barra de ferramentas de filtro (search + toggles) ──────────────────── */
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.toolbar-row__search {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+@media (max-width: 479px) {
+  .toolbar-row { gap: 8px; }
+  .toolbar-row__search { flex: 1 1 100%; }
+}
+
+/* ── Pair row — label à esquerda, valor à direita ───────────────────────── */
+.pair-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.pair-row__label {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.pair-row__value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Hero Section (page with photo + info sidebar) ──────────────────────── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+@media (max-width: 1023px) {
+  .hero-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Sidebar do hero — borda lateral no desktop, superior no mobile ──────── */
+.hero-sidebar {
+  border-left: 1px solid var(--border);
+  border-top: none;
+}
+@media (max-width: 1023px) {
+  .hero-sidebar { border-left: none; border-top: 1px solid var(--border); }
+}
