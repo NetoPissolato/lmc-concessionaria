@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -387,6 +388,9 @@ export default function VehicleDetailPage() {
   const [confirmDeleteExpense, setConfirmDeleteExpense] = useState<string | null>(null);
   const [confirmDeleteVehicle, setConfirmDeleteVehicle] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+
+  // Lock body scroll when any modal is open
+  useBodyScrollLock(showAddExpense || !!editingExpense || !!confirmDeleteExpense || confirmDeleteVehicle);
 
   const { data: vehicle, isLoading: vLoading } = useQuery<Vehicle>({ queryKey: ["vehicle", id], queryFn: () => vehiclesApi.get(id) });
   const { data: costCenter, isLoading: ccLoading } = useQuery<CostCenter>({ queryKey: ["vehicle-cost", id], queryFn: () => vehiclesApi.getCostCenter(id) });
