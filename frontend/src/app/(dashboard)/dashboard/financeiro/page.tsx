@@ -506,12 +506,12 @@ export default function FinanceiroPage() {
                 const lucroBarPct = Math.max(100 - custoBarPct, 0);
                 const isMoto = v.tipo === "moto";
                 const placeholderSrc = isMoto ? "/moto-placeholder.svg" : "/car-placeholder.svg";
-
                 return (
                   <motion.div key={v.placa + i}
                     initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                     style={{
-                      display: "flex", flexDirection: isMobile ? "column" : "row",
+                      display: "flex",
+                      flexDirection: isMobile ? "column" : "row",
                       alignItems: isMobile ? "stretch" : "center",
                       gap: isMobileOrTablet ? 12 : 16,
                       padding: isMobileOrTablet ? "14px 16px" : "16px 22px",
@@ -520,81 +520,9 @@ export default function FinanceiroPage() {
                     }}
                     whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
                   >
-                    {/* Row wrapper for foto + info — stays horizontal even on mobile */}
-                    {isMobile ? (
-                      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    {/* Foto do veículo */}
-                    <div style={{
-                      width: isMobile ? 64 : 80, height: isMobile ? 48 : 60,
-                      borderRadius: 10, overflow: "hidden",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      background: "rgba(255,255,255,0.03)",
-                      flexShrink: 0,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <img
-                        src={v.foto_url || placeholderSrc}
-                        alt={v.veiculo}
-                        onError={e => { (e.target as HTMLImageElement).src = placeholderSrc; }}
-                        style={{ width: "100%", height: "100%", objectFit: v.foto_url ? "cover" : "contain",
-                          opacity: v.foto_url ? 1 : 0.4, padding: v.foto_url ? 0 : 8 }}
-                      />
-                    </div>
-
-                    {/* Info + barra */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
-                        <p style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: isMobile ? "180px" : "none" }}>
-                          {v.veiculo}
-                        </p>
-                        <span style={{ fontSize: 10, fontWeight: 600, padding: "1px 6px", borderRadius: 4, background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                          {v.placa}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: isMobile ? 8 : 10 }}>
-                        Vendido em {v.data_venda}{v.vendedor && v.vendedor !== "—" ? ` · ${v.vendedor}` : ""}
-                      </p>
-
-                      {/* Barra visual custo vs lucro */}
-                      <div style={{ marginBottom: isMobile ? 6 : 8 }}>
-                        <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden", display: "flex" }}>
-                          <motion.div initial={{ width: 0 }} animate={{ width: `${custoBarPct}%` }} transition={{ delay: i * 0.05 + 0.3, duration: 0.6, ease: "easeOut" }}
-                            style={{ height: "100%", background: "linear-gradient(90deg, #ef4444, #f97316)", borderRadius: "3px 0 0 3px" }} />
-                          <motion.div initial={{ width: 0 }} animate={{ width: `${lucroBarPct}%` }} transition={{ delay: i * 0.05 + 0.3, duration: 0.6, ease: "easeOut" }}
-                            style={{ height: "100%", background: "linear-gradient(90deg, #10b981, #22c55e)" }} />
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-                          <span style={{ fontSize: 9, color: "var(--text-muted)" }}>
-                            <span style={{ color: "#f97316" }}>&#9632;</span> Custo {custoBarPct.toFixed(0)}%
-                          </span>
-                          <span style={{ fontSize: 9, color: isProfit ? "#22c55e" : "#ef4444" }}>
-                            Lucro {lucroBarPct.toFixed(0)}% <span style={{ color: isProfit ? "#22c55e" : "#ef4444" }}>&#9632;</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Detalhes em linha — só desktop */}
-                      {!isMobile && (
-                        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                          {[
-                            { label: "Compra", value: fmt(v.valor_compra), color: "#3b82f6" },
-                            { label: "Gastos", value: fmt(v.total_despesas), color: "#f59e0b" },
-                            { label: "Custo total", value: fmt(v.custo_total), color: "#f97316", bold: true },
-                            { label: "Vendido por", value: fmt(v.valor_vendido), color: "#10b981", bold: true },
-                          ].map(d => (
-                            <div key={d.label}>
-                              <p style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 1 }}>{d.label}</p>
-                              <p style={{ fontSize: 11, fontWeight: d.bold ? 700 : 600, color: d.color }}>{d.value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Mobile: valores resumidos */}
-                      {isMobile && (
-                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                          <div>
-                    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    {/* Foto + Info — always horizontal row */}
+                    <div style={{ display: "flex", gap: isMobileOrTablet ? 12 : 16, alignItems: "flex-start", flex: 1, minWidth: 0 }}>
+                      {/* Foto */}
                       <div style={{
                         width: isMobile ? 64 : 80, height: isMobile ? 48 : 60,
                         borderRadius: 10, overflow: "hidden",
