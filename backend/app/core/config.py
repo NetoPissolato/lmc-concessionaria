@@ -32,8 +32,8 @@ class Settings(BaseSettings):
     # JWT
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 525960   # ~1 ano
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 3650       # ~10 anos
 
     # Security
     MAX_LOGIN_ATTEMPTS: int = 5
