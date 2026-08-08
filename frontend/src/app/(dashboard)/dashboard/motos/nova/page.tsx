@@ -263,15 +263,14 @@ export default function NovaMotoPage() {
       </motion.div>
 
       {/* Form */}
-      <form onSubmit={e => e.preventDefault()}>
+      <form onSubmit={e => e.preventDefault()} className="veiculo-form">
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
-            className="card"
+            className="card form-card-scrollable"
             style={{ padding: isMobile ? "16px" : "28px" }}>
 
-            {/* ?"--? Step 1: Dados da Moto ?"--? */}
             {step === 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "16px" }}>
+              <div className="form-grid-auto">
                 <Field label="Marca" required error={errors.marca?.message}>
                   <AutocompleteInput
                     value={watchMarca} options={marcas} loading={marcaLoad}
@@ -491,7 +490,7 @@ export default function NovaMotoPage() {
         </AnimatePresence>
 
         {/* Navigation */}
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>
+        <div className="form-nav-row" style={{ display: "flex", justifyContent: "space-between", marginTop: "16px", gap: 10 }}>
           <button type="button" className="btn btn-secondary"
             onClick={() => setStep(s => Math.max(0, s - 1))}
             disabled={step === 0 || step === 3}>
@@ -499,13 +498,13 @@ export default function NovaMotoPage() {
           </button>
 
           {step < 2 && (
-            <motion.button type="button" className="btn btn-primary" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            <motion.button type="button" className="btn btn-primary form-nav-btn" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               onClick={nextStep} style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}>
               Próximo <ChevronRight size={16} />
             </motion.button>
           )}
           {step === 2 && (
-            <motion.button type="button" className="btn btn-primary" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            <motion.button type="button" className="btn btn-primary form-nav-btn" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               disabled={mutation.isPending} onClick={onSubmitStep2}
               style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}>
               {mutation.isPending ? (<><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Salvando...</>) : (<><Check size={16} /> Cadastrar Moto</>)}

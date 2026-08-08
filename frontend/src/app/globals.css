@@ -2907,3 +2907,147 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 1023px) {
   .hero-sidebar { border-left: none; border-top: 1px solid var(--border); }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MELHORIAS DE UI — KPI, Gráficos, Formulários, Tabelas (Agosto 2026)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. KPI STRIP: texto não transborda em nenhum tamanho ────────────────────── */
+.kpi-strip > * {
+  min-width: 0;
+  overflow: hidden;
+}
+/* O valor principal: usa clamp + ellipsis para nunca vazar */
+.kpi-strip > * p:first-of-type,
+.kpi-strip > * [class*="kpi-val"],
+.kpi-strip > * > div > p {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Padding menor em telas muito pequenas */
+@media (max-width: 380px) {
+  .kpi-strip > * { padding: 12px 10px !important; }
+  .kpi-strip > * p { font-size: 13px !important; }
+  .kpi-strip > * p:first-of-type { font-size: clamp(12px, 4vw, 18px) !important; }
+}
+
+/* ── 2. GRÁFICOS RECHARTS: esconde eixos Y em telas < 380px ─────────────────── */
+/* Mantém legibilidade em telefones muito pequenos ocultando o eixo que
+   sobrepõe as barras — o tooltip ainda funciona ao tocar */
+@media (max-width: 380px) {
+  /* Eixo Y — texto escondido, só a linha permanece */
+  .recharts-cartesian-axis-tick { display: none; }
+  /* Reduce height of chart container on tiny phones */
+  .recharts-wrapper { min-height: 140px; }
+  /* Tooltip ainda aparece em largura completa */
+  .recharts-tooltip-wrapper { z-index: 9999; }
+}
+
+/* Em telas 381–479px, texto do eixo menor */
+@media (min-width: 381px) and (max-width: 479px) {
+  .recharts-cartesian-axis-tick text {
+    font-size: 8px !important;
+  }
+  /* Mostra menos labels no eixo X reduzindo densidade */
+  .recharts-xAxis .recharts-cartesian-axis-tick:nth-child(even) { display: none; }
+}
+
+/* ── 3. FORMULÁRIOS DE VEÍCULO (novo/editar): inputs com tamanho mínimo ─────── */
+/* Todo input/select/textarea dentro de formulários de veículo tem
+   min-height 44px para toque correto em mobile */
+.veiculo-form .input,
+.veiculo-form select,
+.veiculo-form textarea,
+.nova-venda-form .input,
+.nova-venda-form select {
+  min-height: 44px;
+  font-size: clamp(13px, 3.5vw, 15px);
+}
+
+/* Formulário em grade responsiva — 2 colunas a partir de 500px */
+.form-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+}
+@media (max-width: 499px) {
+  .form-grid-auto {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ── 4. CARD DE FORMULÁRIO COM SCROLL INTERNO ────────────────────────────────── */
+/* Em mobile o card do formulário tem altura máxima e scroll interno
+   para evitar que campos fiquem fora da tela */
+@media (max-width: 639px) {
+  .form-card-scrollable {
+    max-height: calc(100dvh - 200px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── 5. TABELAS COM SCROLL HORIZONTAL ───────────────────────────────────────── */
+/* Qualquer tabela dentro do dashboard fica scrollável em mobile */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.table-container::-webkit-scrollbar {
+  height: 4px;
+}
+.table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.table-container::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+}
+/* Tabela dentro do container nunca quebra */
+.table-container table,
+.table-container .sale-table {
+  min-width: 600px;
+}
+
+/* ── 6. STEPPER DE FORMULÁRIO MULTI-STEP ────────────────────────────────────── */
+/* Labels dos passos ficam menores em mobile para caber na linha */
+@media (max-width: 479px) {
+  .step-label { font-size: 9px !important; }
+  .step-circle { width: 28px !important; height: 28px !important; }
+}
+
+/* ── 7. INPUTS E SELECTS GLOBAIS: tamanho mínimo de toque ───────────────────── */
+@media (max-width: 639px) {
+  .input,
+  .select-trigger,
+  select.input {
+    min-height: 44px;
+    font-size: 14px;
+  }
+  /* Botão Próximo/Anterior nos formulários — full width em mobile */
+  .form-nav-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .form-nav-row {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+}
+
+/* ── 8. CARDS KPI NO DASHBOARD: layout 2 colunas em mobile pequeno ──────────── */
+/* Abaixo de 340px: empilha em 1 coluna para evitar texto cortado */
+@media (max-width: 340px) {
+  .kpi-strip {
+    grid-template-columns: 1fr !important;
+  }
+  .kpi-strip > * { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
+  .kpi-strip > *:last-child { border-bottom: none !important; }
+}

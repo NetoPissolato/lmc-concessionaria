@@ -543,7 +543,7 @@ export default function DashboardPage() {
               </h3>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            <div className="filter-chip-row" style={{ justifyContent: "flex-end" }}>
               {/* Period toggle */}
               <div style={{
                 display: "flex", background: "rgba(255,255,255,0.04)",
@@ -561,7 +561,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Series toggles */}
-              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              <div className="filter-chip-row">
                 {([
                   ...(isAdmin ? [{ key: "faturamento" as const, label: "Faturamento", color: "#22c55e" }] : []),
                   { key: "vendas" as const, label: "Vendas", color: "#F5A623" },
