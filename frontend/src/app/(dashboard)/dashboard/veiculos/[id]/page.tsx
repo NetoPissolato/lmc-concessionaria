@@ -294,7 +294,7 @@ function ExpenseModal({ vehicleId, expense, onClose, onSuccess }: {
               ]}
             /></div>
           {showParcelas && (
-            <div style={{ gridColumn: "span 2", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+            <div className="ui-grid-3" style={{ gridColumn: "span 2" }}>
               <div><label {...lbl} style={{ ...lbl.style, marginBottom: 3 }}>Nº parcelas</label>
                 <Select
                   value={form.parcelas}

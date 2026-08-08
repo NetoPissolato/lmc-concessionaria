@@ -2304,3 +2304,170 @@ img[width][height] {
     max-width: 100% !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   UTILITY CLASSES — substitutos para inline styles repetitivos
+   Uso: className="ui-flex ui-items-center ui-gap-4" em vez de
+        style={{ display:'flex', alignItems:'center', gap:16 }}
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Flex layout ─────────────────────────────────────────────────────────────── */
+.ui-flex            { display: flex; }
+.ui-flex-col        { display: flex; flex-direction: column; }
+.ui-flex-row        { display: flex; flex-direction: row; }
+.ui-flex-wrap       { flex-wrap: wrap; }
+.ui-flex-1          { flex: 1; min-width: 0; }
+.ui-flex-shrink-0   { flex-shrink: 0; }
+.ui-items-center    { align-items: center; }
+.ui-items-start     { align-items: flex-start; }
+.ui-items-end       { align-items: flex-end; }
+.ui-justify-between { justify-content: space-between; }
+.ui-justify-center  { justify-content: center; }
+.ui-justify-end     { justify-content: flex-end; }
+.ui-w-full          { width: 100%; }
+.ui-min-w-0         { min-width: 0; }
+
+/* ── Gap responsivo ──────────────────────────────────────────────────────────── */
+.ui-gap-1  { gap: 4px; }
+.ui-gap-2  { gap: 6px; }
+.ui-gap-3  { gap: 8px; }
+.ui-gap-4  { gap: clamp(8px,  1.5vw, 12px); }
+.ui-gap-6  { gap: clamp(10px, 2vw,   16px); }
+.ui-gap-8  { gap: clamp(12px, 2.5vw, 20px); }
+.ui-gap-10 { gap: clamp(14px, 2.5vw, 24px); }
+
+/* ── Grid responsivo (colapsa automático em mobile) ─────────────────────────── */
+.ui-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 2vw, 16px);
+}
+.ui-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: clamp(10px, 2vw, 16px);
+}
+.ui-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(10px, 2vw, 16px);
+}
+/* Auto-fill: usa o espaço disponível sem overflow */
+.ui-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  gap: clamp(10px, 2vw, 16px);
+}
+
+@media (max-width: 639px) {
+  .ui-grid-2 { grid-template-columns: 1fr; }
+  .ui-grid-3 { grid-template-columns: 1fr 1fr; }
+  .ui-grid-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 380px) {
+  .ui-grid-3 { grid-template-columns: 1fr; }
+  .ui-grid-4 { grid-template-columns: 1fr; }
+}
+
+/* ── Padding responsivo ─────────────────────────────────────────────────────── */
+.ui-p-3      { padding: clamp(8px,  1.5vw, 12px); }
+.ui-p-4      { padding: clamp(10px, 2vw,   16px); }
+.ui-p-5      { padding: clamp(12px, 2.5vw, 20px); }
+.ui-p-6      { padding: clamp(14px, 3vw,   24px); }
+.ui-px-4     { padding-left: clamp(10px, 2vw, 16px); padding-right: clamp(10px, 2vw, 16px); }
+.ui-px-5     { padding-left: clamp(12px, 2.5vw, 20px); padding-right: clamp(12px, 2.5vw, 20px); }
+.ui-px-6     { padding-left: clamp(14px, 3vw, 24px); padding-right: clamp(14px, 3vw, 24px); }
+.ui-py-4     { padding-top: clamp(10px, 2vw, 16px); padding-bottom: clamp(10px, 2vw, 16px); }
+.ui-py-5     { padding-top: clamp(12px, 2.5vw, 20px); padding-bottom: clamp(12px, 2.5vw, 20px); }
+.ui-py-6     { padding-top: clamp(14px, 3vw, 24px); padding-bottom: clamp(14px, 3vw, 24px); }
+
+/* Seção interna de card */
+.ui-card-body    { padding: clamp(14px, 3vw, 24px); }
+.ui-card-body-sm { padding: clamp(10px, 2vw, 16px); }
+.ui-card-header  { padding: clamp(12px, 2.5vw, 20px); border-bottom: 1px solid var(--border); }
+.ui-card-footer  { padding: clamp(10px, 2vw, 16px); border-top: 1px solid var(--border); }
+
+/* ── Margin utilities ────────────────────────────────────────────────────────── */
+.ui-mb-1   { margin-bottom: 4px; }
+.ui-mb-2   { margin-bottom: 8px; }
+.ui-mb-3   { margin-bottom: 12px; }
+.ui-mb-4   { margin-bottom: 16px; }
+.ui-mb-6   { margin-bottom: 24px; }
+.ui-mt-2   { margin-top: 8px; }
+.ui-mt-4   { margin-top: 16px; }
+.ui-ml-auto { margin-left: auto; }
+
+/* ── Tipografia ──────────────────────────────────────────────────────────────── */
+.ui-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.ui-value {
+  font-size: clamp(13px, 1.8vw, 15px);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ui-text-muted     { color: var(--text-muted); }
+.ui-text-secondary { color: var(--text-secondary); }
+.ui-text-brand     { color: var(--brand); }
+.ui-text-center    { text-align: center; }
+.ui-truncate       { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Section header (título + ação alinhados) ───────────────────────────────── */
+.ui-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: clamp(12px, 2vw, 16px);
+}
+.ui-section-title {
+  font-size: clamp(14px, 1.8vw, 16px);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Info grid (label + value em 2 colunas) ─────────────────────────────────── */
+.ui-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(12px, 2.5vw, 20px);
+}
+.ui-info-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: clamp(12px, 2.5vw, 20px);
+}
+@media (max-width: 479px) {
+  .ui-info-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Campo de detalhe empilhado ─────────────────────────────────────────────── */
+.ui-field { display: flex; flex-direction: column; gap: 4px; }
+
+/* ── KPI value responsivo ───────────────────────────────────────────────────── */
+.ui-kpi-value {
+  font-size: clamp(20px, 3.5vw, 30px);
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+/* ── Overflow helpers ────────────────────────────────────────────────────────── */
+.ui-overflow-x-auto { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ── Responsive show/hide ───────────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .ui-hide-mobile     { display: none !important; }
+  .ui-flex-col-mobile { flex-direction: column !important; }
+  .ui-w-full-mobile   { width: 100% !important; }
+  .ui-p-mobile-3      { padding: 10px !important; }
+}
+@media (min-width: 640px) {
+  .ui-hide-desktop { display: none !important; }
+}
