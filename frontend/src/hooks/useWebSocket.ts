@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -64,7 +64,7 @@ export function useWebSocket(): { status: WSStatus } {
 
     setStatus("connecting");
 
-    const wsUrl = ${getWsUrl()}/ws?token=;
+    const wsUrl = `${getWsUrl()}/ws?token=${token}`;
     let ws: WebSocket;
 
     try {
