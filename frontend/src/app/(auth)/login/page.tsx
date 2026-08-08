@@ -255,15 +255,84 @@ export default function LoginPage() {
         {/* ── LOGO ── */}
         <motion.div style={{ position: "relative", zIndex: 4 }}
           initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-          <img
+
+          {/* Outer spinning ring */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+            style={{
+              position: "absolute",
+              width: "220px", height: "220px",
+              top: "50%", left: "0",
+              transform: "translateY(-50%)",
+              borderRadius: "50%",
+              border: "1.5px solid transparent",
+              borderTopColor: "rgba(245,166,35,0.7)",
+              borderRightColor: "rgba(245,166,35,0.3)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Inner spinning ring (reverse) */}
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+            style={{
+              position: "absolute",
+              width: "180px", height: "180px",
+              top: "50%", left: "calc(0px + 20px)",
+              transform: "translateY(-50%)",
+              borderRadius: "50%",
+              border: "1px dashed rgba(245,166,35,0.25)",
+              borderBottomColor: "rgba(245,166,35,0.6)",
+              borderLeftColor: "rgba(245,166,35,0.4)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Pulsing glow behind logo */}
+          <motion.div
+            animate={{ opacity: [0.4, 0.9, 0.4], scale: [0.9, 1.2, 0.9] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              position: "absolute",
+              width: "240px", height: "160px",
+              top: "50%", left: "-30px",
+              transform: "translateY(-50%)",
+              background: "radial-gradient(ellipse, rgba(245,166,35,0.3) 0%, transparent 70%)",
+              filter: "blur(18px)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Sweep shimmer */}
+          <motion.div
+            animate={{ x: ["-100%", "250%"] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
+            style={{
+              position: "absolute",
+              width: "60px", height: "160px",
+              top: "50%",
+              transform: "translateY(-50%) skewX(-15deg)",
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          />
+          {/* Logo image */}
+          <motion.img
             src="/LogoLMC.png"
             alt="LMC Veículos"
+            animate={{ filter: [
+              "invert(1) hue-rotate(180deg) drop-shadow(0 0 18px rgba(245,166,35,0.5)) brightness(1.05)",
+              "invert(1) hue-rotate(180deg) drop-shadow(0 0 36px rgba(245,166,35,0.9)) brightness(1.15)",
+              "invert(1) hue-rotate(180deg) drop-shadow(0 0 18px rgba(245,166,35,0.5)) brightness(1.05)",
+            ]}}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
             style={{
-              height: "120px",
+              height: "150px",
               width: "auto",
               objectFit: "contain",
               display: "block",
-              filter: "invert(1) hue-rotate(180deg) drop-shadow(0 6px 24px rgba(245,166,35,0.4))",
+              position: "relative",
+              zIndex: 1,
             }}
           />
         </motion.div>
@@ -375,15 +444,36 @@ export default function LoginPage() {
           className="login-mobile-logo"
           style={{ alignItems: "flex-start", marginBottom: "28px", position: "relative", zIndex: 1 }}
         >
-          <img
+          {/* Pulsing glow */}
+          <motion.div
+            animate={{ opacity: [0.3, 0.8, 0.3], scale: [0.9, 1.15, 0.9] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              position: "absolute",
+              width: "140px", height: "100px",
+              top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
+              background: "radial-gradient(ellipse, rgba(245,166,35,0.35) 0%, transparent 70%)",
+              filter: "blur(14px)",
+              pointerEvents: "none",
+            }}
+          />
+          <motion.img
             src="/LogoLMC.png"
             alt="LMC Veículos"
+            animate={{ filter: [
+              "invert(1) hue-rotate(180deg) drop-shadow(0 0 12px rgba(245,166,35,0.4)) brightness(1.0)",
+              "invert(1) hue-rotate(180deg) drop-shadow(0 0 28px rgba(245,166,35,0.85)) brightness(1.12)",
+              "invert(1) hue-rotate(180deg) drop-shadow(0 0 12px rgba(245,166,35,0.4)) brightness(1.0)",
+            ]}}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             style={{
-              height: "72px",
+              height: "90px",
               width: "auto",
               objectFit: "contain",
               display: "block",
-              filter: "invert(1) hue-rotate(180deg) drop-shadow(0 2px 12px rgba(245,166,35,0.3))",
+              position: "relative",
+              zIndex: 1,
             }}
           />
         </motion.div>
