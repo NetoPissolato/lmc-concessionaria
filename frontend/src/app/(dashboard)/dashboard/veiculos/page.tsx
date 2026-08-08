@@ -435,7 +435,7 @@ export default function VeiculosPage() {
               {hasFilters && <span style={{ color: "var(--text-muted)" }}> (filtrado)</span>}
             </p>
             <select value={sortKey} onChange={e => setSortKey(e.target.value as SortKey)}
-              className="input" style={{ height: "34px", width: "auto", minWidth: 140, padding: "0 32px 0 10px" }}>
+              className="input" style={{ height: "34px", width: "140px", padding: "0 32px 0 10px", flexShrink: 0 }}>
               {SORT_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
             </select>
           </div>

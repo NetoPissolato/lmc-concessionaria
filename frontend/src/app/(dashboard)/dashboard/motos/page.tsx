@@ -564,7 +564,7 @@ export default function MotosPage() {
               {hasFilters && <span style={{ color: "var(--text-muted)" }}> (filtrado)</span>}
             </p>
             <select value={sortKey} onChange={e => setSortKey(e.target.value as typeof sortKey)}
-              className="input" style={{ height: "34px", width: "auto", minWidth: 140, padding: "0 32px 0 10px" }}>
+              className="input" style={{ height: "34px", width: "140px", padding: "0 32px 0 10px", flexShrink: 0 }}>
               <option value="data_compra">Mais recente</option>
               <option value="valor_anunciado">Maior preço</option>
               <option value="quilometragem">Menor km</option>
