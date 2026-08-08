@@ -119,8 +119,8 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             style={{
               width: "100%", maxWidth: 580,
-              background: "#12121c",
-              border: "1px solid rgba(255,255,255,0.1)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--border-hover)",
               borderRadius: 16,
               boxShadow: "0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)",
               overflow: "hidden",
@@ -143,7 +143,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                 placeholder="Buscar veículos, clientes, placas..."
                 style={{
                   flex: 1, background: "none", border: "none", outline: "none",
-                  fontSize: "15px", color: "#eef0f8",
+                  fontSize: "15px", color: "var(--text-primary)",
                   caretColor: "var(--brand)",
                 }}
               />
@@ -205,7 +205,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                         }}>
                           <Icon size={14} color={a.color} />
                         </div>
-                        <span style={{ fontSize: "13px", fontWeight: "500", color: "#d0d4e0" }}>
+                        <span style={{ fontSize: "13px", fontWeight: "500", color: "var(--text-secondary)" }}>
                           {a.label}
                         </span>
                         <ArrowRight size={12} color="rgba(255,255,255,0.2)" style={{ marginLeft: "auto" }} />
@@ -258,7 +258,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                               <Car size={13} color="#38bdf8" />
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: "13px", fontWeight: 500, color: "#eef0f8" }}>
+                              <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)" }}>
                                 <Highlight text={`${v.marca} ${v.modelo}`} query={query} />
                               </p>
                               <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", marginTop: 1 }}>
@@ -310,7 +310,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                               <Users size={13} color="#a78bfa" />
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: "13px", fontWeight: 500, color: "#eef0f8" }}>
+                              <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)" }}>
                                 <Highlight text={c.nome} query={query} />
                               </p>
                               <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", marginTop: 1 }}>

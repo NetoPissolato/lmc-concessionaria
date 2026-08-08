@@ -105,7 +105,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  background: "#16161f",
+                  background: "var(--surface-3)",
                   border: `1px solid ${color}30`,
                   borderLeft: `3px solid ${color}`,
                   borderRadius: "10px",
@@ -121,7 +121,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <span
                   style={{
                     fontSize: "14px",
-                    color: "#f1f5f9",
+                    color: "var(--text-primary)",
                     fontFamily: "Inter, sans-serif",
                     flex: 1,
                     lineHeight: "1.4",
