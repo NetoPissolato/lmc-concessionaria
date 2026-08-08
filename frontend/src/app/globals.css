@@ -93,8 +93,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
-  /* Previne pull-to-refresh acidental no Chrome mobile */
-  overscroll-behavior-y: contain;
+  /* overscroll-behavior removido — causava bloqueio de scroll no mobile */
 }
 
 /* ─── Autofill override ──────────────────────────────────────────────────────── */
@@ -884,13 +883,7 @@ input[type="number"] { -moz-appearance: textfield; }
 /* ─── Dashboard main content ─────────────────────────────────────────────────── */
 .dash-main {
   padding: clamp(12px, 2.5vw, 28px);
-  /* dvh = viewport real sem a barra do browser mobile */
-  min-height: 100dvh;
-  min-height: 100vh; /* fallback para browsers antigos */
-  /* Scroll com momentum no iOS */
-  -webkit-overflow-scrolling: touch;
-  /* Previne scroll "vazar" para fora do container */
-  overscroll-behavior: contain;
+  /* Sem min-height forçado — scroll nativo do browser funciona normalmente */
 }
 
 /* Reserve space for bottom nav on mobile/tablet */
@@ -2176,10 +2169,7 @@ html {
   will-change: auto;
 }
 
-/* Layout containment: browser pode otimizar repaint de cards independentemente */
-.card {
-  contain: layout style;
-}
+/* contain: layout style removido — causava problemas de scroll em Safari iOS */
 
 /* ── Tipografia profissional ────────────────────────────────────────────────── */
 body {
