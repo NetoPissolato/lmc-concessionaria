@@ -21,6 +21,7 @@ class VehicleService:
     """
 
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.vehicle_repo = VehicleRepository(db)
         self.expense_repo = ExpenseRepository(db)
         self.audit_repo = AuditRepository(db)
