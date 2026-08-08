@@ -614,15 +614,23 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
               <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(245,166,35,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}><TrendingUp size={13} color="#F5A623" /></div>
               <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Resumo do Cliente</p>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 140px), 1fr))", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 130px), 1fr))", gap: 12 }}>
               {[
-                { icon: <Car size={18} color="#F5A623" />, value: purchases.length, sub: ["Veículos", "Comprados"], bg: "rgba(245,166,35,0.06)" },
-                { icon: <CreditCard size={18} color="#F5A623" />, value: fmt(totalSpent), sub: ["Valor Total", "Comprado"], bg: "rgba(245,166,35,0.06)" },
+                { icon: <Car size={18} color="#F5A623" />, value: String(purchases.length), sub: ["Veículos", "Comprados"], bg: "rgba(245,166,35,0.06)", money: false },
+                { icon: <CreditCard size={18} color="#F5A623" />, value: fmt(totalSpent), sub: ["Valor Total", "Comprado"], bg: "rgba(245,166,35,0.06)", money: true },
 
-              ].map(({ icon, value, sub, bg }, i) => (
-                <div key={i} style={{ background: bg, borderRadius: 12, padding: "14px 12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+              ].map(({ icon, value, sub, bg, money }, i) => (
+                <div key={i} style={{ background: bg, borderRadius: 12, padding: "14px 12px", border: "1px solid rgba(255,255,255,0.05)", minWidth: 0, overflow: "hidden" }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>{icon}</div>
-                  <p style={{ fontSize: 18, fontWeight: 800, color: i === 1 ? "#22c55e" : "var(--text-primary)", marginBottom: 4 }}>{value}</p>
+                  <p style={{
+                    fontSize: money ? "clamp(12px, 3.2vw, 17px)" : 20,
+                    fontWeight: 800,
+                    color: money ? "#22c55e" : "var(--text-primary)",
+                    marginBottom: 4,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}>{value}</p>
                   {sub.map((s, j) => <p key={j} style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.4, margin: 0 }}>{s}</p>)}
                 </div>
               ))}
