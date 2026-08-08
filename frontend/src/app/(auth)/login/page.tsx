@@ -255,30 +255,17 @@ export default function LoginPage() {
         {/* ── LOGO ── */}
         <motion.div style={{ position: "relative", zIndex: 4 }}
           initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-          <div style={{ display: "flex", alignItems: "flex-start", lineHeight: 1 }}>
-            <span style={{ fontSize: "46px", fontWeight: "900", color: "#fff",
-              letterSpacing: "-2px", textShadow: "0 2px 24px rgba(0,0,0,0.6)" }}>LM</span>
-            <div style={{ position: "relative", display: "inline-flex", alignItems: "flex-start" }}>
-              <span style={{ fontSize: "46px", fontWeight: "900", color: "#fff",
-                letterSpacing: "-2px", textShadow: "0 2px 24px rgba(0,0,0,0.6)" }}>C</span>
-              {/* Pulsing L-bracket */}
-              <motion.div animate={{ boxShadow: ["0 0 10px rgba(245,166,35,0.6)","0 0 22px rgba(245,166,35,1)","0 0 10px rgba(245,166,35,0.6)"] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                style={{ position: "absolute", top: "2px", right: "-15px", width: "13px", height: "5px",
-                  background: "#F5A623", borderRadius: "2px" }} />
-              <motion.div animate={{ boxShadow: ["0 0 10px rgba(245,166,35,0.6)","0 0 22px rgba(245,166,35,1)","0 0 10px rgba(245,166,35,0.6)"] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                style={{ position: "absolute", top: "2px", right: "-15px", width: "5px", height: "13px",
-                  background: "#F5A623", borderRadius: "2px" }} />
-            </div>
-          </div>
-          <motion.div animate={{ width: ["30px","52px","30px"] }} transition={{ duration: 3, repeat: Infinity }}
-            style={{ marginTop: "4px", height: "2px",
-              background: "linear-gradient(90deg,#F5A623,transparent)", borderRadius: "2px",
-              boxShadow: "0 0 8px rgba(245,166,35,0.6)" }} />
-          <p style={{ fontSize: "9px", fontWeight: "800", color: "#F5A623",
-            letterSpacing: "0.35em", textTransform: "uppercase", margin: "5px 0 0 1px",
-            textShadow: "0 0 12px rgba(245,166,35,0.5)" }}>V E I C U L O S</p>
+          <img
+            src="/LogoLMC.png"
+            alt="LMC Veículos"
+            style={{
+              height: "80px",
+              width: "auto",
+              objectFit: "contain",
+              display: "block",
+              filter: "invert(1) hue-rotate(180deg) drop-shadow(0 4px 16px rgba(245,166,35,0.3))",
+            }}
+          />
         </motion.div>
 
         {/* ── TAGLINE ── */}
@@ -382,22 +369,23 @@ export default function LoginPage() {
             pointerEvents: "none", zIndex: 0,
           }} />
 
-        {/* ── HEADING ── */}
-        {/* Mobile logo (shown only on small screens where left panel is hidden) */}
+        {/* Mobile logo */}
         <motion.div
           initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
           className="login-mobile-logo"
           style={{ alignItems: "flex-start", marginBottom: "28px", position: "relative", zIndex: 1 }}
         >
-          <div style={{ display: "flex", alignItems: "flex-start", lineHeight: 1 }}>
-            <span style={{ fontSize: "36px", fontWeight: "900", color: "#fff", letterSpacing: "-2px" }}>LM</span>
-            <div style={{ position: "relative", display: "inline-flex", alignItems: "flex-start" }}>
-              <span style={{ fontSize: "36px", fontWeight: "900", color: "#fff", letterSpacing: "-2px" }}>C</span>
-              <div style={{ position: "absolute", top: "2px", right: "-12px", width: "10px", height: "4px", background: "#F5A623", borderRadius: "2px" }} />
-              <div style={{ position: "absolute", top: "2px", right: "-12px", width: "4px", height: "10px", background: "#F5A623", borderRadius: "2px" }} />
-            </div>
-          </div>
-          <p style={{ fontSize: "8px", fontWeight: "800", color: "#F5A623", letterSpacing: "0.3em", textTransform: "uppercase", marginTop: "6px", marginLeft: "1px" }}>VEÍCULOS</p>
+          <img
+            src="/LogoLMC.png"
+            alt="LMC Veículos"
+            style={{
+              height: "52px",
+              width: "auto",
+              objectFit: "contain",
+              display: "block",
+              filter: "invert(1) hue-rotate(180deg)",
+            }}
+          />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}

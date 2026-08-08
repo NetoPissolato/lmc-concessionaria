@@ -399,27 +399,27 @@ export default function DashboardPage() {
               }}
             />
 
-            {/* Logo image in white container */}
+            {/* Logo image - sem container branco, filter faz white bg desaparecer no dark */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
               style={{
-                background: "rgba(255,255,255,0.95)",
-                borderRadius: "16px",
-                padding: "14px 22px",
-                boxShadow: "0 0 40px rgba(245,166,35,0.25), 0 8px 32px rgba(0,0,0,0.4)",
-                border: "1px solid rgba(245,166,35,0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                filter: "drop-shadow(0 0 20px rgba(245,166,35,0.35))",
               }}
             >
               <img
                 src="/LogoLMC.png"
-                alt="LMC Ve\u00edculos"
+                alt="LMC Veículos"
                 style={{
-                  height: "clamp(48px, 8vw, 72px)",
+                  height: "clamp(56px, 9vw, 90px)",
                   width: "auto",
                   objectFit: "contain",
                   display: "block",
+                  filter: "invert(1) hue-rotate(180deg) drop-shadow(0 2px 12px rgba(245,166,35,0.4))",
                 }}
               />
             </motion.div>

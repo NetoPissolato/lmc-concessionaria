@@ -178,11 +178,13 @@ export function ConfirmDialog({
                 onClick={onCancel}
                 disabled={loading}
                 style={{
-                  flex: 1, height: "40px", borderRadius: "11px",
+                  flex: 1, height: "44px", borderRadius: "11px",
                   background: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.1)",
                   cursor: "pointer", fontSize: "13px", fontWeight: "600",
                   color: "var(--text-secondary)", transition: "all 0.15s",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "inherit",
                 }}
                 onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
@@ -195,7 +197,7 @@ export function ConfirmDialog({
                 whileHover={{ scale: loading ? 1 : 1.02 }}
                 whileTap={{ scale: loading ? 1 : 0.97 }}
                 style={{
-                  flex: 1, height: "40px", borderRadius: "11px",
+                  flex: 1, height: "44px", borderRadius: "11px",
                   background: cfg.btnBg,
                   border: "none",
                   cursor: loading ? "not-allowed" : "pointer",

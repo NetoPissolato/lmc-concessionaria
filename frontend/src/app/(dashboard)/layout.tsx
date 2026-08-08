@@ -234,19 +234,17 @@ function Sidebar({
                   transition={{ duration: 0.18 }}
                   style={{ display: "flex", flexDirection: "column", gap: "3px" }}
                 >
-                  {/* Logo image */}
+                  {/* Logo image - sem fundo branco, filter inverte o white para dark */}
                   <div style={{ position: "relative", display: "inline-block" }}>
                     <img
                       src="/LogoLMC.png"
                       alt="LMC Veículos"
                       style={{
-                        height: "38px",
+                        height: "42px",
                         width: "auto",
                         objectFit: "contain",
-                        borderRadius: "6px",
-                        background: "rgba(255,255,255,0.93)",
-                        padding: "3px 8px",
                         display: "block",
+                        filter: "invert(1) hue-rotate(180deg)",
                       }}
                     />
                     {/* Pulsing amber accent dot */}
@@ -282,20 +280,17 @@ function Sidebar({
                   animate={{ opacity: 1 }}
                   style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1px" }}
                 >
-                  <div style={{
-                    width: 36, height: 36,
-                    borderRadius: "10px",
-                    background: "rgba(255,255,255,0.93)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    overflow: "hidden",
-                    padding: "3px",
-                  }}>
-                    <img
-                      src="/LogoLMC.png"
-                      alt="LMC"
-                      style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                    />
-                  </div>
+                  {/* Mini logo - sem fundo branco */}
+                  <img
+                    src="/LogoLMC.png"
+                    alt="LMC"
+                    style={{
+                      width: "34px",
+                      height: "34px",
+                      objectFit: "contain",
+                      filter: "invert(1) hue-rotate(180deg)",
+                    }}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
