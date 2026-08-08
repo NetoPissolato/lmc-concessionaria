@@ -271,6 +271,7 @@ export default function VendasMotosPage() {
   const { data: rawSales = [], isLoading } = useQuery<Sale[]>({
     queryKey: ["sales-motos-page", month, year],
     queryFn: () => salesApi.list({ skip: 0, limit: 200, month, year }),
+    refetchInterval: 20_000,   // auto-refetch a cada 20s
   });
   const sales = rawSales.filter(s => s.vehicle_tipo === "moto");
 

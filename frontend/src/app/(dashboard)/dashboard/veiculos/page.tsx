@@ -281,6 +281,7 @@ export default function VeiculosPage() {
   const { data: vehicles = [], isLoading } = useQuery<Vehicle[]>({
     queryKey: ["vehicles", "carros-all"],
     queryFn: () => vehiclesApi.list({ tipo: "carro", limit: 200 }),
+    refetchInterval: 20_000,
   });
 
   const deleteMutation = useMutation({

@@ -314,6 +314,7 @@ export default function VendasCarrosPage() {
   const { data: rawSales = [], isLoading } = useQuery<Sale[]>({
     queryKey: ["sales-carros-page", month, year],
     queryFn: () => salesApi.list({ skip: 0, limit: 200, month, year }),
+    refetchInterval: 20_000,   // auto-refetch a cada 20s (cancelamentos aparecem sem F5)
   });
 
   const sales = rawSales.filter(s =>

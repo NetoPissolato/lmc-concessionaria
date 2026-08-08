@@ -10,10 +10,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-          staleTime: 1000 * 5,  // 5 segundos — dados refrescados rapidamente após mutations
-          retry: 1,
-          refetchOnWindowFocus: true,   // recarrega ao voltar para a aba
-          refetchOnMount: "always",     // SEMPRE refetch ao montar, independente de staleTime
+            staleTime: 0,                  // sempre stale → refetch imediato após invalidação
+            gcTime: 1000 * 60 * 10,        // 10 min no cache (sem revalidar a cada mount)
+            retry: 1,
+            refetchOnWindowFocus: true,    // recarrega ao voltar para a aba
+            refetchOnMount: true,          // refetch ao montar se stale (staleTime=0 → sempre)
+            refetchOnReconnect: true,      // refetch ao reconectar internet
           },
         },
       })

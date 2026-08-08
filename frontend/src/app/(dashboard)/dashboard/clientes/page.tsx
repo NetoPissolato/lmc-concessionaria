@@ -83,6 +83,7 @@ export default function ClientesPage() {
   const { data: customers = [], isLoading } = useQuery<Customer[]>({
     queryKey: ["customers", search],
     queryFn: () => customersApi.list({ q: search || undefined, limit: 200 }),
+    refetchInterval: 30_000,
   });
 
   const deleteMutation = useMutation({

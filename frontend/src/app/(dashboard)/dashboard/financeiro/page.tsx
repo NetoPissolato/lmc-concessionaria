@@ -106,16 +106,19 @@ export default function FinanceiroPage() {
   const { data: summary, isLoading: summaryLoading } = useQuery({
     queryKey: ["financial-summary", year, month],
     queryFn: () => financialApi.getSummary(year, month),
+    refetchInterval: 30_000,   // auto-atualiza a cada 30s
   });
 
   const { data: allYearEntries = [] } = useQuery<FinancialEntry[]>({
     queryKey: ["financial-chart", year],
     queryFn: () => financialApi.list({ year, limit: 500 }),
+    refetchInterval: 30_000,
   });
 
   const { data: entries = [], isLoading } = useQuery<FinancialEntry[]>({
     queryKey: ["financial-entries", typeFilter, year],
     queryFn: () => financialApi.list({ year, limit: 500, tipo: typeFilter || undefined }),
+    refetchInterval: 15_000,   // lista de lançamentos atualiza a cada 15s
   });
 
   // ── Lucratividade por veículo no mês selecionado ──────────────────────────
