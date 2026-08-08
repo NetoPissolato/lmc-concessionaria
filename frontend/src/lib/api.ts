@@ -60,6 +60,12 @@ api.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Não interceptar rotas de auth — deixa o erro chegar no catch da página de login
+      const url = originalRequest.url ?? "";
+      if (url.includes("/auth/login") || url.includes("/auth/refresh")) {
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
