@@ -598,7 +598,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
               </div>
               <div style={{ gridColumn: "1/-1" }}>
                 <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Valor total comprado</p>
-                <p style={{ fontSize: 18, fontWeight: 800, color: "#F5A623" }}>{isLoading ? "…" : fmt(totalSpent)}</p>
+                <p style={{ fontSize: 18, fontWeight: 800, color: "#22c55e" }}>{isLoading ? "…" : fmt(totalSpent)}</p>
               </div>
             </div>
           </motion.div>
@@ -618,11 +618,11 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
               {[
                 { icon: <Car size={18} color="#F5A623" />, value: purchases.length, sub: ["Veículos", "Comprados"], bg: "rgba(245,166,35,0.06)" },
                 { icon: <CreditCard size={18} color="#F5A623" />, value: fmt(totalSpent), sub: ["Valor Total", "Comprado"], bg: "rgba(245,166,35,0.06)" },
-        { icon: <User size={18} color="#F5A623" />, value: monthsSince !== null ? `${monthsSince}m` : "-", sub: ["Última compra", lastPurchase ? fmtDateSale(lastPurchase.data_venda) : "-"], bg: "rgba(245,166,35,0.06)" },
+
               ].map(({ icon, value, sub, bg }, i) => (
                 <div key={i} style={{ background: bg, borderRadius: 12, padding: "14px 12px", border: "1px solid rgba(255,255,255,0.05)" }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>{icon}</div>
-                  <p style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>{value}</p>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: i === 1 ? "#22c55e" : "var(--text-primary)", marginBottom: 4 }}>{value}</p>
                   {sub.map((s, j) => <p key={j} style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.4, margin: 0 }}>{s}</p>)}
                 </div>
               ))}
@@ -792,7 +792,7 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
             <div style={{ display: "flex", gap: 24, flexWrap: "wrap", paddingTop: 12, borderTop: "1px solid var(--border)" }}>
               <div>
                 <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Valor</p>
-                <p style={{ fontSize: 17, fontWeight: 800, color: "#F5A623" }}>{fmt(p.valor_venda)}</p>
+                <p style={{ fontSize: 17, fontWeight: 800, color: "#22c55e" }}>{fmt(p.valor_venda)}</p>
               </div>
               <div>
                 <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Pagamento</p>

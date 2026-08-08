@@ -791,7 +791,7 @@ export default function VehicleDetailPage() {
               {vehicle.valor_anunciado ? (
                 <>
                   <p style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Valor Anunciado</p>
-                  <p style={{ fontSize: 30, fontWeight: 900, color: "var(--brand)", letterSpacing: "-1px", lineHeight: 1 }}>{fmt(vehicle.valor_anunciado)}</p>
+                  <p style={{ fontSize: 30, fontWeight: 900, color: "#22c55e", letterSpacing: "-1px", lineHeight: 1 }}>{fmt(vehicle.valor_anunciado)}</p>
                   {vehicle.valor_minimo && <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6 }}>Mínimo: <strong style={{ color: "var(--text-secondary)" }}>{fmt(vehicle.valor_minimo)}</strong></p>}
                   {lucro != null && (
                     <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 8, background: isProfit ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)" }}>

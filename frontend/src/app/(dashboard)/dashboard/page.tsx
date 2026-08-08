@@ -379,7 +379,7 @@ export default function DashboardPage() {
               transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
               style={{
                 position: "absolute",
-                width: "250px", height: "250px",
+                width: "160px", height: "160px",
                 borderRadius: "50%",
                 border: "1px solid rgba(245,166,35,0.18)",
                 borderTopColor: "rgba(245,166,35,0.6)",
@@ -391,7 +391,7 @@ export default function DashboardPage() {
               transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
               style={{
                 position: "absolute",
-                width: "200px", height: "200px",
+                width: "120px", height: "120px",
                 borderRadius: "50%",
                 border: "1px dashed rgba(245,166,35,0.12)",
                 borderBottomColor: "rgba(245,166,35,0.35)",
@@ -415,7 +415,7 @@ export default function DashboardPage() {
                 src="/LogoLMC.png"
                 alt="LMC Veículos"
                 style={{
-                  height: "clamp(90px, 13vw, 150px)",
+                  height: "clamp(50px, 8vw, 110px)",
                   width: "auto",
                   objectFit: "contain",
                   display: "block",

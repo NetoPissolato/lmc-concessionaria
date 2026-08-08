@@ -103,7 +103,7 @@ function VehicleCard({ v, onView, onEdit, onDelete, onExpenses, delay }: {
           </div>
         )}
         <div style={{ marginTop: "auto", paddingTop: "8px", borderTop: "1px solid var(--border)" }}>
-          <p style={{ fontSize: "20px", fontWeight: "900", color: "var(--brand)", letterSpacing: "-0.8px", lineHeight: 1 }}>{fmt(v.valor_anunciado)}</p>
+          <p style={{ fontSize: "20px", fontWeight: "900", color: "#22c55e", letterSpacing: "-0.8px", lineHeight: 1 }}>{fmt(v.valor_anunciado)}</p>
           {v.valor_compra && <p style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: "2px" }}>Compra: {fmt(v.valor_compra)}</p>}
           {(v.valor_multas ?? 0) > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "5px", marginTop: "6px", padding: "4px 8px", borderRadius: "6px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
