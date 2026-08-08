@@ -800,16 +800,25 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
                   {paymentLabels[p.forma_pagamento] || p.forma_pagamento}{p.parcelas ? ` ${p.parcelas}x` : ""}
                 </p>
               </div>
-              {p.valor_entrada > 0 && (
+              {/* ENTRADA: apenas em financiamento com entrada parcial real */}
+              {p.forma_pagamento === "financiamento" && p.valor_entrada > 0 && p.valor_entrada < p.valor_venda && (
                 <div>
                   <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Entrada</p>
                   <p style={{ fontSize: 13, fontWeight: 600, color: "#22c55e" }}>{fmt(p.valor_entrada)}</p>
                 </div>
               )}
-              {p.valor_financiado > 0 && (
+              {/* FINANCIADO: apenas em financiamento */}
+              {p.forma_pagamento === "financiamento" && p.valor_financiado > 0 && (
                 <div>
                   <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Financiado</p>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#8b5cf6" }}>{fmt(p.valor_financiado)}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#8b5cf6" }}>{fmt(p.valor_financiado)}{p.parcelas ? ` · ${p.parcelas}x` : ""}</p>
+                </div>
+              )}
+              {/* BANCO: quando for financiamento com banco informado */}
+              {p.forma_pagamento === "financiamento" && p.banco_financiamento && (
+                <div>
+                  <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Banco</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{p.banco_financiamento}</p>
                 </div>
               )}
               <div style={{ marginLeft: "auto" }}>
