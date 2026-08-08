@@ -17,6 +17,7 @@ import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useSwipe } from "@/hooks/useSwipe";
 import { useWebSocket, WSStatus } from "@/hooks/useWebSocket";
 import { useMobileFormScroll } from "@/hooks/useMobileFormScroll";
+import { useQuery } from "@tanstack/react-query";
 
 // ─── Route Access Control ────────────────────────────────────────────────────
 // Routes restricted to ADMIN only
@@ -693,19 +694,17 @@ function Header({
   const [time, setTime] = useState(new Date());
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
-  const [pendingSales, setPendingSales] = useState<{id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string}[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
   const { isMobileOrTablet, isMobile, isDesktop } = useBreakpoint();
 
-  // Fetch pending sales for notifications
-  useEffect(() => {
-    salesApi.list({ status: "pendente", limit: 10 }).then((data: unknown[]) => {
-      setPendingSales(
-        (data as {id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string}[])
-          .slice(0, 8)
-      );
-    }).catch(() => {});
-  }, []);
+  // Fetch pending sales for notifications — updated by WebSocket + 30s polling
+  const { data: pendingSales = [] } = useQuery<{id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string}[]>({
+    queryKey: ["pending-sales"],
+    queryFn: () => salesApi.list({ status: "pendente", limit: 10 }) as Promise<{id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string}[]>,
+    staleTime: 0,
+    refetchInterval: 30_000,  // fallback polling a cada 30s
+    refetchOnWindowFocus: true,
+  });
 
   // Close notif panel on outside click
   useEffect(() => {

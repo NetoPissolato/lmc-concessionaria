@@ -13,12 +13,14 @@ const EVENT_INVALIDATIONS: Record<string, string[]> = {
     "dashboard", "financial-entries", "financial-summary",
     "financial-chart", "vehicles", "vehicles-carros",
     "vehicles-motos", "customers", "lucratividade-mes",
+    "pending-sales",  // atualiza o sino de notificações
   ],
   sale_updated: [
     "sales", "sales-carros-page", "sales-motos-page",
     "dashboard", "financial-entries", "financial-summary",
     "financial-chart", "vehicles", "vehicles-carros",
     "vehicles-motos", "lucratividade-mes",
+    "pending-sales",  // atualiza o sino de notificações
   ],
   vehicle_updated: [
     "vehicles", "vehicles-carros", "vehicles-motos", "dashboard",
