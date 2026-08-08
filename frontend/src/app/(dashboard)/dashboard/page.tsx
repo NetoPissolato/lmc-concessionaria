@@ -285,7 +285,12 @@ export default function DashboardPage() {
     { key: "em_manutencao", value: stats?.em_manutencao ?? 0 },
     { key: "vendido",       value: stats?.vendido       ?? 0 },
   ];
-  const totalVehicles = statusItems.reduce((a, b) => a + b.value, 0);
+  // "Total em estoque" não inclui vendidos
+  const totalVehicles = statusItems
+    .filter(s => s.key !== "vendido")
+    .reduce((a, b) => a + b.value, 0);
+  // Total geral (com vendidos) usado apenas para calcular percentuais
+  const totalAll = statusItems.reduce((a, b) => a + b.value, 0);
 
 
 
@@ -641,7 +646,7 @@ export default function DashboardPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "14px", flex: 1 }}>
             {statusItems.map(({ key, value }) => {
               const cfg = STATUS_CFG[key];
-              const pct = totalVehicles > 0 ? Math.round((value / totalVehicles) * 100) : 0;
+              const pct = totalAll > 0 ? Math.round((value / totalAll) * 100) : 0;
               return (
                 <div key={key}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
