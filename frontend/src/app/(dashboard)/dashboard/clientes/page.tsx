@@ -950,16 +950,17 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           }}><X size={16} /></button>
         </div>
 
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
         <div style={{
           flex: 1, overflowY: "auto",
           WebkitOverflowScrolling: "touch" as "touch",
         }}>
-        <form onSubmit={handleSubmit} style={{
-          padding: isMobile ? "16px" : "22px",
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-          gap: "16px",
-        }}>
+          <div style={{
+            padding: isMobile ? "16px" : "22px",
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: "16px",
+          }}>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Nome completo *</label>
             <input required value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })}
@@ -1045,21 +1046,25 @@ function CustomerModal({ customer, onClose, onSuccess }: {
               className="input" rows={2} style={{ height: "auto", paddingTop: "8px", minHeight: 88 }}
               placeholder="Anotações sobre o cliente..." />
           </div>
-          <div style={{
-            gridColumn: "1 / -1",
-            display: "flex", gap: "10px", justifyContent: "flex-end",
-            paddingTop: "12px", borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 4,
-          }}>
-            <button type="button" className="btn btn-secondary" onClick={onClose} style={{ minHeight: 44 }}>Cancelar</button>
-            <motion.button type="submit" className="btn btn-primary" whileTap={{ scale: 0.97 }} disabled={loading} style={{ minHeight: 44 }}>
-              {loading
-                ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Salvando...</>
-                : <><Check size={13} /> {customer ? "Salvar alterações" : "Cadastrar"}</>
-              }
-            </motion.button>
-          </div>
-        </form>
+          </div>{/* end grid */}
+        </div>{/* end scroll */}
+        <div style={{
+          display: "flex", gap: "10px", justifyContent: "flex-end",
+          padding: "14px 22px",
+          paddingBottom: "max(14px, env(safe-area-inset-bottom))",
+          borderTop: "1px solid rgba(255,255,255,0.07)",
+          background: "var(--surface)",
+          flexShrink: 0,
+        }}>
+          <button type="button" className="btn btn-secondary" onClick={onClose} style={{ minHeight: 44 }}>Cancelar</button>
+          <motion.button type="submit" className="btn btn-primary" whileTap={{ scale: 0.97 }} disabled={loading} style={{ minHeight: 44 }}>
+            {loading
+              ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Salvando...</>
+              : <><Check size={13} /> {customer ? "Salvar alterações" : "Cadastrar"}</>
+            }
+          </motion.button>
         </div>
+        </form>
       </motion.div>
     </motion.div>
   );
