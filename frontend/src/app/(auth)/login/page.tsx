@@ -253,65 +253,65 @@ export default function LoginPage() {
         {particles.map((p, i) => <Particle key={i} {...p} />)}
 
         {/* ── LOGO ── */}
-        <motion.div style={{ position: "relative", zIndex: 4 }}
+        <motion.div style={{ position: "relative", zIndex: 4, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
           initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
 
-          {/* Outer spinning ring */}
+          {/* Outer spinning ring — centered on logo */}
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
             style={{
               position: "absolute",
-              width: "220px", height: "220px",
-              top: "50%", left: "0",
-              transform: "translateY(-50%)",
+              width: "210px", height: "210px",
+              top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
               borderRadius: "50%",
-              border: "1.5px solid transparent",
-              borderTopColor: "rgba(245,166,35,0.7)",
+              border: "1.5px solid rgba(245,166,35,0.1)",
+              borderTopColor: "rgba(245,166,35,0.65)",
               borderRightColor: "rgba(245,166,35,0.3)",
               pointerEvents: "none",
             }}
           />
-          {/* Inner spinning ring (reverse) */}
+          {/* Inner spinning ring (reverse) — centered */}
           <motion.div
             animate={{ rotate: -360 }}
             transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
             style={{
               position: "absolute",
-              width: "180px", height: "180px",
-              top: "50%", left: "calc(0px + 20px)",
-              transform: "translateY(-50%)",
+              width: "170px", height: "170px",
+              top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
               borderRadius: "50%",
-              border: "1px dashed rgba(245,166,35,0.25)",
-              borderBottomColor: "rgba(245,166,35,0.6)",
-              borderLeftColor: "rgba(245,166,35,0.4)",
+              border: "1px dashed rgba(245,166,35,0.18)",
+              borderBottomColor: "rgba(245,166,35,0.55)",
+              borderLeftColor: "rgba(245,166,35,0.35)",
               pointerEvents: "none",
             }}
           />
-          {/* Pulsing glow behind logo */}
+          {/* Pulsing glow behind logo — centered */}
           <motion.div
-            animate={{ opacity: [0.4, 0.9, 0.4], scale: [0.9, 1.2, 0.9] }}
+            animate={{ opacity: [0.35, 0.8, 0.35], scale: [0.9, 1.2, 0.9] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
             style={{
               position: "absolute",
-              width: "240px", height: "160px",
-              top: "50%", left: "-30px",
-              transform: "translateY(-50%)",
-              background: "radial-gradient(ellipse, rgba(245,166,35,0.3) 0%, transparent 70%)",
+              width: "220px", height: "150px",
+              top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
+              background: "radial-gradient(ellipse, rgba(245,166,35,0.28) 0%, transparent 70%)",
               filter: "blur(18px)",
               pointerEvents: "none",
             }}
           />
           {/* Sweep shimmer */}
           <motion.div
-            animate={{ x: ["-100%", "250%"] }}
+            animate={{ x: ["-180px", "280px"] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
             style={{
               position: "absolute",
-              width: "60px", height: "160px",
+              width: "55px", height: "160px",
               top: "50%",
               transform: "translateY(-50%) skewX(-15deg)",
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)",
               pointerEvents: "none",
               zIndex: 2,
             }}
@@ -322,7 +322,7 @@ export default function LoginPage() {
             alt="LMC Veículos"
             animate={{ filter: [
               "invert(1) hue-rotate(180deg) drop-shadow(0 0 18px rgba(245,166,35,0.5)) brightness(1.05)",
-              "invert(1) hue-rotate(180deg) drop-shadow(0 0 36px rgba(245,166,35,0.9)) brightness(1.15)",
+              "invert(1) hue-rotate(180deg) drop-shadow(0 0 36px rgba(245,166,35,0.85)) brightness(1.14)",
               "invert(1) hue-rotate(180deg) drop-shadow(0 0 18px rgba(245,166,35,0.5)) brightness(1.05)",
             ]}}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}

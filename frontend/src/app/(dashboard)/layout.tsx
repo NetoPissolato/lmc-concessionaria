@@ -251,17 +251,6 @@ function Sidebar({
                       }}
                     />
                   </div>
-                  {/* Animated underline */}
-                  <motion.div
-                    animate={{ width: ["24px", "42px", "24px"] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    style={{
-                      height: "1.5px",
-                      background: "linear-gradient(90deg, #F5A623, transparent)",
-                      borderRadius: "2px",
-                      boxShadow: "0 0 6px rgba(245,166,35,0.5)",
-                    }}
-                  />
                 </motion.div>
               ) : (
                 /* Collapsed: mostra apenas botao de expandir, sem logo */
