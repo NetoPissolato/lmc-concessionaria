@@ -61,9 +61,13 @@ class SaleRepository(BaseRepository[Sale]):
 
     async def get_recent_sales(self, limit: int = 5) -> List[Sale]:
         """Returns the N most recent completed sales across all time."""
+        from app.domain.models.vehicle import Vehicle
         result = await self.db.execute(
             select(Sale)
-            .options(selectinload(Sale.cliente), selectinload(Sale.vehicle))
+            .options(
+                selectinload(Sale.cliente),
+                selectinload(Sale.vehicle).selectinload(Vehicle.photos),
+            )
             .where(
                 Sale.is_deleted == False,
                 Sale.status == SaleStatus.CONCLUIDA,
