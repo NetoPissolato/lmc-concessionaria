@@ -28,6 +28,7 @@ class SaleService:
     """
 
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.sale_repo = SaleRepository(db)
         self.vehicle_repo = VehicleRepository(db)
         self.financial_repo = FinancialRepository(db)
@@ -107,18 +108,28 @@ class SaleService:
                 created_by=created_by,
             )
             # Saída: custo de aquisição do veículo (compra + multas)
-            custo_veiculo = (vehicle.valor_compra or Decimal("0")) + (vehicle.valor_multas or Decimal("0"))
-            if custo_veiculo > 0:
-                await self.financial_repo.create(
-                    tipo=EntryType.SAIDA,
-                    categoria=FinancialCategory.COMPRA_VEICULO,
-                    descricao=f"Custo: {vehicle.marca} {vehicle.modelo} {vehicle.ano} - {vehicle.placa}",
-                    valor=custo_veiculo,
-                    data=data.data_venda,
-                    venda_id=sale.id,
-                    vehicle_id=vehicle.id,
-                    created_by=created_by,
+            # Verifica se já existe lançamento de compra (criado no cadastro do veículo)
+            from sqlalchemy import select, func
+            from app.domain.models.financial import FinancialEntry
+            existing = await self.db.scalar(
+                select(func.count()).select_from(FinancialEntry).where(
+                    FinancialEntry.vehicle_id == vehicle.id,
+                    FinancialEntry.categoria == FinancialCategory.COMPRA_VEICULO,
                 )
+            )
+            if not existing:
+                custo_veiculo = (vehicle.valor_compra or Decimal("0")) + (vehicle.valor_multas or Decimal("0"))
+                if custo_veiculo > 0:
+                    await self.financial_repo.create(
+                        tipo=EntryType.SAIDA,
+                        categoria=FinancialCategory.COMPRA_VEICULO,
+                        descricao=f"Custo: {vehicle.marca} {vehicle.modelo} {vehicle.ano} - {vehicle.placa}",
+                        valor=custo_veiculo,
+                        data=data.data_venda,
+                        venda_id=sale.id,
+                        vehicle_id=vehicle.id,
+                        created_by=created_by,
+                    )
             # Se tem comissão, cria SAIDA
             if comissao_valor > 0:
                 await self.financial_repo.create(
@@ -159,19 +170,28 @@ class SaleService:
             vehicle_id=vehicle.id,
             created_by=created_by,
         )
-        # Saída: custo de aquisição do veículo (compra + multas)
-        custo_veiculo = (vehicle.valor_compra or Decimal("0")) + (vehicle.valor_multas or Decimal("0"))
-        if custo_veiculo > 0:
-            await self.financial_repo.create(
-                tipo=EntryType.SAIDA,
-                categoria=FinancialCategory.COMPRA_VEICULO,
-                descricao=f"Custo: {vehicle.marca} {vehicle.modelo} {vehicle.ano} - {vehicle.placa}",
-                valor=custo_veiculo,
-                data=sale.data_venda,
-                venda_id=sale.id,
-                vehicle_id=vehicle.id,
-                created_by=created_by,
+        # Saída: custo de aquisição — só se não existir ainda (pode ter sido criado no cadastro)
+        from sqlalchemy import select, func
+        from app.domain.models.financial import FinancialEntry
+        existing = await self.db.scalar(
+            select(func.count()).select_from(FinancialEntry).where(
+                FinancialEntry.vehicle_id == vehicle.id,
+                FinancialEntry.categoria == FinancialCategory.COMPRA_VEICULO,
             )
+        )
+        if not existing:
+            custo_veiculo = (vehicle.valor_compra or Decimal("0")) + (vehicle.valor_multas or Decimal("0"))
+            if custo_veiculo > 0:
+                await self.financial_repo.create(
+                    tipo=EntryType.SAIDA,
+                    categoria=FinancialCategory.COMPRA_VEICULO,
+                    descricao=f"Custo: {vehicle.marca} {vehicle.modelo} {vehicle.ano} - {vehicle.placa}",
+                    valor=custo_veiculo,
+                    data=sale.data_venda,
+                    venda_id=sale.id,
+                    vehicle_id=vehicle.id,
+                    created_by=created_by,
+                )
         # Comissão
         comissao_valor = sale.comissao_valor or Decimal("0")
         if comissao_valor > 0:
