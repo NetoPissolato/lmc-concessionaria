@@ -17,6 +17,7 @@ import {
 import { usersApi, authApi } from "@/lib/api";
 import { toast } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Select } from "@/components/Select";
 
 // --- Types --------------------------------------------------------------------
 interface UserItem {
@@ -345,15 +346,14 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
                     </div>
                     <div>
                       <label style={labelStyle}>Perfil de acesso</label>
-                      <div style={{ position: "relative" }}>
-                        <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.28)", display: "flex", pointerEvents: "none", zIndex: 1 }}><Shield size={13} /></div>
-                        <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value as "admin" | "funcionario" }))}
-                          style={{ ...inp, paddingLeft: 34, paddingRight: 34, cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}>
-                          <option value="funcionario">Funcionário</option>
-                          <option value="admin">Administrador</option>
-                        </select>
-                        <ChevronRight size={13} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%) rotate(90deg)", color: "rgba(255,255,255,0.3)", pointerEvents: "none" }} />
-                      </div>
+                      <Select
+                        value={form.role}
+                        onChange={(v) => setForm(f => ({ ...f, role: v as "admin" | "funcionario" }))}
+                        options={[
+                          { value: "funcionario", label: "Funcionário" },
+                          { value: "admin", label: "Administrador" },
+                        ]}
+                      />
                     </div>
                   </div>
                 </div>
