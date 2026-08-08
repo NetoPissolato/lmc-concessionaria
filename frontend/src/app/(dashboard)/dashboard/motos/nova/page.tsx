@@ -31,7 +31,7 @@ const motoSchema = z.object({
   placa:             z.string().min(7, "Placa inválida - mín. 7 caracteres").max(8).refine(v => validatePlaca(v), "Formato inválido (ex: ABC1D23)"),
   chassi:            z.string().length(17, "Chassi deve ter exatamente 17 caracteres"),
   renavam:           z.string().max(11).optional(),
-  valor_compra:      z.number({ coerce: true, invalid_type_error: "Valor inválido" }).positive("Valor deve ser maior que zero"),
+  valor_compra:      z.number({ coerce: true, invalid_type_error: "Valor inválido" }).min(0, "Valor não pode ser negativo"),
   valor_multas:      z.preprocess(v => (v === "" || v === undefined || v === null || (typeof v === 'number' && isNaN(v as number))) ? 0 : Number(v), z.number().min(0)).optional(),
   data_compra:       z.string().min(1, "Data de compra obrigatória"),
   vendedor_nome:     z.string().optional(),

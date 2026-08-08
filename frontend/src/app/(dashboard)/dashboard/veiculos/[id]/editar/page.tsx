@@ -145,7 +145,7 @@ export default function EditarVeiculoPage() {
     const chassi = form.chassi.replace(/\s/g, "");
     if (chassi.length !== 17) errs.chassi = "Chassi deve ter 17 caracteres";
     if (!form.data_compra) errs.data_compra = "Obrigatório";
-    if (form.valor_compra <= 0) errs.valor_compra_display = "Valor inválido";
+    if (form.valor_compra < 0) errs.valor_compra_display = "Valor inválido";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
