@@ -101,6 +101,10 @@ export function useWebSocket(): { status: WSStatus } {
             queryClient.invalidateQueries({ queryKey: [k] })
           );
         }
+        // Notify Header to re-fetch pending sales
+        if (event === "sale_created" || event === "sale_updated") {
+          window.dispatchEvent(new CustomEvent("lmc:sale_event"));
+        }
       } catch {
         // ignore malformed messages
       }
