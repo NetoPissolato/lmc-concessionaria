@@ -234,35 +234,35 @@ function Sidebar({
                   transition={{ duration: 0.18 }}
                   style={{ display: "flex", flexDirection: "column", gap: "3px" }}
                 >
-                  {/* LMC wordmark */}
-                  <div style={{ display: "flex", alignItems: "flex-start", lineHeight: 1, gap: "0px" }}>
-                    <span style={{
-                      fontSize: "30px", fontWeight: "900", color: "#fff",
-                      letterSpacing: "-2px", lineHeight: 1,
-                      textShadow: "0 2px 12px rgba(0,0,0,0.8)",
-                    }}>LM</span>
-                    <div style={{ position: "relative", display: "inline-flex", alignItems: "flex-start" }}>
-                      <span style={{
-                        fontSize: "30px", fontWeight: "900", color: "#fff",
-                        letterSpacing: "-2px", lineHeight: 1,
-                        textShadow: "0 2px 12px rgba(0,0,0,0.8)",
-                      }}>C</span>
-                      {/* Superscript amber accent */}
-                      <motion.div
-                        animate={{ opacity: [0.7, 1, 0.7] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        style={{
-                          position: "absolute", top: "2px", right: "-9px",
-                          width: "7px", height: "7px",
-                          borderTop: "2.5px solid #F5A623",
-                          borderRight: "2.5px solid #F5A623",
-                          borderRadius: "0 2px 0 0",
-                          boxShadow: "2px -2px 6px rgba(245,166,35,0.6)",
-                        }}
-                      />
-                    </div>
+                  {/* Logo image */}
+                  <div style={{ position: "relative", display: "inline-block" }}>
+                    <img
+                      src="/LogoLMC.png"
+                      alt="LMC Veículos"
+                      style={{
+                        height: "38px",
+                        width: "auto",
+                        objectFit: "contain",
+                        borderRadius: "6px",
+                        background: "rgba(255,255,255,0.93)",
+                        padding: "3px 8px",
+                        display: "block",
+                      }}
+                    />
+                    {/* Pulsing amber accent dot */}
+                    <motion.div
+                      animate={{ opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      style={{
+                        position: "absolute", top: "-3px", right: "-5px",
+                        width: "7px", height: "7px",
+                        borderTop: "2.5px solid #F5A623",
+                        borderRight: "2.5px solid #F5A623",
+                        borderRadius: "0 2px 0 0",
+                        boxShadow: "2px -2px 6px rgba(245,166,35,0.6)",
+                      }}
+                    />
                   </div>
-
                   {/* Animated underline */}
                   <motion.div
                     animate={{ width: ["24px", "42px", "24px"] }}
@@ -274,13 +274,6 @@ function Sidebar({
                       boxShadow: "0 0 6px rgba(245,166,35,0.5)",
                     }}
                   />
-
-                  {/* VEÍCULOS */}
-                  <p style={{
-                    fontSize: "7.5px", fontWeight: "800", color: "#F5A623",
-                    letterSpacing: "0.3em", textTransform: "uppercase",
-                    textShadow: "0 0 8px rgba(245,166,35,0.4)",
-                  }}>V E Í C U L O S</p>
                 </motion.div>
               ) : (
                 <motion.div
@@ -289,12 +282,19 @@ function Sidebar({
                   animate={{ opacity: 1 }}
                   style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1px" }}
                 >
-                  <div style={{ display: "flex", alignItems: "flex-start" }}>
-                    <span style={{ fontSize: "18px", fontWeight: "900", color: "#fff", letterSpacing: "-1px", lineHeight: 1 }}>LM</span>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ fontSize: "18px", fontWeight: "900", color: "#fff", letterSpacing: "-1px", lineHeight: 1 }}>C</span>
-                      <div style={{ position: "absolute", top: "1px", right: "-5px", width: "4px", height: "4px", borderTop: "2px solid #F5A623", borderRight: "2px solid #F5A623", borderRadius: "0 1px 0 0" }} />
-                    </div>
+                  <div style={{
+                    width: 36, height: 36,
+                    borderRadius: "10px",
+                    background: "rgba(255,255,255,0.93)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    overflow: "hidden",
+                    padding: "3px",
+                  }}>
+                    <img
+                      src="/LogoLMC.png"
+                      alt="LMC"
+                      style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                    />
                   </div>
                 </motion.div>
               )}

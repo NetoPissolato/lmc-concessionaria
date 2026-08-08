@@ -392,6 +392,7 @@ export default function MotoDetailPage() {
   const [editingExpense, setEditingExpense] = useState<VehicleExpense | null>(null);
   const [confirmDeleteExpense, setConfirmDeleteExpense] = useState<string | null>(null);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [confirmDeleteMoto, setConfirmDeleteMoto] = useState(false);
 
   // Lock body scroll when any modal is open
   useBodyScrollLock(showAddExpense || !!editingExpense || !!confirmDeleteExpense);
@@ -416,6 +417,17 @@ export default function MotoDetailPage() {
     mutationFn: () => vehiclesApi.payFines(id),
     onSuccess: () => { toast.success("Multas pagas!"); queryClient.invalidateQueries({ queryKey: ["vehicle", id] }); queryClient.invalidateQueries({ queryKey: ["vehicle-cost", id] }); },
     onError: () => toast.error("Erro ao registrar pagamento"),
+  });
+
+  const deleteMotoMutation = useMutation({
+    mutationFn: () => vehiclesApi.delete(id),
+    onSuccess: () => {
+      toast.success("Moto excluída!");
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      router.replace("/dashboard/motos");
+    },
+    onError: () => toast.error("Erro ao excluir moto"),
   });
 
   const refreshExpenses = () => { queryClient.invalidateQueries({ queryKey: ["vehicle-expenses", id] }); queryClient.invalidateQueries({ queryKey: ["vehicle-cost", id] }); };
@@ -808,6 +820,15 @@ export default function MotoDetailPage() {
                   <WhatsAppIcon size={14} color="#25d366" /> Enviar por WhatsApp
                 </motion.button>
               )}
+              {vehicle.status !== "vendido" && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => setConfirmDeleteMoto(true)}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 0", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.4)", color: "#ef4444", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
+                >
+                  <Trash2 size={14} /> Excluir Moto
+                </motion.button>
+              )}
             </div>
           </motion.div>
 
@@ -874,6 +895,16 @@ export default function MotoDetailPage() {
             onSuccess={() => { setShowAddExpense(false); setEditingExpense(null); refreshExpenses(); }} />
         )}
       </Portal>
+
+      <ConfirmDialog
+        open={confirmDeleteMoto}
+        title="Excluir moto?"
+        description={`A moto ${vehicle?.marca} ${vehicle?.modelo} (${vehicle?.placa}) será excluída permanentemente junto com todas as despesas e fotos. Esta ação não pode ser desfeita.`}
+        confirmLabel="Sim, excluir" cancelLabel="Cancelar" variant="danger"
+        loading={deleteMotoMutation.isPending}
+        onConfirm={() => deleteMotoMutation.mutate()}
+        onCancel={() => setConfirmDeleteMoto(false)}
+      />
     </div>
   );
 }

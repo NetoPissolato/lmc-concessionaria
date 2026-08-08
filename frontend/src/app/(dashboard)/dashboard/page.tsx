@@ -366,12 +366,12 @@ export default function DashboardPage() {
             }}
           />
 
-          {/* Texto LMC */}
+          {/* Logo image */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: "relative", display: "flex", alignItems: "center", gap: "0px" }}
+            style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}
           >
             {/* Anel decorativo atrás */}
             <motion.div
@@ -379,7 +379,7 @@ export default function DashboardPage() {
               transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
               style={{
                 position: "absolute",
-                width: "120px", height: "120px",
+                width: "180px", height: "180px",
                 borderRadius: "50%",
                 border: "1px solid rgba(245,166,35,0.18)",
                 borderTopColor: "rgba(245,166,35,0.6)",
@@ -391,7 +391,7 @@ export default function DashboardPage() {
               transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
               style={{
                 position: "absolute",
-                width: "96px", height: "96px",
+                width: "148px", height: "148px",
                 borderRadius: "50%",
                 border: "1px dashed rgba(245,166,35,0.12)",
                 borderBottomColor: "rgba(245,166,35,0.35)",
@@ -399,27 +399,30 @@ export default function DashboardPage() {
               }}
             />
 
-            {/* As letras */}
-            {["L", "M", "C"].map((letter, i) => (
-              <motion.span
-                key={letter}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="fluid-hero-title"
+            {/* Logo image in white container */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              style={{
+                background: "rgba(255,255,255,0.95)",
+                borderRadius: "16px",
+                padding: "14px 22px",
+                boxShadow: "0 0 40px rgba(245,166,35,0.25), 0 8px 32px rgba(0,0,0,0.4)",
+                border: "1px solid rgba(245,166,35,0.3)",
+              }}
+            >
+              <img
+                src="/LogoLMC.png"
+                alt="LMC Ve\u00edculos"
                 style={{
-                  lineHeight: 1,
-                  color: i === 2 ? "#F5A623" : "#ffffff",
-                  textShadow: i === 2
-                    ? "0 0 30px rgba(245,166,35,0.8), 0 0 60px rgba(245,166,35,0.4), 0 4px 20px rgba(0,0,0,0.8)"
-                    : "0 0 20px rgba(255,255,255,0.3), 0 4px 20px rgba(0,0,0,0.8)",
-                  fontFamily: "'Inter', sans-serif",
+                  height: "clamp(48px, 8vw, 72px)",
+                  width: "auto",
+                  objectFit: "contain",
+                  display: "block",
                 }}
-              >
-                {letter}
-              </motion.span>
-            ))}
-
+              />
+            </motion.div>
           </motion.div>
 
           {/* Subtítulo */}
