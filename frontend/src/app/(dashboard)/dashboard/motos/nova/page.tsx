@@ -266,9 +266,8 @@ export default function NovaMotoPage() {
       <form onSubmit={e => e.preventDefault()} className="veiculo-form">
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
-            className="card form-card-scrollable"
-            style={{ padding: isMobile ? "16px" : "28px" }}>
-
+            className="form-section-card">
+            <div className="form-section-card-body">
             {step === 0 && (
               <div className="form-grid-auto">
                 <Field label="Marca" required error={errors.marca?.message}>
@@ -344,9 +343,9 @@ export default function NovaMotoPage() {
               </div>
             )}
 
-            {/* ?"--? Step 2: Documentação ?"--? */}
+            {/* Step 2: Documentação */}
             {step === 1 && (
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "16px" }}>
+              <div className="form-grid-auto">
                 <Field label="Placa" required error={errors.placa?.message}>
                   <div style={{ position: "relative" }}>
                     <input className="input" style={{ textTransform: "uppercase", letterSpacing: "0.12em", ...inputStyle("placa") }}
@@ -392,9 +391,9 @@ export default function NovaMotoPage() {
               </div>
             )}
 
-            {/* ?"--? Step 3: Valores ?"--? */}
+            {/* Step 3: Valores */}
             {step === 2 && (
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "16px" }}>
+              <div className="form-grid-auto">
                 <Field label="Valor de Compra (R$)" required error={errors.valor_compra?.message}>
                   <div style={{ position: "relative" }}>
                     <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "var(--text-muted)", fontWeight: 600, pointerEvents: "none" }}>R$</span>
@@ -486,6 +485,7 @@ export default function NovaMotoPage() {
                 )}
               </div>
             )}
+            </div>{/* /form-section-card-body */}
           </motion.div>
         </AnimatePresence>
 

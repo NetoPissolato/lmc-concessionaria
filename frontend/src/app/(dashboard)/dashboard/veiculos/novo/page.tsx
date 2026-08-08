@@ -354,9 +354,9 @@ export default function NovoVeiculoPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
-            className="card form-card-scrollable"
-            style={{ padding: isMobile ? "16px" : "28px" }}
+            className="form-section-card"
           >
+            <div className="form-section-card-body">
             {/* Step 1 - Basic Data */}
             {step === 0 && (
               <div className="form-grid-auto">
@@ -446,7 +446,7 @@ export default function NovoVeiculoPage() {
 
             {/* Step 2 - Purchase */}
             {step === 1 && (
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "16px" }}>
+              <div className="form-grid-auto">
                 <Field label="Placa" required error={errors.placa?.message}>
                   <div style={{ position: "relative" }}>
                     <input
@@ -534,9 +534,9 @@ export default function NovoVeiculoPage() {
               </div>
             )}
 
-            {/* Step 3 - Pricing */}
+            {/* Step 3 - Values */}
             {step === 2 && (
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "16px" }}>
+              <div className="form-grid-auto">
                 <Field label="Valor de Compra (R$)" required error={errors.valor_compra?.message}>
                   <div style={{ position: "relative" }}>
                     <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "var(--text-muted)", fontWeight: 600, pointerEvents: "none" }}>R$</span>
@@ -570,21 +570,18 @@ export default function NovoVeiculoPage() {
                   </div>
                 </Field>
                 {/* Info card */}
-                <div
-                  style={{
-                    ...(isMobile ? {} : { gridColumn: "span 2" }),
-                    background: "var(--brand-light)",
-                    border: "1px solid rgba(59,130,246,0.2)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "14px",
-                    fontSize: "12px",
-                    color: "var(--brand)",
-                    lineHeight: "1.6",
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "8px",
-                  }}
-                >
+                <div style={{
+                  background: "rgba(245,166,35,0.06)",
+                  border: "1px solid rgba(245,166,35,0.2)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "14px",
+                  fontSize: "12px",
+                  color: "#F5A623",
+                  lineHeight: "1.6",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "8px",
+                }}>
                   <Lightbulb size={14} style={{ flexShrink: 0, marginTop: "2px" }} />
                   <span>O sistema calculará automaticamente o <strong>investimento total</strong> (compra + despesas) e o <strong>lucro</strong> após as despesas serem lançadas.</span>
                 </div>
@@ -676,6 +673,7 @@ export default function NovoVeiculoPage() {
                 )}
               </div>
             )}
+            </div>{/* /form-section-card-body */}
           </motion.div>
         </AnimatePresence>
 
