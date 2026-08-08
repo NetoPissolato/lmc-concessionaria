@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useBodyScrollLock } from "@/hooks/useModalScroll";
+import { Portal } from "@/components/Portal";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -428,7 +429,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18 }}
       style={{
-        position: "fixed", inset: 0, zIndex: 200,
+        position: "fixed", inset: 0, zIndex: 9000,
         background: "rgba(0,0,0,0.92)",
         backdropFilter: "blur(12px)",
         overflowY: "auto",
@@ -892,7 +893,7 @@ function CustomerModal({ customer, onClose, onSuccess }: {
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       style={{
-        position: "fixed", inset: 0, zIndex: 300,
+        position: "fixed", inset: 0, zIndex: 9100,
         background: "rgba(0,0,0,0.82)",
         backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
         display: "flex", alignItems: "center", justifyContent: "center", padding: "24px",

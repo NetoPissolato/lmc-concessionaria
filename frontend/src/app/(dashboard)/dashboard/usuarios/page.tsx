@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useBodyScrollLock } from "@/hooks/useModalScroll";
+import { Portal } from "@/components/Portal";
 
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,6 +77,7 @@ function Avatar({ foto, nome, size = 40 }: { foto: string | null; nome: string; 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   useBodyScrollLock(true);
   return (
+    <Portal>
     <AnimatePresence>
       <motion.div
         key="backdrop"
@@ -83,7 +85,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
-          backdropFilter: "blur(6px)", zIndex: 60,
+          backdropFilter: "blur(6px)", zIndex: 9000,
           display: "flex", alignItems: "center", justifyContent: "center", padding: "16px",
         }}
       >
@@ -120,6 +122,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         </motion.div>
       </motion.div>
     </AnimatePresence>
+    </Portal>
   );
 }
 
@@ -256,10 +259,11 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
   );
 
   return (
+    <Portal>
     <AnimatePresence>
       <motion.div key="backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
-        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", backdropFilter: "blur(8px)", zIndex: 60, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", padding: isMobile ? "0" : "16px" }}>
+        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", backdropFilter: "blur(8px)", zIndex: 9000, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", padding: isMobile ? "0" : "16px" }}>
         <motion.div initial={{ opacity: 0, scale: 0.95, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 14 }}
           transition={{ duration: 0.22 }} onClick={e => e.stopPropagation()}
           style={{ background: "#131313", border: "1px solid rgba(255,255,255,0.08)", borderRadius: isMobile ? "20px 20px 0 0" : "20px", width: "100%", maxWidth: isMobile ? "100%" : "660px", boxShadow: "0 28px 90px rgba(0,0,0,0.75)", maxHeight: isMobile ? "92dvh" : "90dvh", overflowY: "auto", overflowX: "hidden" }}>
@@ -397,6 +401,7 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
         </motion.div>
       </motion.div>
     </AnimatePresence>
+    </Portal>
   );
 }
 
