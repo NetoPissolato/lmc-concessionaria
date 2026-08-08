@@ -23,7 +23,10 @@ async def list_entries(
     from app.domain.models.financial import FinancialEntry, EntryType
     from app.domain.models.vehicle_photo import VehiclePhoto
 
-    stmt = select(FinancialEntry).order_by(FinancialEntry.data.desc())
+    stmt = select(FinancialEntry).order_by(
+        FinancialEntry.data.desc(),
+        FinancialEntry.created_at.desc(),  # desempate: mais recente primeiro
+    )
 
     if tipo in ("entrada", "saida"):
         stmt = stmt.where(FinancialEntry.tipo == EntryType(tipo))

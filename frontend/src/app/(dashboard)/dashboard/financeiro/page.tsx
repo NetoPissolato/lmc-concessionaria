@@ -758,6 +758,8 @@ export default function FinanceiroPage() {
                       width: isMobile ? 38 : 46, height: isMobile ? 38 : 46, borderRadius: 10,
                       flexShrink: 0, overflow: "hidden", position: "relative",
                       border: `1px solid ${catColor}22`,
+                      background: `${catColor}14`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
                       {e.foto_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -765,16 +767,21 @@ export default function FinanceiroPage() {
                           src={e.foto_url}
                           alt="Foto do veículo"
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          onError={(ev) => { (ev.target as HTMLImageElement).style.display = "none"; }}
+                          onError={(ev) => {
+                            // Se a foto falhar, esconde img e mostra ícone de categoria
+                            const img = ev.target as HTMLImageElement;
+                            img.style.display = "none";
+                            const parent = img.parentElement;
+                            if (parent && !parent.querySelector(".cat-icon-fallback")) {
+                              const iconDiv = document.createElement("div");
+                              iconDiv.className = "cat-icon-fallback";
+                              iconDiv.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;";
+                              parent.appendChild(iconDiv);
+                            }
+                          }}
                         />
                       ) : (
-                        <div style={{
-                          width: "100%", height: "100%",
-                          background: `${catColor}14`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                        }}>
-                          <CatIcon size={isMobile ? 15 : 18} color={catColor} />
-                        </div>
+                        <CatIcon size={isMobile ? 15 : 18} color={catColor} />
                       )}
                     </div>
 
