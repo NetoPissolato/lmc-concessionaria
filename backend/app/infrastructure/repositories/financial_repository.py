@@ -17,7 +17,7 @@ class FinancialRepository:
         from sqlalchemy import select
         result = await self.db.execute(
             select(FinancialEntry)
-            .order_by(FinancialEntry.data.desc())
+            .order_by(FinancialEntry.data.desc(), FinancialEntry.created_at.desc())
             .offset(skip)
             .limit(limit)
         )
