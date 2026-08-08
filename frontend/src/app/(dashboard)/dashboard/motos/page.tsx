@@ -106,15 +106,15 @@ function MotoCard({ v, onView, onEdit, onDelete, onExpenses, delay }: {
       </div>
 
       <div style={{ display: "flex", borderTop: "1px solid var(--border)", background: "var(--surface-2)" }} onClick={e => e.stopPropagation()}>
-        {[{ emoji: "🛵", label: "Ver",      action: onView,     color: "#f97316"              },
-          { emoji: "💰", label: "Despesas", action: onExpenses, color: "#a78bfa"              },
-          { emoji: "✏️", label: "Editar",   action: onEdit,     color: "var(--text-secondary)" }]
-          .map(({ emoji, label, action, color }, i) => (
+        {[{ Icon: Eye,     label: "Ver",      action: onView,     color: "#f97316"               },
+          { Icon: Receipt, label: "Despesas", action: onExpenses, color: "#a78bfa"               },
+          { Icon: Edit,    label: "Editar",   action: onEdit,     color: "var(--text-secondary)"  }]
+          .map(({ Icon, label, action, color }, i) => (
             <button key={label} onClick={action} title={label}
-              style={{ flex: 1, height: "44px", display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", fontSize: "20px", color, borderRight: i < 2 ? "1px solid var(--border)" : "none", transition: "background 0.15s" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+              style={{ flex: 1, height: "44px", display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color, borderRight: i < 2 ? "1px solid var(--border)" : "none", transition: "background 0.15s" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
               onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-              {emoji}
+              <Icon size={18} strokeWidth={1.8} />
             </button>
           ))}
       </div>

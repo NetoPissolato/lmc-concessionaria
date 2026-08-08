@@ -137,34 +137,41 @@ function PayRow({ line, onChange, onRemove, canRemove, totalVenda, onFillRemaind
       style={{ borderRadius: 12, background: "var(--surface-2)", border: `1.5px solid ${color}25`, overflow: "hidden" }}>
       <div style={{ display: "flex", alignItems: "stretch" }}>
         <div style={{ width: 4, background: `linear-gradient(180deg, ${color}, ${color}60)`, flexShrink: 0 }} />
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, padding: "12px 14px" }}>
-          {/* Logo do método à esquerda */}
-          <div style={{ flexShrink: 0 }}>
-            <PaymentBadge forma={line.forma} banco={line.banco} size="sm" iconOnly />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, padding: "12px 14px" }}>
+          {/* Linha 1: badge + select (ocupa toda a largura no mobile) */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ flexShrink: 0 }}>
+              <PaymentBadge forma={line.forma} banco={line.banco} size="sm" iconOnly />
+            </div>
+            <select value={line.forma} className="input"
+              style={{ fontSize: "13px", flex: 1, borderColor: `${color}40` }}
+              onChange={e => onChange(line.id, { forma: e.target.value })}>
+              {PAYMENT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
           </div>
-          <select value={line.forma} className="input" style={{ fontSize: "13px", width: 178, flexShrink: 0, borderColor: `${color}40` }} onChange={e => onChange(line.id, { forma: e.target.value })}>
-            {PAYMENT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-          <div style={{ flex: 1, position: "relative" }}>
-            <input value={line.valor_display} inputMode="numeric" placeholder="0,00" className="input"
-              style={{ fontSize: "14px", fontWeight: 600, borderColor: `${color}40`, paddingRight: totalVenda > 0 && line.valor > 0 ? 52 : 12 }}
-              onChange={e => { const m = maskCurrency(e.target.value); onChange(line.id, { valor_display: m, valor: parseCurrency(m) }); }} />
-            {totalVenda > 0 && line.valor > 0 && (
-              <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: "10px", fontWeight: 700, color, background: `${color}15`, padding: "1px 6px", borderRadius: 4 }}>
-                {Math.round((line.valor / totalVenda) * 100)}%
-              </span>
+          {/* Linha 2: valor + botão restante + lixeira */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ flex: 1, position: "relative" }}>
+              <input value={line.valor_display} inputMode="numeric" placeholder="0,00" className="input"
+                style={{ fontSize: "14px", fontWeight: 600, borderColor: `${color}40`, paddingRight: totalVenda > 0 && line.valor > 0 ? 46 : 12 }}
+                onChange={e => { const m = maskCurrency(e.target.value); onChange(line.id, { valor_display: m, valor: parseCurrency(m) }); }} />
+              {totalVenda > 0 && line.valor > 0 && (
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: "10px", fontWeight: 700, color, background: `${color}15`, padding: "1px 6px", borderRadius: 4 }}>
+                  {Math.round((line.valor / totalVenda) * 100)}%
+                </span>
+              )}
+            </div>
+            {remainder > 0.01 && (
+              <button type="button" onClick={() => onFillRemainder(line.id)}
+                style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, fontSize: "11px", fontWeight: 600, color, background: `${color}12`, border: `1px solid ${color}28`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", whiteSpace: "nowrap" }}>
+                <Calculator size={10} /> Restante
+              </button>
             )}
-          </div>
-          {remainder > 0.01 && (
-            <button type="button" onClick={() => onFillRemainder(line.id)}
-              style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, fontSize: "11px", fontWeight: 600, color, background: `${color}12`, border: `1px solid ${color}28`, borderRadius: 8, padding: "6px 10px", cursor: "pointer" }}>
-              <Calculator size={10} /> Restante
+            <button type="button" onClick={() => onRemove(line.id)} disabled={!canRemove}
+              style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: canRemove ? "pointer" : "not-allowed", background: canRemove ? "rgba(239,68,68,0.08)" : "transparent", border: canRemove ? "1px solid rgba(239,68,68,0.18)" : "1px solid transparent", color: canRemove ? "#ef4444" : "var(--text-muted)" }}>
+              <Trash2 size={13} />
             </button>
-          )}
-          <button type="button" onClick={() => onRemove(line.id)} disabled={!canRemove}
-            style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: canRemove ? "pointer" : "not-allowed", background: canRemove ? "rgba(239,68,68,0.08)" : "transparent", border: canRemove ? "1px solid rgba(239,68,68,0.18)" : "1px solid transparent", color: canRemove ? "#ef4444" : "var(--text-muted)" }}>
-            <Trash2 size={12} />
-          </button>
+          </div>
         </div>
       </div>
       {hasExtras && (
