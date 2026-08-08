@@ -1963,3 +1963,143 @@ input[type="number"] { -moz-appearance: textfield; }
 @media (max-width: 360px) {
   .vehicle-action-label { display: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ─── GLOBAL MOBILE POLISH — Corrige TODAS as páginas de uma vez ────────────
+   Aplicado por ÚLTIMO para ter prioridade máxima sobre regras anteriores.
+   Resolve: coisas apertadas, desalinhadas, cortadas, fontes ilegíveis.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Telefone (≤639px) ─────────────────────────────────────────────────────── */
+@media (max-width: 639px) {
+
+  /* 1. Padding lateral do conteúdo principal — mais espaço horizontal */
+  .dash-main {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* 2. Nenhum elemento filho pode causar scroll horizontal */
+  .dashboard-main-content,
+  .dashboard-main-content > * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 3. Qualquer container direto do conteúdo não deve overflow */
+  #dash-main > * {
+    overflow-x: hidden;
+  }
+
+  /* 4. KPI card — padding menor para caber melhor */
+  .kpi-card {
+    padding: 12px 14px !important;
+  }
+
+  /* 5. Fontes mínimas legíveis — evita rótulos de 10px ilegíveis */
+  .section-label {
+    font-size: 11px !important;
+  }
+
+  /* 6. Texto não transborda containers */
+  h1, h2, h3, h4,
+  p, span, label, td, th {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  /* 7. Imagens respeitam o container */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* 8. Selects e inputs não transbordam */
+  select, input, textarea {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 9. Flex containers — filhos não causam overflow */
+  .filter-bar,
+  .page-header,
+  [class*="actions"] {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .filter-bar > *,
+  .page-header > * {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  /* 10. Tabelas com scroll horizontal ao invés de overflow */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* 11. Formulários — todos os campos em coluna única no celular */
+  .form-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 12. Page header menos pesado no mobile */
+  .page-header {
+    gap: 8px !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 14px !important;
+  }
+  .page-title {
+    font-size: clamp(17px, 5vw, 22px) !important;
+  }
+}
+
+/* ── Telefone muito pequeno (≤380px) ─────────────────────────────────────── */
+@media (max-width: 380px) {
+  /* Padding ainda menor para telas muito pequenas */
+  .dash-main {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+
+  /* KPI card ainda mais compacto */
+  .kpi-card {
+    padding: 10px 10px !important;
+  }
+
+  /* Título menor em telas minúsculas */
+  .page-title {
+    font-size: 16px !important;
+  }
+}
+
+/* ── Tablet (640px–1023px) ─────────────────────────────────────────────── */
+@media (min-width: 640px) and (max-width: 1023px) {
+
+  /* Tablet tem mais espaço — padding um pouco maior */
+  .dash-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* Texto não transborda em tablet também */
+  h1, h2, h3, p, span, label {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Imagens não transbordam */
+  img {
+    max-width: 100%;
+  }
+
+  /* Selects e inputs no tablet */
+  select, input, textarea {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
