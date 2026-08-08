@@ -511,7 +511,8 @@ export default function FinanceiroPage() {
                   <motion.div key={v.placa + i}
                     initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                     style={{
-                      display: "flex", alignItems: isMobile ? "flex-start" : "center",
+                      display: "flex", flexDirection: isMobile ? "column" : "row",
+                      alignItems: isMobile ? "stretch" : "center",
                       gap: isMobileOrTablet ? 12 : 16,
                       padding: isMobileOrTablet ? "14px 16px" : "16px 22px",
                       borderBottom: i < veiculosLucro.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
@@ -519,6 +520,9 @@ export default function FinanceiroPage() {
                     }}
                     whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
                   >
+                    {/* Row wrapper for foto + info — stays horizontal even on mobile */}
+                    {isMobile ? (
+                      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                     {/* Foto do veículo */}
                     <div style={{
                       width: isMobile ? 64 : 80, height: isMobile ? 48 : 60,
@@ -590,26 +594,93 @@ export default function FinanceiroPage() {
                       {isMobile && (
                         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                           <div>
-                            <p style={{ fontSize: 9, color: "var(--text-muted)" }}>Custo total</p>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "#f97316" }}>{fmt(v.custo_total)}</p>
+                    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                      <div style={{
+                        width: isMobile ? 64 : 80, height: isMobile ? 48 : 60,
+                        borderRadius: 10, overflow: "hidden",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        background: "rgba(255,255,255,0.03)",
+                        flexShrink: 0,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <img
+                          src={v.foto_url || placeholderSrc}
+                          alt={v.veiculo}
+                          onError={e => { (e.target as HTMLImageElement).src = placeholderSrc; }}
+                          style={{ width: "100%", height: "100%", objectFit: v.foto_url ? "cover" : "contain",
+                            opacity: v.foto_url ? 1 : 0.4, padding: v.foto_url ? 0 : 8 }}
+                        />
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+                          <p style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: isMobile ? "180px" : "none" }}>
+                            {v.veiculo}
+                          </p>
+                          <span style={{ fontSize: 10, fontWeight: 600, padding: "1px 6px", borderRadius: 4, background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                            {v.placa}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: isMobile ? 8 : 10 }}>
+                          Vendido em {v.data_venda}{v.vendedor && v.vendedor !== "—" ? ` · ${v.vendedor}` : ""}
+                        </p>
+
+                        <div style={{ marginBottom: isMobile ? 6 : 8 }}>
+                          <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden", display: "flex" }}>
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${custoBarPct}%` }} transition={{ delay: i * 0.05 + 0.3, duration: 0.6, ease: "easeOut" }}
+                              style={{ height: "100%", background: "linear-gradient(90deg, #ef4444, #f97316)", borderRadius: "3px 0 0 3px" }} />
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${lucroBarPct}%` }} transition={{ delay: i * 0.05 + 0.3, duration: 0.6, ease: "easeOut" }}
+                              style={{ height: "100%", background: "linear-gradient(90deg, #10b981, #22c55e)" }} />
                           </div>
-                          <div>
-                            <p style={{ fontSize: 9, color: "var(--text-muted)" }}>Vendido por</p>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "#10b981" }}>{fmt(v.valor_vendido)}</p>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                            <span style={{ fontSize: 9, color: "var(--text-muted)" }}>
+                              <span style={{ color: "#f97316" }}>&#9632;</span> Custo {custoBarPct.toFixed(0)}%
+                            </span>
+                            <span style={{ fontSize: 9, color: isProfit ? "#22c55e" : "#ef4444" }}>
+                              Lucro {lucroBarPct.toFixed(0)}% <span style={{ color: isProfit ? "#22c55e" : "#ef4444" }}>&#9632;</span>
+                            </span>
                           </div>
                         </div>
-                      )}
+
+                        {!isMobile && (
+                          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                            {[
+                              { label: "Compra", value: fmt(v.valor_compra), color: "#3b82f6" },
+                              { label: "Gastos", value: fmt(v.total_despesas), color: "#f59e0b" },
+                              { label: "Custo total", value: fmt(v.custo_total), color: "#f97316", bold: true },
+                              { label: "Vendido por", value: fmt(v.valor_vendido), color: "#10b981", bold: true },
+                            ].map(d => (
+                              <div key={d.label}>
+                                <p style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 1 }}>{d.label}</p>
+                                <p style={{ fontSize: 11, fontWeight: d.bold ? 700 : 600, color: d.color }}>{d.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {isMobile && (
+                          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                            <div>
+                              <p style={{ fontSize: 9, color: "var(--text-muted)" }}>Custo total</p>
+                              <p style={{ fontSize: 11, fontWeight: 700, color: "#f97316" }}>{fmt(v.custo_total)}</p>
+                            </div>
+                            <div>
+                              <p style={{ fontSize: 9, color: "var(--text-muted)" }}>Vendido por</p>
+                              <p style={{ fontSize: 11, fontWeight: 700, color: "#10b981" }}>{fmt(v.valor_vendido)}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Lucro em destaque */}
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ padding: isMobile ? "8px 10px" : "10px 14px", borderRadius: 10, background: isProfit ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${isProfit ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>
-                        <p style={{ fontSize: 9, fontWeight: 600, color: "var(--text-muted)", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Lucro</p>
-                        <p style={{ fontSize: isMobile ? 16 : 20, fontWeight: 900, color: profitColor, letterSpacing: "-0.5px", lineHeight: 1 }}>
+                    <div style={{ textAlign: isMobile ? "left" : "right", flexShrink: 0 }}>
+                      <div style={{ padding: isMobile ? "8px 12px" : "10px 14px", borderRadius: 10, background: isProfit ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${isProfit ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`, display: "flex", flexDirection: isMobile ? "row" : "column", alignItems: isMobile ? "center" : "flex-end", gap: isMobile ? 10 : 0 }}>
+                        <p style={{ fontSize: 9, fontWeight: 600, color: "var(--text-muted)", marginBottom: isMobile ? 0 : 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Lucro</p>
+                        <p style={{ fontSize: isMobile ? 18 : 20, fontWeight: 900, color: profitColor, letterSpacing: "-0.5px", lineHeight: 1 }}>
                           {isProfit ? "+" : ""}{fmt(v.lucro_bruto)}
                         </p>
                         {v.margem_pct !== 0 && (
-                          <p style={{ fontSize: 10, fontWeight: 700, color: profitColor, marginTop: 3, opacity: 0.8 }}>
+                          <p style={{ fontSize: 10, fontWeight: 700, color: profitColor, marginTop: isMobile ? 0 : 3, marginLeft: isMobile ? "auto" : 0, opacity: 0.8 }}>
                             {v.margem_pct?.toFixed(1)}% margem
                           </p>
                         )}
