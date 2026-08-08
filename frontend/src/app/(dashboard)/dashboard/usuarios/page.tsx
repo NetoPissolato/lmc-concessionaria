@@ -291,113 +291,111 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
             </button>
           </div>
 
-          {/* Body — ONLY this part scrolls */}
-          <div className="modal-body">
+          {/* form wraps both scrollable body and sticky footer */}
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
 
-          {/* Body */}
-          <form onSubmit={handleSubmit}>
-            <div style={{ padding: isMobileOrTablet ? "16px" : "24px" }}>
+            {/* Body — ONLY this div scrolls */}
+            <div className="modal-body">
+              <div style={{ padding: isMobileOrTablet ? "16px" : "24px" }}>
 
-              {/* Foto + Campos - stack on mobile */}
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "156px 1fr", gap: 20, marginBottom: 20 }}>
+                {/* Foto + Campos - stack on mobile */}
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "156px 1fr", gap: 20, marginBottom: 20 }}>
 
-                {/* Coluna esquerda: foto */}
-                <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", gap: 8, alignItems: isMobile ? "center" : "flex-start" }}>
-                  <div style={{ position: "relative", width: isMobile ? 96 : 156, height: isMobile ? 96 : 156, borderRadius: 14, overflow: "hidden", background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
-                    {avatarPreview
-                      ? <img src={avatarPreview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #F5A623, #e8920e)" }}>
-                          <span style={{ fontSize: 52, fontWeight: 900, color: "#000" }}>{(form.nome || user?.nome || "?")[0]?.toUpperCase()}</span>
-                        </div>
-                    }
+                  {/* Coluna esquerda: foto */}
+                  <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", gap: 8, alignItems: isMobile ? "center" : "flex-start" }}>
+                    <div style={{ position: "relative", width: isMobile ? 96 : 156, height: isMobile ? 96 : 156, borderRadius: 14, overflow: "hidden", background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+                      {avatarPreview
+                        ? <img src={avatarPreview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #F5A623, #e8920e)" }}>
+                            <span style={{ fontSize: 52, fontWeight: 900, color: "#000" }}>{(form.nome || user?.nome || "?")[0]?.toUpperCase()}</span>
+                          </div>
+                      }
+                      <button type="button" onClick={() => fileRef.current?.click()}
+                        style={{ position: "absolute", bottom: 8, right: 8, width: 28, height: 28, borderRadius: "50%", background: "#F5A623", border: "2px solid #131313", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Camera size={13} color="#000" />
+                      </button>
+                    </div>
                     <button type="button" onClick={() => fileRef.current?.click()}
-                      style={{ position: "absolute", bottom: 8, right: 8, width: 28, height: 28, borderRadius: "50%", background: "#F5A623", border: "2px solid #131313", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Camera size={13} color="#000" />
+                      style={{ width: isMobile ? "auto" : 156, flex: isMobile ? 1 : undefined, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", cursor: "pointer", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600 }}>
+                      <Upload size={12} /> Alterar foto
                     </button>
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", textAlign: "center", margin: 0, lineHeight: 1.6 }}>JPG, PNG ou WebP<br/>máx. 5 MB</p>
+                    <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} style={{ display: "none" }} />
                   </div>
-                  <button type="button" onClick={() => fileRef.current?.click()}
-                    style={{ width: isMobile ? "auto" : 156, flex: isMobile ? 1 : undefined, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", cursor: "pointer", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600 }}>
-                    <Upload size={12} /> Alterar foto
-                  </button>
-                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", textAlign: "center", margin: 0, lineHeight: 1.6 }}>JPG, PNG ou WebP<br/>máx. 5 MB</p>
-                  <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} style={{ display: "none" }} />
+
+                  {/* Coluna direita: campos */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <div>
+                      <label style={labelStyle}>Nome completo <span style={{ color: "#F5A623" }}>*</span></label>
+                      {iconField(<UserIcon size={14} />,
+                        <input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} placeholder="Ex: João Silva"
+                          style={{ ...inp, paddingLeft: 36, borderColor: errs.nome ? "#ef4444" : "rgba(255,255,255,0.08)" }} />, errs.nome)}
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 190px), 1fr))", gap: 10 }}>
+                      <div>
+                        <label style={labelStyle}>E-mail {!isEdit && <span style={{ color: "#F5A623" }}>*</span>}</label>
+                        {iconField(<Mail size={13} />,
+                          <input type="email" value={form.email} disabled={isEdit} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@exemplo.com"
+                            style={{ ...inp, paddingLeft: 34, opacity: isEdit ? 0.5 : 1, borderColor: errs.email ? "#ef4444" : "rgba(255,255,255,0.08)" }} />, errs.email)}
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Nome de usuário</label>
+                        {iconField(<AtSign size={13} />,
+                          <input value={form.usuario} onChange={e => setForm(f => ({ ...f, usuario: e.target.value.toLowerCase() }))} placeholder="Ex: joao.silva"
+                            style={{ ...inp, paddingLeft: 34 }} />)}
+                      </div>
+                    </div>
+                    {!isEdit && (
+                      <div>
+                        <label style={labelStyle}>Senha <span style={{ color: "#F5A623" }}>*</span></label>
+                        <PasswordInput value={form.senha} onChange={v => setForm(f => ({ ...f, senha: v }))} placeholder="Mínimo 8 caracteres" />
+                        {errs.senha && <p style={{ color: "#ef4444", fontSize: 11, marginTop: 4 }}>{errs.senha}</p>}
+                      </div>
+                    )}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 190px), 1fr))", gap: 10 }}>
+                      <div>
+                        <label style={labelStyle}>Telefone</label>
+                        {iconField(<Phone size={13} />,
+                          <input value={form.telefone} maxLength={15}
+                            onChange={e => { const d = e.target.value.replace(/\D/g, "").slice(0,11); let m=d; if(d.length>0)m=`(${d.slice(0,2)}`; if(d.length>2)m+=`) ${d.slice(2,7)}`; if(d.length>7)m+=`-${d.slice(7,11)}`; setForm(f=>({...f,telefone:m})); }}
+                            placeholder="(11) 99999-9999" style={{ ...inp, paddingLeft: 34 }} />)}
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Perfil de acesso</label>
+                        <Select
+                          value={form.role}
+                          onChange={(v) => setForm(f => ({ ...f, role: v as "admin" | "funcionario" }))}
+                          options={[
+                            { value: "funcionario", label: "Funcionário" },
+                            { value: "admin", label: "Administrador" },
+                          ]}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Coluna direita: campos */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  <div>
-                    <label style={labelStyle}>Nome completo <span style={{ color: "#F5A623" }}>*</span></label>
-                    {iconField(<UserIcon size={14} />,
-                      <input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} placeholder="Ex: João Silva"
-                        style={{ ...inp, paddingLeft: 36, borderColor: errs.nome ? "#ef4444" : "rgba(255,255,255,0.08)" }} />, errs.nome)}
+                {/* Permissões card */}
+                <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 12, background: "rgba(245,166,35,0.04)", border: "1px solid rgba(245,166,35,0.12)" }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Shield size={18} color="#F5A623" />
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 190px), 1fr))", gap: 10 }}>
-                    <div>
-                      <label style={labelStyle}>E-mail {!isEdit && <span style={{ color: "#F5A623" }}>*</span>}</label>
-                      {iconField(<Mail size={13} />,
-                        <input type="email" value={form.email} disabled={isEdit} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@exemplo.com"
-                          style={{ ...inp, paddingLeft: 34, opacity: isEdit ? 0.5 : 1, borderColor: errs.email ? "#ef4444" : "rgba(255,255,255,0.08)" }} />, errs.email)}
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Nome de usuário</label>
-                      {iconField(<AtSign size={13} />,
-                        <input value={form.usuario} onChange={e => setForm(f => ({ ...f, usuario: e.target.value.toLowerCase() }))} placeholder="Ex: joao.silva"
-                          style={{ ...inp, paddingLeft: 34 }} />)}
-                    </div>
-                  </div>
-                  {!isEdit && (
-                    <div>
-                      <label style={labelStyle}>Senha <span style={{ color: "#F5A623" }}>*</span></label>
-                      <PasswordInput value={form.senha} onChange={v => setForm(f => ({ ...f, senha: v }))} placeholder="Mínimo 8 caracteres" />
-                      {errs.senha && <p style={{ color: "#ef4444", fontSize: 11, marginTop: 4 }}>{errs.senha}</p>}
-                    </div>
-                  )}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 190px), 1fr))", gap: 10 }}>
-                    <div>
-                      <label style={labelStyle}>Telefone</label>
-                      {iconField(<Phone size={13} />,
-                        <input value={form.telefone} maxLength={15}
-                          onChange={e => { const d = e.target.value.replace(/\D/g, "").slice(0,11); let m=d; if(d.length>0)m=`(${d.slice(0,2)}`; if(d.length>2)m+=`) ${d.slice(2,7)}`; if(d.length>7)m+=`-${d.slice(7,11)}`; setForm(f=>({...f,telefone:m})); }}
-                          placeholder="(11) 99999-9999" style={{ ...inp, paddingLeft: 34 }} />)}
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Perfil de acesso</label>
-                      <Select
-                        value={form.role}
-                        onChange={(v) => setForm(f => ({ ...f, role: v as "admin" | "funcionario" }))}
-                        options={[
-                          { value: "funcionario", label: "Funcionário" },
-                          { value: "admin", label: "Administrador" },
-                        ]}
-                      />
-                    </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", margin: 0 }}>Permissões de acesso</p>
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", margin: "2px 0 0" }}>
+                      {form.role === "admin" ? "Este perfil tem acesso total ao sistema." : "Este perfil possui acesso limitado às áreas do sistema."}
+                    </p>
                   </div>
                 </div>
+
+                {form.role === "admin" && (
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 12px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.15)", borderRadius: 10, marginTop: 10 }}>
+                    <AlertTriangle size={14} color="#F5A623" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <p style={{ fontSize: 11, color: "rgba(245,166,35,0.9)", lineHeight: 1.5, margin: 0 }}>Administradores têm acesso total ao sistema, incluindo dados financeiros e gerenciamento de usuários.</p>
+                  </div>
+                )}
               </div>
-
-              {/* Permissões card */}
-              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 12, background: "rgba(245,166,35,0.04)", border: "1px solid rgba(245,166,35,0.12)" }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Shield size={18} color="#F5A623" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", margin: 0 }}>Permissões de acesso</p>
-                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", margin: "2px 0 0" }}>
-                    {form.role === "admin" ? "Este perfil tem acesso total ao sistema." : "Este perfil possui acesso limitado às áreas do sistema."}
-                  </p>
-                </div>
-
-              </div>
-
-              {form.role === "admin" && (
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 12px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.15)", borderRadius: 10, marginTop: 10 }}>
-                  <AlertTriangle size={14} color="#F5A623" style={{ flexShrink: 0, marginTop: 1 }} />
-                  <p style={{ fontSize: 11, color: "rgba(245,166,35,0.9)", lineHeight: 1.5, margin: 0 }}>Administradores têm acesso total ao sistema, incluindo dados financeiros e gerenciamento de usuários.</p>
-                </div>
-              )}
             </div>
-
-          </div>{/* end modal-body */}
 
             {/* Footer — flex-shrink:0, always visible */}
             <div className="modal-footer" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "#131313", padding: isMobileOrTablet ? "14px 16px" : "16px 24px" }}>
