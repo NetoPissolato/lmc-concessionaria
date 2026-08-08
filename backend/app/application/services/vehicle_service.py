@@ -101,6 +101,7 @@ class VehicleService:
             )
 
         # Track changes for audit
+        old_valor_compra = vehicle.valor_compra
         old_data = {
             k: str(getattr(vehicle, k)) if getattr(vehicle, k) is not None else None
             for k in data.model_dump(exclude_none=True).keys()
@@ -108,6 +109,35 @@ class VehicleService:
 
         update_data = data.model_dump(exclude_none=True)
         updated = await self.vehicle_repo.update(vehicle, **update_data)
+
+        # Sync financial entry if valor_compra changed
+        if "valor_compra" in update_data:
+            new_valor = update_data["valor_compra"]
+            from sqlalchemy import select
+            from app.domain.models.financial import FinancialEntry
+            result = await self.db.execute(
+                select(FinancialEntry).where(
+                    FinancialEntry.vehicle_id == vehicle_id,
+                    FinancialEntry.categoria == FinancialCategory.COMPRA_VEICULO,
+                )
+            )
+            existing_entry = result.scalar_one_or_none()
+
+            if existing_entry:
+                if new_valor and new_valor > 0:
+                    existing_entry.valor = new_valor
+                else:
+                    await self.db.delete(existing_entry)
+            elif new_valor and new_valor > 0:
+                await self.financial_repo.create(
+                    tipo=EntryType.SAIDA,
+                    categoria=FinancialCategory.COMPRA_VEICULO,
+                    descricao=f"Compra de veículo — {vehicle.marca} {vehicle.modelo} {vehicle.ano} ({vehicle.placa})",
+                    valor=new_valor,
+                    data=vehicle.data_compra,
+                    vehicle_id=vehicle_id,
+                    created_by=updated_by,
+                )
 
         await self.audit_repo.log(
             usuario_id=updated_by,

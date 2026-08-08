@@ -157,12 +157,28 @@ async def update_expense(
     db: AsyncSession = Depends(get_db),
     _user: dict = Depends(get_current_user_payload),
 ):
-    """Update an existing expense."""
+    """Update an existing expense and sync with financial ledger."""
     repo = ExpenseRepository(db)
     expense = await repo.get_by_id_for_vehicle(expense_id, vehicle_id)
     if not expense:
         raise HTTPException(status_code=404, detail="Despesa não encontrada")
     updated = await repo.update_expense(expense, **body.model_dump(exclude_none=True))
+
+    # Sync financial entry if exists
+    from sqlalchemy import select as sql_select
+    result = await db.execute(
+        sql_select(FinancialEntry).where(FinancialEntry.expense_id == expense_id)
+    )
+    fin_entry = result.scalar_one_or_none()
+    if fin_entry:
+        update_fields = body.model_dump(exclude_none=True)
+        if "valor" in update_fields:
+            fin_entry.valor = update_fields["valor"]
+        if "data" in update_fields:
+            fin_entry.data = update_fields["data"]
+        if "descricao" in update_fields:
+            fin_entry.descricao = f"{update_fields.get('descricao', fin_entry.descricao)}"
+
     await db.commit()
     return updated
 
