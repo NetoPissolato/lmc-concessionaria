@@ -110,7 +110,12 @@ class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
     # Relationships
     expenses = relationship("VehicleExpense", back_populates="vehicle", cascade="all, delete-orphan")
     photos = relationship("VehiclePhoto", back_populates="vehicle", cascade="all, delete-orphan", order_by="VehiclePhoto.ordem")
-    sale = relationship("Sale", back_populates="vehicle", uselist=False)
+    sale = relationship(
+        "Sale",
+        back_populates="vehicle",
+        uselist=True,
+        order_by="Sale.created_at.desc()",  # mais recente primeiro
+    )
     creator = relationship("User", foreign_keys=[created_by])
 
     # ─── Computed financial properties ───────────────────────────────────────────

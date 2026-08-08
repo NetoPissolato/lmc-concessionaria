@@ -456,7 +456,12 @@ async def report_lucratividade(
 
     rows = []
     for v in vehicles:
-        sale_dt = v.sale.data_venda if v.sale else None
+        # sale = venda mais relevante (concluida tem prioridade; senão a mais recente)
+        sale = next((s for s in v.sale if s.status.value == "concluida"), None)
+        if sale is None:
+            sale = v.sale[0] if v.sale else None
+
+        sale_dt        = sale.data_venda if sale else None
         if not _in_period(sale_dt, di, df):
             continue
 
@@ -468,7 +473,6 @@ async def report_lucratividade(
         tipo_val    = v.tipo.value if hasattr(v.tipo, "value") else str(v.tipo)
 
         # Dados do comprador/venda
-        sale    = v.sale
         cliente_nome   = sale.cliente.nome     if sale and sale.cliente  else "—"
         cliente_tel    = sale.cliente.telefone if sale and sale.cliente  else "—"
         vendedor_nome  = sale.vendedor.nome    if sale and sale.vendedor else "—"
