@@ -309,29 +309,36 @@ export default function DashboardPage() {
           position: "relative",
           borderRadius: "20px",
           overflow: "hidden",
-          height: "clamp(130px, 18vw, 200px)",
-          background: "#060606",
-          border: "1px solid rgba(245,166,35,0.15)",
+          height: "clamp(160px, 20vw, 240px)",
+          background: "linear-gradient(135deg, #0c0905 0%, #060606 45%, #070a06 100%)",
+          border: "1px solid rgba(245,166,35,0.2)",
         }}
       >
-        {/* Imagem de fundo */}
-        <img
-          src="/BANNERHERO.png"
-          alt="Banner"
-          style={{
-            position: "absolute", inset: 0,
-            width: "100%", height: "100%",
-            objectFit: "cover", objectPosition: "center",
-            opacity: 0.55,
-          }}
-        />
-        {/* Overlay escuro centralizado */}
+        {/* Subtle grid background */}
         <div style={{
           position: "absolute", inset: 0,
-          background: "radial-gradient(ellipse at center, rgba(6,6,6,0.3) 0%, rgba(6,6,6,0.75) 100%)",
+          backgroundImage: "linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
         }} />
 
-        {/* Linha de acento top */}
+        {/* Radial glow center */}
+        <motion.div
+          animate={{ opacity: [0.4, 0.8, 0.4] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute", inset: 0,
+            background: "radial-gradient(ellipse 60% 80% at 50% 50%, rgba(245,166,35,0.18) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Corner decorations */}
+        <div style={{ position: "absolute", top: 16, left: 20, width: 40, height: 40, borderTop: "1.5px solid rgba(245,166,35,0.35)", borderLeft: "1.5px solid rgba(245,166,35,0.35)", borderRadius: "4px 0 0 0" }} />
+        <div style={{ position: "absolute", top: 16, right: 20, width: 40, height: 40, borderTop: "1.5px solid rgba(245,166,35,0.35)", borderRight: "1.5px solid rgba(245,166,35,0.35)", borderRadius: "0 4px 0 0" }} />
+        <div style={{ position: "absolute", bottom: 16, left: 20, width: 40, height: 40, borderBottom: "1.5px solid rgba(245,166,35,0.35)", borderLeft: "1.5px solid rgba(245,166,35,0.35)", borderRadius: "0 0 0 4px" }} />
+        <div style={{ position: "absolute", bottom: 16, right: 20, width: 40, height: 40, borderBottom: "1.5px solid rgba(245,166,35,0.35)", borderRight: "1.5px solid rgba(245,166,35,0.35)", borderRadius: "0 0 4px 0" }} />
+
+        {/* Linha de acento top animada */}
         <motion.div
           animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
           transition={{ duration: 4, repeat: Infinity }}
@@ -352,16 +359,16 @@ export default function DashboardPage() {
           position: "absolute", inset: 0,
           display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center",
-          gap: "10px",
+          gap: "12px",
         }}>
           {/* Glow de fundo pulsante */}
           <motion.div
-            animate={{ opacity: [0.3, 0.7, 0.3], scale: [1, 1.15, 1] }}
+            animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.2, 1] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             style={{
               position: "absolute",
-              width: "260px", height: "160px",
-              background: "radial-gradient(ellipse, rgba(245,166,35,0.22) 0%, transparent 70%)",
+              width: "320px", height: "200px",
+              background: "radial-gradient(ellipse, rgba(245,166,35,0.25) 0%, transparent 70%)",
               pointerEvents: "none",
             }}
           />
@@ -373,33 +380,36 @@ export default function DashboardPage() {
             transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}
           >
-            {/* Anel decorativo atrás */}
+            {/* Anel decorativo externo */}
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               style={{
                 position: "absolute",
-                width: "160px", height: "160px",
+                width: "clamp(140px, 18vw, 220px)", height: "clamp(140px, 18vw, 220px)",
                 borderRadius: "50%",
-                border: "1px solid rgba(245,166,35,0.18)",
-                borderTopColor: "rgba(245,166,35,0.6)",
+                border: "1px solid rgba(245,166,35,0.15)",
+                borderTopColor: "rgba(245,166,35,0.55)",
+                borderRightColor: "rgba(245,166,35,0.3)",
                 pointerEvents: "none",
               }}
             />
+            {/* Anel decorativo interno */}
             <motion.div
               animate={{ rotate: -360 }}
-              transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
               style={{
                 position: "absolute",
-                width: "120px", height: "120px",
+                width: "clamp(100px, 13vw, 160px)", height: "clamp(100px, 13vw, 160px)",
                 borderRadius: "50%",
-                border: "1px dashed rgba(245,166,35,0.12)",
-                borderBottomColor: "rgba(245,166,35,0.35)",
+                border: "1px dashed rgba(245,166,35,0.1)",
+                borderBottomColor: "rgba(245,166,35,0.4)",
+                borderLeftColor: "rgba(245,166,35,0.25)",
                 pointerEvents: "none",
               }}
             />
 
-            {/* Logo image - sem container branco, filter faz white bg desaparecer no dark */}
+            {/* Logo image */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -408,18 +418,18 @@ export default function DashboardPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                filter: "drop-shadow(0 0 20px rgba(245,166,35,0.35))",
+                filter: "drop-shadow(0 0 30px rgba(245,166,35,0.5))",
               }}
             >
               <img
                 src="/LogoLMC.png"
                 alt="LMC Veículos"
                 style={{
-                  height: "clamp(50px, 8vw, 110px)",
+                  height: "clamp(80px, 12vw, 160px)",
                   width: "auto",
                   objectFit: "contain",
                   display: "block",
-                  filter: "invert(1) hue-rotate(180deg) drop-shadow(0 4px 20px rgba(245,166,35,0.5))",
+                  filter: "invert(1) hue-rotate(180deg) drop-shadow(0 4px 24px rgba(245,166,35,0.6)) brightness(1.1)",
                 }}
               />
             </motion.div>
@@ -433,13 +443,13 @@ export default function DashboardPage() {
             style={{
               fontSize: "11px",
               fontWeight: "700",
-              letterSpacing: "0.22em",
+              letterSpacing: "0.28em",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.45)",
-              marginTop: "2px",
+              color: "rgba(255,255,255,0.4)",
+              marginTop: "4px",
             }}
           >
-            Concessionária · Sistema de Gestão
+            Concession&#225;ria &middot; Sistema de Gest&#227;o
           </motion.p>
 
           {/* Ponto online */}
