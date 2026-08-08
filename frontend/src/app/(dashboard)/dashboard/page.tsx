@@ -232,7 +232,10 @@ export default function DashboardPage() {
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ["dashboard", year, month],
     queryFn: () => salesApi.getDashboard(year, month),
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const user      = authApi.getUser();
