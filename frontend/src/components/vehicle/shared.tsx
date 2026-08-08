@@ -149,14 +149,19 @@ export function buildWhatsAppVehicleUrl(v: {
     : null;
   const titulo = v.versao ? `${v.marca} ${v.modelo} - ${v.versao}` : `${v.marca} ${v.modelo}`;
   const lines = [
-    `🚗 *${titulo} ${v.ano}*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
+    `🏎️ *LMC Concessionária*`,
+    ``,
+    `Olá! Temos um veículo incrível esperando por você:`,
+    ``,
+    `*${titulo} ${v.ano}*`,
     `🎨 Cor: ${v.cor}`,
     `📍 KM: ${km} km`,
     v.placa ? `🔖 Placa: ${v.placa}` : null,
-    val ? `💰 Valor: *${val}*` : null,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `Ficou interessado? Entre em contato conosco! 😊`,
+    val ? `💲 Valor: *${val}*` : null,
+    ``,
+    `Ficou interessado? Responda essa mensagem ou venha nos visitar! 😊`,
+    ``,
+    `_LMC Concessionária — Qualidade e confiança em cada negócio._`,
   ].filter(l => l !== null).join("\n");
 
   // Se tiver telefone do cliente, abre conversa direta; senão abre link de compartilhamento
