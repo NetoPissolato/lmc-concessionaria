@@ -270,13 +270,15 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
     <AnimatePresence>
       <motion.div key="backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
-        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", backdropFilter: "blur(8px)", zIndex: 9000, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", padding: isMobile ? "0" : "16px" }}>
+        className="modal-overlay"
+        style={{ zIndex: 9000 }}>
         <motion.div initial={{ opacity: 0, scale: 0.95, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 14 }}
           transition={{ duration: 0.22 }} onClick={e => e.stopPropagation()}
-          style={{ background: "#131313", border: "1px solid rgba(255,255,255,0.08)", borderRadius: isMobile ? "20px 20px 0 0" : "20px", width: "100%", maxWidth: isMobile ? "100%" : "660px", boxShadow: "0 28px 90px rgba(0,0,0,0.75)", maxHeight: isMobile ? "92dvh" : "90dvh", overflowY: "auto", overflowX: "hidden" }}>
+          className="modal-card modal-card-lg"
+          style={{ background: "#131313", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 28px 90px rgba(0,0,0,0.75)" }}>
 
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          {/* Header — flex-shrink:0, always visible */}
+          <div className="modal-header" style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)", gap: 14 }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg, #F5A623, #e8920e)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <UserCog size={20} color="#000" strokeWidth={2.5} />
             </div>
@@ -284,10 +286,13 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
               <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", margin: 0, letterSpacing: "-0.3px" }}>{isEdit ? "Editar Funcionário" : "Novo Funcionário"}</h2>
               <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", margin: "2px 0 0" }}>{isEdit ? "Atualize as informações do funcionário" : "Preencha os dados do novo funcionário"}</p>
             </div>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.5)" }}>
-              <X size={14} />
+            <button onClick={onClose} className="modal-close-btn">
+              <X size={16} />
             </button>
           </div>
+
+          {/* Body — ONLY this part scrolls */}
+          <div className="modal-body">
 
           {/* Body */}
           <form onSubmit={handleSubmit}>
@@ -392,14 +397,16 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
               )}
             </div>
 
-            {/* Footer */}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: isMobileOrTablet ? "14px 16px" : "16px 24px", borderTop: "1px solid rgba(255,255,255,0.06)", flexWrap: "wrap" }}>
+          </div>{/* end modal-body */}
+
+            {/* Footer — flex-shrink:0, always visible */}
+            <div className="modal-footer" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "#131313", padding: isMobileOrTablet ? "14px 16px" : "16px 24px" }}>
               <button type="button" onClick={onClose}
-                style={{ padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer", color: "rgba(255,255,255,0.65)", flex: isMobile ? 1 : undefined }}>
+                style={{ padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer", color: "rgba(255,255,255,0.65)", flex: isMobile ? 1 : undefined, minHeight: 44 }}>
                 Cancelar
               </button>
               <button type="submit" disabled={loading}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 800, background: "linear-gradient(135deg, #F5A623, #e8920e)", color: "#000", border: "none", cursor: loading ? "wait" : "pointer", opacity: loading ? 0.7 : 1 }}>
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 800, background: "linear-gradient(135deg, #F5A623, #e8920e)", color: "#000", border: "none", cursor: loading ? "wait" : "pointer", opacity: loading ? 0.7 : 1, minHeight: 44 }}>
                 {loading ? "Salvando…" : isEdit ? "Salvar alterações" : "Criar funcionário"}
                 {!loading && <Check size={14} strokeWidth={2.5} />}
               </button>

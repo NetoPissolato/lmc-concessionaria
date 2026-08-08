@@ -3051,3 +3051,225 @@ img { max-width: 100%; height: auto; }
   .kpi-strip > * { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
   .kpi-strip > *:last-child { border-bottom: none !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SISTEMA GLOBAL DE MODAL — padrão correto para todos os dispositivos
+   ══════════════════════════════════════════════════════════════════════════════
+   
+   COMO USAR:
+   <div class="modal-overlay">          ← overlay: flex, overflow hidden
+     <div class="modal-card">           ← card: flex-column, max-height
+       <div class="modal-header">       ← header: flex-shrink 0, sempre visível
+       <div class="modal-body">         ← body: flex 1, SÓ AQUI rola
+       <div class="modal-footer">       ← footer: flex-shrink 0, sempre visível
+   
+   Regra de ouro: NUNCA colocar overflow-y no overlay ou no card.
+   SEMPRE colocar overflow-y: auto SOMENTE no .modal-body
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Overlay: cobre tela toda, centraliza card, nunca rola ────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* CRÍTICO: overflow hidden — o overlay NUNCA deve rolar */
+  overflow: hidden;
+  padding: 16px;
+  /* Safe area para iPhones com notch/Dynamic Island */
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* Mobile: card sobe da parte inferior (sheet-style) */
+@media (max-width: 639px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+}
+
+/* ── Card: container do modal com altura máxima ─────────────────────────── */
+.modal-card {
+  width: 100%;
+  max-width: 600px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  /* CRÍTICO: flex-column para que header/footer fiquem fixos */
+  display: flex;
+  flex-direction: column;
+  /* Altura máxima: 95% da viewport dinâmica */
+  max-height: min(calc(100dvh - 32px - env(safe-area-inset-bottom, 0px)), 800px);
+  overflow: hidden; /* card nunca rola — somente .modal-body rola */
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* Mobile: borda arredondada só no topo (bottom-sheet) */
+@media (max-width: 639px) {
+  .modal-card {
+    border-radius: 20px 20px 0 0;
+    max-width: 100%;
+    max-height: 92dvh;
+    border-bottom: none;
+  }
+}
+
+/* Card largo (ex: confirmações de exclusão, uploads) */
+.modal-card-sm { max-width: 420px; }
+.modal-card-lg { max-width: 760px; }
+.modal-card-xl { max-width: 1000px; }
+
+/* ── Header: SEMPRE visível, nunca some ao rolar ─────────────────────────── */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  /* flex-shrink 0 garante que o header nunca some */
+  flex-shrink: 0;
+  background: var(--surface);
+}
+
+@media (max-width: 639px) {
+  .modal-header { padding: 16px; }
+}
+
+/* Botão X de fechar padronizado */
+.modal-close-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* ── Body: ÚNICA parte que rola ──────────────────────────────────────────── */
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* scrollbar fina e discreta */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+.modal-body::-webkit-scrollbar { width: 4px; }
+.modal-body::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+
+/* Padding padrão do corpo */
+.modal-body-pad { padding: 22px; }
+@media (max-width: 639px) { .modal-body-pad { padding: 16px; } }
+
+/* ── Footer: SEMPRE visível, nunca some ao rolar ─────────────────────────── */
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+  background: var(--surface);
+}
+
+@media (max-width: 639px) {
+  .modal-footer {
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  /* Footer empilhado em coluna em mobile */
+  .modal-footer-col {
+    flex-direction: column-reverse;
+  }
+  .modal-footer-col .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Formulário dentro do modal-body ─────────────────────────────────────── */
+/* Grade responsiva 2 colunas → 1 coluna em mobile */
+.modal-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 22px;
+}
+@media (max-width: 639px) {
+  .modal-form-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px;
+  }
+}
+/* Span coluna inteira */
+.modal-form-full { grid-column: 1 / -1; }
+
+/* ── Inputs em modais: tamanho mínimo de toque ─────────────────────────── */
+.modal-body .input,
+.modal-body select,
+.modal-body textarea {
+  min-height: 44px;
+  font-size: clamp(13px, 3.5vw, 15px);
+}
+.modal-body textarea { min-height: 80px; }
+
+/* ── Divider dentro do formulário ────────────────────────────────────────── */
+.modal-divider {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 4px 0;
+}
+
+/* ── Overlay fullscreen (perfil de cliente, etc.) ────────────────────────── */
+/* Para páginas que abrem em tela cheia ao invés de card centrado */
+.modal-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
+}
+/* Barra de navegação sticky dentro do fullscreen */
+.modal-fullscreen-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
