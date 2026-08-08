@@ -2570,3 +2570,190 @@ body.modal-open {
 @media (max-width: 1024px) {
   .btn:not(.compact), button.btn-primary, button.btn-secondary { min-height: 44px; }
 }
+
+/* ======================================================================
+   REGRAS GLOBAIS AUTOMÁTICAS — aplica em toda a app sem mudar por pagina
+====================================================================== */
+
+/* Todo botão de ação com ícone + texto — alinhamento garantido */
+button, .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Grupos de botões próximos — nunca quebram o layout */
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Cards de informação em grid 2 colunas — empilha em mobile */
+.info-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 639px) {
+  .info-grid-2 { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* Rows que tem info à esquerda e ação à direita */
+.between-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Lista de campos label+value */
+.field-list { display: flex; flex-direction: column; gap: 8px; }
+.field-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.field-item__label {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.field-item__value {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  min-width: 0;
+  word-break: break-word;
+}
+
+/* Garantir que texto dentro de qualquer flex item nao estoure */
+.flex-col-safe {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.flex-row-safe {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.flex-row-safe > * { min-width: 0; }
+
+/* Overflow seguro para qualquer container flex */
+.flex-1-safe { flex: 1; min-width: 0; }
+
+/* Header de modal/seção com título e botão fechar */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.modal-header__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 0;
+}
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+@media (max-width: 479px) {
+  .modal-footer { flex-direction: column-reverse; }
+  .modal-footer > * { width: 100%; justify-content: center; }
+  .modal-header { padding: 14px 16px; }
+}
+
+/* Paginação responsiva */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.pagination__btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pagination__btn:hover { border-color: var(--brand); color: var(--brand); }
+.pagination__btn--active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #000;
+}
+@media (max-width: 479px) {
+  .pagination__btn { width: 32px; height: 32px; font-size: 11px; }
+}
+
+/* Badge de status genérico */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Divider com texto no meio */
+.divider-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.divider-text::before,
+.divider-text::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Garantir min-width 0 em todo td/th */
+td, th { min-width: 0; }
+
+/* Imagens responsivas por padrão */
+img { max-width: 100%; height: auto; }
+
+/* Scroll suave horizontal em containers de abas ou chips */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.scroll-x::-webkit-scrollbar { display: none; }
+.scroll-x > * { flex-shrink: 0; }
