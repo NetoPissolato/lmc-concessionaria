@@ -823,7 +823,7 @@ input[type="number"] { -moz-appearance: textfield; }
   gap: clamp(10px, 2.5vw, 20px);
   flex-wrap: nowrap;
 }
-@media (max-width: 479px) {
+@media (max-width: 1023px) {
   .hero-chips { display: none; }
 }
 
@@ -1369,8 +1369,8 @@ input[type="number"] { -moz-appearance: textfield; }
   flex-wrap: wrap;
 }
 
-/* Hide chips on very small screens — banner is already short */
-@media (max-width: 480px) {
+/* Hide chips on tablet and below — banner is short and chips overflow */
+@media (max-width: 1023px) {
   .hero-chips { display: none; }
 }
 
@@ -1876,7 +1876,7 @@ input[type="number"] { -moz-appearance: textfield; }
   flex-wrap: wrap;
   align-items: center;
 }
-@media (max-width: 479px) {
+@media (max-width: 1023px) {
   .hero-chips { display: none; }
 }
 

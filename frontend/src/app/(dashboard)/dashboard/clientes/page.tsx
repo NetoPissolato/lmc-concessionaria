@@ -515,7 +515,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
                   <Mail size={13} color="#F5A623" />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "clamp(160px, 22vw, 260px)", display: "block" }}>{customer.email}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "clamp(140px, 20vw, 240px)", display: "block", whiteSpace: "nowrap" }}>{customer.email}</span>
                 </div>
                 <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>E-mail</p>
                 <a

@@ -349,7 +349,7 @@ export default function VeiculosPage() {
         <img src="/BANNERHERO.png" alt="Banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center right", opacity: 0.7 }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(6,6,6,0.96) 30%, rgba(6,6,6,0.4) 70%, rgba(6,6,6,0.1) 100%)" }} />
         <div style={{ position: "relative", zIndex: 1, padding: "clamp(16px,4vw,32px) clamp(16px,4vw,36px)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          <div style={{ paddingRight: "clamp(120px, 30%, 170px)" }}>
+          <div style={{ paddingRight: "clamp(80px, 20%, 150px)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
               <Car size={13} color={accent} strokeWidth={2} />
               <p style={{ fontSize: "11px", fontWeight: "700", color: accent, letterSpacing: "0.12em", textTransform: "uppercase" }}>Painel de Estoque - Carros</p>
