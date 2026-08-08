@@ -58,6 +58,18 @@ class VehicleService:
             status=VehicleStatus.DISPONIVEL,
         )
 
+        # Create financial entry for vehicle purchase (SAIDA) — only if valor_compra > 0
+        if vehicle.valor_compra and vehicle.valor_compra > 0:
+            await self.financial_repo.create(
+                tipo=EntryType.SAIDA,
+                categoria=FinancialCategory.COMPRA_VEICULO,
+                descricao=f"Compra de veículo — {vehicle.marca} {vehicle.modelo} {vehicle.ano} ({vehicle.placa})",
+                valor=vehicle.valor_compra,
+                data=vehicle.data_compra,
+                vehicle_id=vehicle.id,
+                created_by=created_by,
+            )
+
         await self.audit_repo.log(
             usuario_id=created_by,
             acao="CREATE",
@@ -123,6 +135,13 @@ class VehicleService:
                 status_code=400,
                 detail="Não é possível excluir um veículo vendido.",
             )
+
+        # Remove all financial entries linked to this vehicle (purchase, expenses, fines)
+        from sqlalchemy import delete as sql_delete
+        from app.domain.models.financial import FinancialEntry
+        await self.db.execute(
+            sql_delete(FinancialEntry).where(FinancialEntry.vehicle_id == vehicle_id)
+        )
 
         await self.vehicle_repo.soft_delete(vehicle, deleted_by)
 

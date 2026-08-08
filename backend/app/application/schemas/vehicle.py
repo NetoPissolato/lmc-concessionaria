@@ -21,7 +21,7 @@ class VehicleCreate(BaseModel):
     placa: str
     chassi: str
     renavam: Optional[str] = None
-    valor_compra: Decimal
+    valor_compra: Decimal = Decimal("0")
     valor_multas: Decimal = Decimal("0")
     data_compra: date
     vendedor_nome: Optional[str] = None
@@ -59,8 +59,8 @@ class VehicleCreate(BaseModel):
     @field_validator("valor_compra")
     @classmethod
     def valid_price(cls, v: Decimal) -> Decimal:
-        if v <= 0:
-            raise ValueError("Valor de compra deve ser maior que zero")
+        if v < 0:
+            raise ValueError("Valor de compra não pode ser negativo")
         return v
 
 
