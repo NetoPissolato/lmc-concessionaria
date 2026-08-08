@@ -422,6 +422,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
   const fmtDateSale = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("pt-BR");
 
   return (
+    /* The profile overlay fills the whole screen and scrolls normally */
     <motion.div
       key="profile-overlay"
       initial={{ opacity: 0 }}
@@ -430,23 +431,33 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
       transition={{ duration: 0.18 }}
       style={{
         position: "fixed", inset: 0, zIndex: 9000,
-        background: "rgba(0,0,0,0.92)",
+        background: "rgba(0,0,0,0.96)",
         backdropFilter: "blur(12px)",
         overflowY: "auto",
-        padding: "24px",
+        WebkitOverflowScrolling: "touch" as "touch",
+        padding: "16px",
+        paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
       }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, paddingBottom: 40 }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
 
-        {/* -- Top bar -- */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+        {/* -- Top bar: sticky so it's always visible -- */}
+        <div style={{
+          position: "sticky", top: 0, zIndex: 10,
+          background: "rgba(0,0,0,0.85)",
+          backdropFilter: "blur(8px)",
+          borderRadius: 12,
+          padding: "10px 0",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+        }}>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onClose}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", borderRadius: 10, color: "#F5A623", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", borderRadius: 10, color: "#F5A623", fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
             Voltar para clientes
           </motion.button>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onEdit}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>
             <Edit size={13} /> Editar Cliente
           </motion.button>
         </div>
@@ -896,10 +907,13 @@ function CustomerModal({ customer, onClose, onSuccess }: {
         position: "fixed", inset: 0, zIndex: 9100,
         background: "rgba(0,0,0,0.82)",
         backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-        display: "flex", alignItems: "flex-start", justifyContent: "center",
-        overflowY: "auto", WebkitOverflowScrolling: "touch" as "touch",
-        padding: "16px 16px calc(16px + env(safe-area-inset-bottom, 64px))",
-      }}>
+        display: "flex", alignItems: "center", justifyContent: "center",
+        overflow: "hidden",
+        padding: "16px",
+        paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <motion.div
         initial={{ scale: 0.94, opacity: 0, y: 16 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -909,46 +923,53 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           width: "100%", maxWidth: "600px",
           background: "var(--surface)", border: "1px solid rgba(255,255,255,0.09)",
           borderRadius: "18px", overflow: "hidden",
-          maxHeight: "calc(100dvh - 32px - env(safe-area-inset-bottom, 64px))",
+          maxHeight: "min(calc(100dvh - 32px - env(safe-area-inset-bottom, 0px)), 760px)",
           display: "flex", flexDirection: "column",
           boxShadow: "0 40px 100px rgba(0,0,0,0.8)",
-          marginTop: "auto", marginBottom: "auto",
         }}
       >
         <div style={{
           padding: "18px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)",
-          display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexShrink: 0,
+          background: "var(--surface)",
         }}>
           <div>
-            <h2 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>
               {customer ? "Editar Cliente" : "Novo Cliente"}
             </h2>
-            <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "3px" }}>
               {customer ? "Atualize as informações do cliente" : "Preencha os dados do novo cliente"}
             </p>
           </div>
           <button onClick={onClose} style={{
-            width: "30px", height: "30px", borderRadius: "8px",
-            background: "rgba(255,255,255,0.06)", border: "none",
+            width: "36px", height: "36px", borderRadius: "10px",
+            background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)",
             cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-            color: "var(--text-muted)",
-          }}><X size={14} /></button>
+            color: "var(--text-muted)", flexShrink: 0,
+          }}><X size={16} /></button>
         </div>
 
+        <div style={{
+          flex: 1, overflowY: "auto",
+          WebkitOverflowScrolling: "touch" as "touch",
+        }}>
         <form onSubmit={handleSubmit} style={{
-          padding: isMobile ? "14px 14px" : "20px 22px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 240px), 1fr))",
-          gap: "14px", overflowY: "auto",
+          padding: isMobile ? "16px" : "22px",
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: "16px",
         }}>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Nome completo *</label>
             <input required value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })}
-              className="input" placeholder="Ex: João da Silva" />
+              className="input" placeholder="Ex: João da Silva" style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>CPF / CNPJ</label>
             <input value={form.cpf_cnpj}
               onChange={e => setForm({ ...form, cpf_cnpj: maskCPFOrCNPJ(e.target.value) })}
-              className="input" placeholder="000.000.000-00" inputMode="numeric" />
+              className="input" placeholder="000.000.000-00" inputMode="numeric" style={{ minHeight: 44 }} />
             {form.cpf_cnpj && unmask(form.cpf_cnpj).length === 11 && !validateCPF(form.cpf_cnpj) && (
               <p style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "11px", color: "var(--error)", marginTop: 4 }}>
                 <AlertCircle size={10} /> CPF inválido
@@ -963,17 +984,17 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           <div>
             <label style={lbl}>Email</label>
             <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-              className="input" placeholder="email@exemplo.com" />
+              className="input" placeholder="email@exemplo.com" style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>Telefone</label>
             <input value={form.telefone} onChange={e => setForm({ ...form, telefone: maskPhone(e.target.value) })}
-              className="input" placeholder="(00) 00000-0000" inputMode="tel" maxLength={15} />
+              className="input" placeholder="(00) 00000-0000" inputMode="tel" maxLength={15} style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>WhatsApp</label>
             <input value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: maskPhone(e.target.value) })}
-              className="input" placeholder="(00) 00000-0000" inputMode="tel" maxLength={15} />
+              className="input" placeholder="(00) 00000-0000" inputMode="tel" maxLength={15} style={{ minHeight: 44 }} />
           </div>
 
           <div style={isMobile ? {} : { gridColumn: "span 2", height: "1px", background: "rgba(255,255,255,0.06)" }} />
@@ -982,7 +1003,7 @@ function CustomerModal({ customer, onClose, onSuccess }: {
             <label style={lbl}>CEP</label>
             <div style={{ position: "relative" }}>
               <input value={form.cep} onChange={e => handleCEP(e.target.value)}
-                className="input" placeholder="00000-000" inputMode="numeric" maxLength={9} />
+                className="input" placeholder="00000-000" inputMode="numeric" maxLength={9} style={{ minHeight: 44 }} />
               {cepLoading && <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
                 <Loader2 size={13} color="var(--text-muted)" style={{ animation: "spin 1s linear infinite" }} />
               </span>}
@@ -996,37 +1017,41 @@ function CustomerModal({ customer, onClose, onSuccess }: {
             <label style={lbl}>Estado (UF)</label>
             <input value={form.estado}
               onChange={e => setForm({ ...form, estado: e.target.value.toUpperCase().slice(0, 2) })}
-              className="input" placeholder="SP" maxLength={2} />
+              className="input" placeholder="SP" maxLength={2} style={{ minHeight: 44 }} />
           </div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Logradouro e Bairro</label>
             <input value={form.rua} onChange={e => setForm({ ...form, rua: e.target.value })}
-              className="input" placeholder="Rua, Bairro (preenchido pelo CEP)" />
+              className="input" placeholder="Rua, Bairro (preenchido pelo CEP)" style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>Número</label>
             <input value={form.numero} onChange={e => setForm({ ...form, numero: e.target.value })}
-              className="input" placeholder="123" inputMode="numeric" />
+              className="input" placeholder="123" inputMode="numeric" style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>Complemento</label>
             <input value={form.complemento} onChange={e => setForm({ ...form, complemento: e.target.value })}
-              className="input" placeholder="Apto, Casa..." />
+              className="input" placeholder="Apto, Casa..." style={{ minHeight: 44 }} />
           </div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Cidade</label>
             <input value={form.cidade} onChange={e => setForm({ ...form, cidade: e.target.value })}
-              className="input" placeholder="Cidade" />
+              className="input" placeholder="Cidade" style={{ minHeight: 44 }} />
           </div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Observações</label>
             <textarea value={form.observacoes} onChange={e => setForm({ ...form, observacoes: e.target.value })}
-              className="input" rows={2} style={{ height: "auto", paddingTop: "8px" }}
+              className="input" rows={2} style={{ height: "auto", paddingTop: "8px", minHeight: 88 }}
               placeholder="Anotações sobre o cliente..." />
           </div>
-          <div style={{ ...(isMobile ? {} : { gridColumn: "span 2" }), display: "flex", gap: "10px", justifyContent: "flex-end", paddingTop: "4px" }}>
-            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancelar</button>
-            <motion.button type="submit" className="btn btn-primary" whileTap={{ scale: 0.97 }} disabled={loading}>
+          <div style={{
+            gridColumn: "1 / -1",
+            display: "flex", gap: "10px", justifyContent: "flex-end",
+            paddingTop: "12px", borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 4,
+          }}>
+            <button type="button" className="btn btn-secondary" onClick={onClose} style={{ minHeight: 44 }}>Cancelar</button>
+            <motion.button type="submit" className="btn btn-primary" whileTap={{ scale: 0.97 }} disabled={loading} style={{ minHeight: 44 }}>
               {loading
                 ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Salvando...</>
                 : <><Check size={13} /> {customer ? "Salvar alterações" : "Cadastrar"}</>
@@ -1034,8 +1059,8 @@ function CustomerModal({ customer, onClose, onSuccess }: {
             </motion.button>
           </div>
         </form>
+        </div>
       </motion.div>
     </motion.div>
   );
 }
-
