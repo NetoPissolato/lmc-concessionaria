@@ -772,7 +772,7 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
                     { label: `${p.vehicle.quilometragem.toLocaleString("pt-BR")} km` },
                   ].map(({ label, amber }, idx) => (
                     <span key={idx} style={{ fontSize: 11, color: amber ? "#F5A623" : "var(--text-muted)", fontWeight: amber ? 700 : 400 }}>
-                      {idx > 0 && <span style={{ marginRight: 12, opacity: 0.3 }}>Ã‚·</span>}
+                      {idx > 0 && <span style={{ marginRight: 6, marginLeft: 6, opacity: 0.3 }}>{"\u00B7"}</span>}
                       {label}
                     </span>
                   ))}
