@@ -2478,28 +2478,13 @@ img[width][height] {
 /* ─── Global body scroll lock when modal overlays are open ───────────────── */
 body.modal-open {
   overflow: hidden !important;
-  touch-action: none;
-}
-
-/* ─── Global modal overlay fixes ────────────────────────────────────────── */
-/* All fixed overlays (modals) — ensure proper scrolling inside */
-[style*="position: fixed"][style*="inset: 0"] {
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Mobile adjustments for modals */
 @media (max-width: 768px) {
-  [style*="position: fixed"][style*="inset: 0"][style*="padding: 24"] {
-    padding: 12px !important;
-  }
-
-  /* Expense form - single column on mobile */
   .expense-form-grid {
     grid-template-columns: 1fr !important;
     padding: 14px !important;
   }
-  .expense-form-grid > div[style*="span 2"] {
-    grid-column: span 1 !important;
-  }
 }
+

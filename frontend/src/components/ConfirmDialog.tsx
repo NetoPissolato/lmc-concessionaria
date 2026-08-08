@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Trash2, ShoppingBag, LogOut, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Portal } from "@/components/Portal";
 
 
 export type ConfirmVariant = "danger" | "warning" | "success";
@@ -76,6 +77,7 @@ export function ConfirmDialog({
   }, [open]);
 
   return (
+    <Portal>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -86,12 +88,12 @@ export function ConfirmDialog({
           transition={{ duration: 0.15 }}
           onClick={e => { if (e.target === e.currentTarget) onCancel(); }}
           style={{
-            position: "fixed", inset: 0, zIndex: 500,
+            position: "fixed", inset: 0, zIndex: 9500,
             background: "rgba(0,0,0,0.82)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "24px",
+            padding: "16px",
           }}
         >
           <motion.div
@@ -219,5 +221,6 @@ export function ConfirmDialog({
         </motion.div>
       )}
     </AnimatePresence>
+    </Portal>
   );
 }

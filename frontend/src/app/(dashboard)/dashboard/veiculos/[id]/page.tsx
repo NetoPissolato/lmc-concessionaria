@@ -23,6 +23,7 @@ import { maskPhone, maskCurrency, parseCurrency, maskKM } from "@/lib/masks";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { Select } from "@/components/Select";
+import { Portal } from "@/components/Portal";
 
 import { fmtCurrencyFull as fmt, fmtDate } from "@/lib/formatters";
 import { CAT_COLORS, daysInStock, DaysChip, WhatsAppIcon, buildWhatsAppVehicleUrl } from "@/components/vehicle/shared";
@@ -261,7 +262,7 @@ function ExpenseModal({ vehicleId, expense, onClose, onSuccess }: {
   const lbl = { style: { fontSize: "12px", color: "var(--text-muted)", display: "block" as const, marginBottom: 4 } };
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
         className="glass" style={{ width: "100%", maxWidth: 540, borderRadius: "var(--radius-xl)", overflow: "hidden" }}>
@@ -857,11 +858,13 @@ export default function VehicleDetailPage() {
         onCancel={() => setConfirmDeleteExpense(null)}
       />
 
-      {(showAddExpense || editingExpense) && (
-        <ExpenseModal vehicleId={id} expense={editingExpense ?? undefined}
-          onClose={() => { setShowAddExpense(false); setEditingExpense(null); }}
-          onSuccess={() => { setShowAddExpense(false); setEditingExpense(null); refreshExpenses(); }} />
-      )}
+      <Portal>
+        {(showAddExpense || editingExpense) && (
+          <ExpenseModal vehicleId={id} expense={editingExpense ?? undefined}
+            onClose={() => { setShowAddExpense(false); setEditingExpense(null); }}
+            onSuccess={() => { setShowAddExpense(false); setEditingExpense(null); refreshExpenses(); }} />
+        )}
+      </Portal>
 
       <ConfirmDialog
         open={confirmDeleteVehicle}
