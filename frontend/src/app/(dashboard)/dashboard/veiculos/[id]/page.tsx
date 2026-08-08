@@ -385,6 +385,7 @@ export default function VehicleDetailPage() {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<VehicleExpense | null>(null);
   const [confirmDeleteExpense, setConfirmDeleteExpense] = useState<string | null>(null);
+  const [confirmDeleteVehicle, setConfirmDeleteVehicle] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
   const { data: vehicle, isLoading: vLoading } = useQuery<Vehicle>({ queryKey: ["vehicle", id], queryFn: () => vehiclesApi.get(id) });
@@ -407,6 +408,17 @@ export default function VehicleDetailPage() {
     mutationFn: () => vehiclesApi.payFines(id),
     onSuccess: () => { toast.success("Multas pagas!"); queryClient.invalidateQueries({ queryKey: ["vehicle", id] }); queryClient.invalidateQueries({ queryKey: ["vehicle-cost", id] }); },
     onError: () => toast.error("Erro ao registrar pagamento"),
+  });
+
+  const deleteVehicleMutation = useMutation({
+    mutationFn: () => vehiclesApi.delete(id),
+    onSuccess: () => {
+      toast.success("Veículo excluído!");
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      router.replace("/dashboard/veiculos");
+    },
+    onError: () => toast.error("Erro ao excluir veículo"),
   });
 
   const refreshExpenses = () => { queryClient.invalidateQueries({ queryKey: ["vehicle-expenses", id] }); queryClient.invalidateQueries({ queryKey: ["vehicle-cost", id] }); };
@@ -755,11 +767,18 @@ export default function VehicleDetailPage() {
                 <p style={{ fontSize: 14, color: "var(--text-muted)" }}>Preço não definido</p>
               )}
             </div>
-            <div style={{ padding: "0 20px 20px" }}>
+            <div style={{ padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="btn btn-secondary"
                 onClick={() => router.push(`/dashboard/veiculos/${id}/editar`)} style={{ width: "100%", justifyContent: "center", gap: 7 }}>
                 <Edit size={14} /> Editar Veículo
               </motion.button>
+              {vehicle.status !== "vendido" && (
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => setConfirmDeleteVehicle(true)}
+                  style={{ width: "100%", justifyContent: "center", gap: 7, display: "flex", alignItems: "center", padding: "9px 16px", borderRadius: "var(--radius-md)", border: "1px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.08)", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+                  <Trash2 size={14} /> Excluir Veículo
+                </motion.button>
+              )}
             </div>
           </motion.div>
 
@@ -824,6 +843,16 @@ export default function VehicleDetailPage() {
           onClose={() => { setShowAddExpense(false); setEditingExpense(null); }}
           onSuccess={() => { setShowAddExpense(false); setEditingExpense(null); refreshExpenses(); }} />
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteVehicle}
+        title="Excluir veículo?"
+        description={`O veículo ${vehicle?.marca} ${vehicle?.modelo} (${vehicle?.placa}) será excluído permanentemente junto com todas as despesas e fotos. Esta ação não pode ser desfeita.`}
+        confirmLabel="Sim, excluir" cancelLabel="Cancelar" variant="danger"
+        loading={deleteVehicleMutation.isPending}
+        onConfirm={() => deleteVehicleMutation.mutate()}
+        onCancel={() => setConfirmDeleteVehicle(false)}
+      />
     </div>
   );
 }
