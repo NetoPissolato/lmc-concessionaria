@@ -141,18 +141,30 @@ export function WhatsAppIcon({ size = 16, color = "currentColor" }: { size?: num
 export function buildWhatsAppVehicleUrl(v: {
   marca: string; modelo: string; ano: number; cor: string;
   quilometragem: number; valor_anunciado?: number | null;
-}): string {
+  versao?: string | null; placa?: string | null;
+}, telefoneCliente?: string): string {
   const km  = v.quilometragem.toLocaleString("pt-BR");
   const val = v.valor_anunciado
     ? v.valor_anunciado.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0 })
     : null;
+  const titulo = v.versao ? `${v.marca} ${v.modelo} - ${v.versao}` : `${v.marca} ${v.modelo}`;
   const lines = [
-    `${v.marca} ${v.modelo} ${v.ano}`,
-    `Cor: ${v.cor}  |  KM: ${km} km`,
-    val ? `Valor: ${val}` : null,
-    "",
-    "Olá! Tenho interesse neste veículo. Pode me passar mais informações?",
+    `🚗 *${titulo} ${v.ano}*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `🎨 Cor: ${v.cor}`,
+    `📍 KM: ${km} km`,
+    v.placa ? `🔖 Placa: ${v.placa}` : null,
+    val ? `💰 Valor: *${val}*` : null,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `Ficou interessado? Entre em contato conosco! 😊`,
   ].filter(l => l !== null).join("\n");
+
+  // Se tiver telefone do cliente, abre conversa direta; senão abre link de compartilhamento
+  if (telefoneCliente) {
+    const digits = telefoneCliente.replace(/\D/g, "");
+    const number = digits.startsWith("55") ? digits : `55${digits}`;
+    return `https://wa.me/${number}?text=${encodeURIComponent(lines)}`;
+  }
   return `https://wa.me/?text=${encodeURIComponent(lines)}`;
 }
 

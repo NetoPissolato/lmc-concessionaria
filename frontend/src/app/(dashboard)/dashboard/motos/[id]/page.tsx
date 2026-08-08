@@ -800,7 +800,9 @@ export default function MotoDetailPage() {
               {vehicle.status !== "vendido" && (
                 <motion.button
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => window.open(buildWhatsAppVehicleUrl(vehicle), "_blank")}
+                  onClick={() => window.open(buildWhatsAppVehicleUrl(
+                    { ...vehicle, versao: vehicle.versao, placa: vehicle.placa },
+                  ), "_blank")}
                   style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 0", borderRadius: 10, background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.4)", color: "#25d366", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
                 >
                   <WhatsAppIcon size={14} color="#25d366" /> Enviar por WhatsApp
