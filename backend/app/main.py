@@ -51,6 +51,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  Redis não disponível: {e}")
 
+    # Create database tables if they don't exist
+    from app.core.database import Base
+    from sqlalchemy import text
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("✅ Tabelas do banco criadas/verificadas")
+
     logger.info("✅ Backend pronto!")
     yield
 
