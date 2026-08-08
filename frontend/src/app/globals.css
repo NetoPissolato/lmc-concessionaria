@@ -2961,10 +2961,72 @@ img { max-width: 100%; height: auto; }
 .veiculo-form .input,
 .veiculo-form select,
 .veiculo-form textarea,
+.editar-form .input,
+.editar-form select,
+.editar-form textarea,
 .nova-venda-form .input,
 .nova-venda-form select {
   min-height: 44px;
   font-size: clamp(13px, 3.5vw, 15px);
+}
+
+/* ── Inputs com focus glow brand: todos os formulários ───────────────── */
+.veiculo-form .input:focus,
+.editar-form .input:focus,
+.nova-venda-form .input:focus,
+.expense-form-grid .input:focus {
+  outline: none;
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px rgba(245,166,35,0.15);
+}
+
+/* ── Seção premium de formulário ─────────────────────────────────────────────── */
+/* Card de seção com linha colorida no topo e visual premium */
+.form-section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+.form-section-card::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand) 0%, rgba(245,166,35,0.3) 60%, transparent 100%);
+}
+.form-section-card-body {
+  padding: 18px 20px 20px;
+}
+@media (max-width: 639px) {
+  .form-section-card-body {
+    padding: 14px 14px 16px;
+  }
+}
+
+/* ── Título de seção premium ─────────────────────────────────────────────────── */
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.form-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--brand);
+  flex-shrink: 0;
 }
 
 /* Formulário em grade responsiva — 2 colunas a partir de 500px */
@@ -2982,10 +3044,11 @@ img { max-width: 100%; height: auto; }
 
 /* ── 4. CARD DE FORMULÁRIO COM SCROLL INTERNO ────────────────────────────────── */
 /* Em mobile o card do formulário tem altura máxima e scroll interno
-   para evitar que campos fiquem fora da tela */
+   para evitar que campos fiquem fora da tela.
+   Usa 100svh (small viewport) para evitar bug do iOS Safari com barra de URL */
 @media (max-width: 639px) {
   .form-card-scrollable {
-    max-height: calc(100dvh - 200px);
+    max-height: calc(100svh - 200px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }

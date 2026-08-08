@@ -191,11 +191,6 @@ export default function EditarVeiculoPage() {
     </div>;
   }
 
-  const section = (title: string) => (
-    <h3 style={{ fontSize: "13px", fontWeight: "600", color: "var(--brand)", marginBottom: 4, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
-      {title}
-    </h3>
-  );
 
   return (
     <div style={{ maxWidth: 740, margin: "0 auto" }}>
@@ -211,99 +206,95 @@ export default function EditarVeiculoPage() {
           Editar Veículo
         </h1>
         <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: 4 }}>
-          {vehicle?.marca} {vehicle?.modelo} - {vehicle?.placa}
+          {vehicle?.marca} {vehicle?.modelo} — {vehicle?.placa}
         </p>
       </motion.div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="editar-form">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-          className="card" style={{ padding: isMobile ? 14 : 24, marginBottom: 16 }}>
-          {section("Dados Básicos")}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 14, marginTop: 16 }}>
-            <Field label="Marca" required error={errors.marca}><input placeholder="Honda" {...inp("marca")} /></Field>
-            <Field label="Modelo" required error={errors.modelo}><input placeholder="Civic" {...inp("modelo")} /></Field>
-            <div style={isMobile ? {} : { gridColumn: "span 2" }}>
+          className="form-section-card">
+          <div className="form-section-card-body">
+            <p className="form-section-title">Dados Básicos</p>
+            <div className="form-grid-auto">
+              <Field label="Marca" required error={errors.marca}><input placeholder="Honda" {...inp("marca")} /></Field>
+              <Field label="Modelo" required error={errors.modelo}><input placeholder="Civic" {...inp("modelo")} /></Field>
               <Field label="Versão" error={errors.versao}><input placeholder="EXL 2.0 CVT" {...inp("versao")} /></Field>
-            </div>
-            <Field label="Ano" required error={errors.ano}>
-              <input {...inp("ano")} inputMode="numeric" placeholder="2020"
-                onChange={e => setForm(f => ({ ...f, ano: e.target.value.replace(/\D/g, "").slice(0, 4) }))} />
-            </Field>
-            <Field label="Cor" required error={errors.cor}><input placeholder="Branco Perolizado" {...inp("cor")} /></Field>
-            <Field label="Combustível" required error={errors.combustivel}>
-              <Select
-                value={form.combustivel}
-                onChange={(v) => setForm(f => ({ ...f, combustivel: v as FuelType }))}
-                error={!!errors.combustivel}
-                options={[["flex","Flex"],["gasolina","Gasolina"],["etanol","Etanol"],["diesel","Diesel"],["eletrico","Elétrico"],["hibrido","Híbrido"],["gnv","GNV"]].map(([v,l]) => ({ value: v, label: l }))}
-              />
-            </Field>
-            <Field label="Câmbio" required error={errors.cambio}>
-              <Select
-                value={form.cambio}
-                onChange={(v) => setForm(f => ({ ...f, cambio: v as TransmissionType }))}
-                error={!!errors.cambio}
-                options={[["manual","Manual"],["automatico","Automático"],["automatizado","Automatizado"],["cvt","CVT"]].map(([v,l]) => ({ value: v, label: l }))}
-              />
-            </Field>
-            <Field label="Quilometragem" required error={errors.quilometragem}>
-              <div style={{ position: "relative" }}>
-                <input
-                  inputMode="numeric"
-                  placeholder="0"
-                  className="input"
-                  style={{ borderColor: errors.quilometragem ? "var(--error)" : undefined, fontSize: "13px" }}
-                  value={form.quilometragem}
-                  onChange={e => setForm(f => ({ ...f, quilometragem: maskKM(e.target.value) }))}
+              <Field label="Ano" required error={errors.ano}>
+                <input {...inp("ano")} inputMode="numeric" placeholder="2020"
+                  onChange={e => setForm(f => ({ ...f, ano: e.target.value.replace(/\D/g, "").slice(0, 4) }))} />
+              </Field>
+              <Field label="Cor" required error={errors.cor}><input placeholder="Branco Perolizado" {...inp("cor")} /></Field>
+              <Field label="Combustível" required error={errors.combustivel}>
+                <Select
+                  value={form.combustivel}
+                  onChange={(v) => setForm(f => ({ ...f, combustivel: v as FuelType }))}
+                  error={!!errors.combustivel}
+                  options={[["flex","Flex"],["gasolina","Gasolina"],["etanol","Etanol"],["diesel","Diesel"],["eletrico","Elétrico"],["hibrido","Híbrido"],["gnv","GNV"]].map(([v,l]) => ({ value: v, label: l }))}
                 />
-                <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
-              </div>
-            </Field>
-            <Field label="Status" required>
-              <Select
-                value={form.status}
-                onChange={(v) => setForm(f => ({ ...f, status: v as VehicleStatus }))}
-                options={[
-                  { value: "disponivel", label: "Disponível" },
-                  { value: "reservado", label: "Reservado" },
-                  { value: "em_preparacao", label: "Em Preparação" },
-                  { value: "em_manutencao", label: "Em Manutenção" },
-                  ...(vehicle?.status === "vendido" ? [{ value: "vendido", label: "Vendido" }] : []),
-                ]}
-              />
-            </Field>
+              </Field>
+              <Field label="Câmbio" required error={errors.cambio}>
+                <Select
+                  value={form.cambio}
+                  onChange={(v) => setForm(f => ({ ...f, cambio: v as TransmissionType }))}
+                  error={!!errors.cambio}
+                  options={[["manual","Manual"],["automatico","Automático"],["automatizado","Automatizado"],["cvt","CVT"]].map(([v,l]) => ({ value: v, label: l }))}
+                />
+              </Field>
+              <Field label="Quilometragem" required error={errors.quilometragem}>
+                <div style={{ position: "relative" }}>
+                  <input inputMode="numeric" placeholder="0" className="input"
+                    style={{ borderColor: errors.quilometragem ? "var(--error)" : undefined, fontSize: "13px" }}
+                    value={form.quilometragem}
+                    onChange={e => setForm(f => ({ ...f, quilometragem: maskKM(e.target.value) }))} />
+                  <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
+                </div>
+              </Field>
+              <Field label="Status" required>
+                <Select
+                  value={form.status}
+                  onChange={(v) => setForm(f => ({ ...f, status: v as VehicleStatus }))}
+                  options={[
+                    { value: "disponivel", label: "Disponível" },
+                    { value: "reservado", label: "Reservado" },
+                    { value: "em_preparacao", label: "Em Preparação" },
+                    { value: "em_manutencao", label: "Em Manutenção" },
+                    ...(vehicle?.status === "vendido" ? [{ value: "vendido", label: "Vendido" }] : []),
+                  ]}
+                />
+              </Field>
+            </div>
           </div>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
-          className="card" style={{ padding: isMobile ? 14 : 24, marginBottom: 16 }}>
-          {section("Documentos & Compra")}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 14, marginTop: 16 }}>
-            <Field label="Placa" required error={errors.placa}>
-              <input {...inp("placa", { textTransform: "uppercase", letterSpacing: "0.1em" })}
-                placeholder="ABC1D23"
-                onChange={e => setForm(f => ({ ...f, placa: maskPlaca(e.target.value) }))} />
-            </Field>
-            <Field label="Chassi (17 caracteres)" required error={errors.chassi}>
-              <input {...inp("chassi", { fontFamily: "monospace", textTransform: "uppercase" })}
-                placeholder="9BWZZZ377VT004251" maxLength={17}
-                onChange={e => setForm(f => ({ ...f, chassi: maskChassi(e.target.value) }))} />
-            </Field>
-            <Field label="RENAVAM" error={errors.renavam}>
-              <input {...inp("renavam")} placeholder="Opcional" inputMode="numeric"
-                onChange={e => setForm(f => ({ ...f, renavam: maskRENAVAM(e.target.value) }))} />
-            </Field>
-            <Field label="Data de Compra" required error={errors.data_compra}>
-              <input type="date" {...inp("data_compra")} />
-            </Field>
-            <Field label="Nome do Antigo Dono" error={errors.vendedor_nome}>
-              <input placeholder="Opcional" {...inp("vendedor_nome")} />
-            </Field>
-            <Field label="Telefone do Antigo Dono" error={errors.vendedor_telefone}>
-              <input {...inp("vendedor_telefone")} placeholder="(00) 00000-0000" inputMode="tel"
-                onChange={e => setForm(f => ({ ...f, vendedor_telefone: maskPhone(e.target.value) }))} />
-            </Field>
-            <div style={isMobile ? {} : { gridColumn: "span 2" }}>
+          className="form-section-card">
+          <div className="form-section-card-body">
+            <p className="form-section-title">Documentos &amp; Compra</p>
+            <div className="form-grid-auto">
+              <Field label="Placa" required error={errors.placa}>
+                <input {...inp("placa", { textTransform: "uppercase", letterSpacing: "0.1em" })}
+                  placeholder="ABC1D23"
+                  onChange={e => setForm(f => ({ ...f, placa: maskPlaca(e.target.value) }))} />
+              </Field>
+              <Field label="Chassi (17 caracteres)" required error={errors.chassi}>
+                <input {...inp("chassi", { fontFamily: "monospace", textTransform: "uppercase" })}
+                  placeholder="9BWZZZ377VT004251" maxLength={17}
+                  onChange={e => setForm(f => ({ ...f, chassi: maskChassi(e.target.value) }))} />
+              </Field>
+              <Field label="RENAVAM" error={errors.renavam}>
+                <input {...inp("renavam")} placeholder="Opcional" inputMode="numeric"
+                  onChange={e => setForm(f => ({ ...f, renavam: maskRENAVAM(e.target.value) }))} />
+              </Field>
+              <Field label="Data de Compra" required error={errors.data_compra}>
+                <input type="date" {...inp("data_compra")} />
+              </Field>
+              <Field label="Nome do Antigo Dono" error={errors.vendedor_nome}>
+                <input placeholder="Opcional" {...inp("vendedor_nome")} />
+              </Field>
+              <Field label="Telefone do Antigo Dono" error={errors.vendedor_telefone}>
+                <input {...inp("vendedor_telefone")} placeholder="(00) 00000-0000" inputMode="tel"
+                  onChange={e => setForm(f => ({ ...f, vendedor_telefone: maskPhone(e.target.value) }))} />
+              </Field>
               <Field label="Observações" error={errors.observacoes}>
                 <textarea {...inp("observacoes")} rows={3} style={{ height: "auto", paddingTop: 8, fontSize: "13px" }} placeholder="Anotações sobre o veículo..." />
               </Field>
@@ -312,44 +303,46 @@ export default function EditarVeiculoPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="card" style={{ padding: isMobile ? 14 : 24, marginBottom: 16 }}>
-          {section("Valores")}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 14, marginTop: 16 }}>
-            <Field label="Valor de Compra (R$)" required error={errors.valor_compra_display}>
-              <input value={form.valor_compra_display} inputMode="numeric" placeholder="0,00" className="input"
-                style={{ fontSize: "13px", borderColor: errors.valor_compra_display ? "var(--error)" : undefined }}
-                onChange={e => setCurrency("valor_compra")(e.target.value)} />
-            </Field>
-            <Field label="Multas no Documento (R$)" error={errors.valor_multas_display}>
-              <input value={form.valor_multas_display} inputMode="numeric" placeholder="0,00" className="input"
-                style={{ fontSize: "13px" }}
-                onChange={e => setCurrency("valor_multas")(e.target.value)} />
-            </Field>
-            <Field label="Valor Anunciado (R$)" error={errors.valor_anunciado_display}>
-              <input value={form.valor_anunciado_display} inputMode="numeric" placeholder="0,00" className="input"
-                style={{ fontSize: "13px" }}
-                onChange={e => setCurrency("valor_anunciado")(e.target.value)} />
-            </Field>
-            <Field label="Valor Mínimo (R$)" error={errors.valor_minimo_display}>
-              <input value={form.valor_minimo_display} inputMode="numeric" placeholder="0,00" className="input"
-                style={{ fontSize: "13px" }}
-                onChange={e => setCurrency("valor_minimo")(e.target.value)} />
-            </Field>
-          </div>
-          <div style={{
-            marginTop: 12, padding: "10px 14px", borderRadius: "var(--radius-md)",
-            background: "var(--brand-light)", border: "1px solid rgba(59,130,246,0.15)",
-            fontSize: "12px", color: "var(--brand)",
-            display: "flex", alignItems: "flex-start", gap: "8px",
-          }}>
-            <Lightbulb size={13} style={{ flexShrink: 0, marginTop: "1px" }} />
-            <span>O investimento total (compra + despesas) e lucro são calculados automaticamente.</span>
+          className="form-section-card">
+          <div className="form-section-card-body">
+            <p className="form-section-title">Valores</p>
+            <div className="form-grid-auto">
+              <Field label="Valor de Compra (R$)" required error={errors.valor_compra_display}>
+                <input value={form.valor_compra_display} inputMode="numeric" placeholder="0,00" className="input"
+                  style={{ fontSize: "13px", borderColor: errors.valor_compra_display ? "var(--error)" : undefined }}
+                  onChange={e => setCurrency("valor_compra")(e.target.value)} />
+              </Field>
+              <Field label="Multas no Documento (R$)" error={errors.valor_multas_display}>
+                <input value={form.valor_multas_display} inputMode="numeric" placeholder="0,00" className="input"
+                  style={{ fontSize: "13px" }}
+                  onChange={e => setCurrency("valor_multas")(e.target.value)} />
+              </Field>
+              <Field label="Valor Anunciado (R$)" error={errors.valor_anunciado_display}>
+                <input value={form.valor_anunciado_display} inputMode="numeric" placeholder="0,00" className="input"
+                  style={{ fontSize: "13px" }}
+                  onChange={e => setCurrency("valor_anunciado")(e.target.value)} />
+              </Field>
+              <Field label="Valor Mínimo (R$)" error={errors.valor_minimo_display}>
+                <input value={form.valor_minimo_display} inputMode="numeric" placeholder="0,00" className="input"
+                  style={{ fontSize: "13px" }}
+                  onChange={e => setCurrency("valor_minimo")(e.target.value)} />
+              </Field>
+            </div>
+            <div style={{
+              marginTop: 12, padding: "10px 14px", borderRadius: "var(--radius-md)",
+              background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)",
+              fontSize: "12px", color: "#F5A623",
+              display: "flex", alignItems: "flex-start", gap: "8px",
+            }}>
+              <Lightbulb size={13} style={{ flexShrink: 0, marginTop: "1px" }} />
+              <span>O investimento total (compra + despesas) e lucro são calculados automaticamente.</span>
+            </div>
           </div>
         </motion.div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-          <button type="button" className="btn btn-secondary" onClick={() => router.back()}>Cancelar</button>
-          <motion.button type="submit" className="btn btn-primary" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} disabled={mutation.isPending}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button type="button" className="btn btn-secondary" style={{ flex: "1 1 auto", justifyContent: "center" }} onClick={() => router.back()}>Cancelar</button>
+          <motion.button type="submit" className="btn btn-primary" style={{ flex: "2 1 auto", justifyContent: "center" }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} disabled={mutation.isPending}>
             {mutation.isPending
               ? <><Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> Salvando...</>
               : <><Save size={15} /> Salvar Alterações</>
