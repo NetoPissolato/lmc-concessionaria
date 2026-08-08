@@ -436,7 +436,8 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
         overflowY: "auto",
         WebkitOverflowScrolling: "touch" as "touch",
         padding: "16px",
-        paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+        /* Espaço suficiente para não ficar escondido atrás da nav bar inferior */
+        paddingBottom: "calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px) + 24px)",
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
