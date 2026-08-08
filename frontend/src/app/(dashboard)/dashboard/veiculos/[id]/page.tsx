@@ -24,7 +24,7 @@ import { PhotoUploader } from "@/components/PhotoUploader";
 import { Select } from "@/components/Select";
 
 import { fmtCurrencyFull as fmt, fmtDate } from "@/lib/formatters";
-import { CAT_COLORS } from "@/components/vehicle/shared";
+import { CAT_COLORS, daysInStock, DaysChip, WhatsAppIcon, buildWhatsAppVehicleUrl } from "@/components/vehicle/shared";
 
 // ─── Lightbox ─────────────────────────────────────────────────────────────────
 function LightboxOverlay({ photos, initial, onClose, vehicleName }: {
@@ -510,6 +510,12 @@ export default function VehicleDetailPage() {
               <span style={{ fontFamily: "monospace", letterSpacing: "0.05em" }}>{vehicle.placa}</span>
               <span style={{ color: "var(--border)" }}>·</span>
               <span>{vehicle.quilometragem.toLocaleString("pt-BR")} km</span>
+              {daysInStock(vehicle.data_compra) !== null && (
+                <>
+                  <span style={{ color: "var(--border)" }}>·</span>
+                  <DaysChip days={daysInStock(vehicle.data_compra)} />
+                </>
+              )}
             </p>
           </motion.div>
 
@@ -772,6 +778,15 @@ export default function VehicleDetailPage() {
                 onClick={() => router.push(`/dashboard/veiculos/${id}/editar`)} style={{ width: "100%", justifyContent: "center", gap: 7 }}>
                 <Edit size={14} /> Editar Veículo
               </motion.button>
+              {vehicle.status !== "vendido" && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => window.open(buildWhatsAppVehicleUrl(vehicle), "_blank")}
+                  style={{ width: "100%", justifyContent: "center", gap: 8, display: "flex", alignItems: "center", padding: "9px 16px", borderRadius: "var(--radius-md)", border: "1px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.08)", color: "#25d366", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  <WhatsAppIcon size={14} color="#25d366" /> Enviar por WhatsApp
+                </motion.button>
+              )}
               {vehicle.status !== "vendido" && (
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                   onClick={() => setConfirmDeleteVehicle(true)}

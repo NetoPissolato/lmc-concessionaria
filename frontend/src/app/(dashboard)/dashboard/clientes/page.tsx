@@ -13,6 +13,7 @@ import {
 import { customersApi, vehiclesApi } from "@/lib/api";
 import { Customer, VehiclePhoto } from "@/types";
 import { toast } from "@/lib/toast";
+import { WhatsAppIcon } from "@/components/vehicle/shared";
 import { maskPhone, maskCPFOrCNPJ, validateCPF, validateCNPJ, unmask } from "@/lib/masks";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
@@ -469,23 +470,20 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
               </span>
             </div>
             {/* Contact row */}
-            <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-start" }}>
               {customer.telefone && (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
                     <Phone size={13} color="#F5A623" />
                     <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{customer.telefone}</span>
                   </div>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Telefone</p>
-                </div>
-              )}
-              {customer.email && (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                    <Mail size={13} color="#F5A623" />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{customer.email}</span>
-                  </div>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>E-mail</p>
+                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Telefone</p>
+                  <a
+                    href={`tel:${customer.telefone.replace(/\D/g, "")}`}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
+                  >
+                    <Phone size={12} /> Ligar
+                  </a>
                 </div>
               )}
               {(customer.whatsapp || customer.telefone) && (
@@ -494,7 +492,29 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
                     <MessageCircle size={13} color="#25d366" />
                     <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{customer.whatsapp || customer.telefone}</span>
                   </div>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>WhatsApp</p>
+                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>WhatsApp</p>
+                  <a
+                    href={`https://wa.me/55${(customer.whatsapp || customer.telefone || "").replace(/\D/g, "")}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.25)", color: "#25d366", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
+                  >
+                    <WhatsAppIcon size={12} color="#25d366" /> Abrir WhatsApp
+                  </a>
+                </div>
+              )}
+              {customer.email && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                    <Mail size={13} color="#F5A623" />
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{customer.email}</span>
+                  </div>
+                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>E-mail</p>
+                  <a
+                    href={`mailto:${customer.email}`}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
+                  >
+                    <Mail size={12} /> Enviar E-mail
+                  </a>
                 </div>
               )}
             </div>

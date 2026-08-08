@@ -25,7 +25,7 @@ import { Select } from "@/components/Select";
 
 const ACCENT = "#f97316"; // laranja para motos
 import { fmtCurrencyFull as fmt, fmtDate } from "@/lib/formatters";
-import { CAT_COLORS } from "@/components/vehicle/shared";
+import { CAT_COLORS, daysInStock, DaysChip, WhatsAppIcon, buildWhatsAppVehicleUrl } from "@/components/vehicle/shared";
 
 // ─── Lightbox ─────────────────────────────────────────────────────────────────
 function LightboxOverlay({ photos, initial, onClose, vehicleName }: {
@@ -507,6 +507,12 @@ export default function MotoDetailPage() {
               <span style={{ color: "var(--border)" }}>·</span>
               <span>{vehicle.quilometragem.toLocaleString("pt-BR")} km</span>
               {vehicle.tipo_moto && <><span style={{ color: "var(--border)" }}>·</span><span style={{ color: ACCENT, fontWeight: 600 }}>{vehicle.tipo_moto}</span></>}
+              {daysInStock(vehicle.data_compra) !== null && (
+                <>
+                  <span style={{ color: "var(--border)" }}>·</span>
+                  <DaysChip days={daysInStock(vehicle.data_compra)} />
+                </>
+              )}
             </p>
           </motion.div>
 
@@ -775,12 +781,21 @@ export default function MotoDetailPage() {
                 <p style={{ fontSize: 14, color: "var(--text-muted)" }}>Preço não definido</p>
               )}
             </div>
-            <div style={{ padding: "0 20px 20px" }}>
+            <div style={{ padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                 onClick={() => router.push(`/dashboard/motos/${id}/editar`)}
                 style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 0", borderRadius: 10, background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-secondary)", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
                 <Edit size={14} /> Editar Moto
               </motion.button>
+              {vehicle.status !== "vendido" && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => window.open(buildWhatsAppVehicleUrl(vehicle), "_blank")}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 0", borderRadius: 10, background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.4)", color: "#25d366", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
+                >
+                  <WhatsAppIcon size={14} color="#25d366" /> Enviar por WhatsApp
+                </motion.button>
+              )}
             </div>
           </motion.div>
 
