@@ -22,11 +22,7 @@ import { DashboardStats, DailyChartDataPoint, Sale, VehicleStatus, VEHICLE_STATU
 import { fmtCurrency as fmt } from "@/lib/formatters";
 
 // --- Formatters ---------------------------------------------------------------
-const fmtShort = (value: number) => {
-  if (value >= 1_000_000) return `R$ ${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000)     return `R$ ${(value / 1_000).toFixed(0)}k`;
-  return fmt(value);
-};
+const fmtShort = (value: number) => fmt(value);
 
 const MONTH_NAMES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
