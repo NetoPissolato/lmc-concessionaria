@@ -82,6 +82,9 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Previne iOS de redimensionar fontes automaticamente ao rotacionar */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -90,6 +93,8 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  /* Previne pull-to-refresh acidental no Chrome mobile */
+  overscroll-behavior-y: contain;
 }
 
 /* ─── Autofill override ──────────────────────────────────────────────────────── */
@@ -285,6 +290,12 @@ input:-webkit-autofill:active {
 
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.5; pointer-events: none; }
+/* Elimina atraso de 300ms no toque (mobile) + remove flash azul do Android */
+.btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
 
 .btn-primary {
   background: linear-gradient(135deg, #F5A623 0%, #e8920e 100%);
@@ -362,8 +373,13 @@ input:-webkit-autofill:active {
   height: 38px;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
   outline: none;
+  /* Aparência uniforme em todos os browsers/OS */
+  -webkit-appearance: none;
+  appearance: none;
+  /* Elimina atraso de toque no mobile */
+  touch-action: manipulation;
 }
-.input::placeholder { color: var(--text-muted); }
+.input::placeholder { color: var(--text-muted); font-size: 13px; }
 .input:hover { border-color: var(--border-hover); }
 .input:focus {
   border-color: rgba(245,166,35,0.5);
@@ -482,6 +498,10 @@ input[type="number"] { -moz-appearance: textfield; }
   overflow: hidden;
   letter-spacing: -0.1px;
   border: 1px solid transparent;
+  /* Mobile: sem delay de toque e sem flash */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .nav-item:hover {
@@ -864,6 +884,13 @@ input[type="number"] { -moz-appearance: textfield; }
 /* ─── Dashboard main content ─────────────────────────────────────────────────── */
 .dash-main {
   padding: clamp(12px, 2.5vw, 28px);
+  /* dvh = viewport real sem a barra do browser mobile */
+  min-height: 100dvh;
+  min-height: 100vh; /* fallback para browsers antigos */
+  /* Scroll com momentum no iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Previne scroll "vazar" para fora do container */
+  overscroll-behavior: contain;
 }
 
 /* Reserve space for bottom nav on mobile/tablet */
