@@ -43,8 +43,8 @@ function getWsUrl(): string {
 export function useWebSocket(): { status: WSStatus } {
   const [status, setStatus] = useState<WSStatus>("connecting");
   const wsRef = useRef<WebSocket | null>(null);
-  const retryRef = useRef<ReturnType<typeof setTimeout>>();
-  const pingRef = useRef<ReturnType<typeof setInterval>>();
+  const retryRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pingRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const retryCount = useRef(0);
   const mountedRef = useRef(true);
   const queryClient = useQueryClient();

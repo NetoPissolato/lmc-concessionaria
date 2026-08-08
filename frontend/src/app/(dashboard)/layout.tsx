@@ -87,6 +87,7 @@ function Sidebar({
   onToggle,
   mobileOpen,
   onMobileClose,
+  wsStatus,
 }: {
   collapsed: boolean;
   onToggle: () => void;
