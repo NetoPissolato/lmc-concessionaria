@@ -211,7 +211,7 @@ function Sidebar({
           <div style={{
             position: "absolute", inset: 0,
             display: "flex", alignItems: "center",
-            padding: collapsed ? "0" : "0 16px",
+            padding: collapsed ? "0" : "0 12px",
             justifyContent: collapsed ? "center" : "space-between",
           }}>
             <AnimatePresence mode="wait">
@@ -222,35 +222,19 @@ function Sidebar({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.18 }}
-                  style={{ display: "flex", flexDirection: "column", gap: "3px" }}
+                  style={{ display: "flex", alignItems: "center" }}
                 >
-                  {/* Logo image - sem fundo branco, filter inverte o white para dark */}
-                  <div style={{ position: "relative", display: "inline-block" }}>
-                    <img
-                      src="/LogoLMC.png"
-                      alt="LMC Veículos"
-                      style={{
-                        height: "72px",
-                        width: "auto",
-                        objectFit: "contain",
-                        display: "block",
-                        filter: "invert(1) hue-rotate(180deg) drop-shadow(0 2px 12px rgba(245,166,35,0.45)) brightness(1.05)",
-                      }}
-                    />
-                    {/* Pulsing amber accent dot */}
-                    <motion.div
-                      animate={{ opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      style={{
-                        position: "absolute", top: "-3px", right: "-5px",
-                        width: "7px", height: "7px",
-                        borderTop: "2.5px solid #F5A623",
-                        borderRight: "2.5px solid #F5A623",
-                        borderRadius: "0 2px 0 0",
-                        boxShadow: "2px -2px 6px rgba(245,166,35,0.6)",
-                      }}
-                    />
-                  </div>
+                  <img
+                    src="/LogoLMC.png"
+                    alt="LMC Veículos"
+                    style={{
+                      height: "92px",
+                      width: "auto",
+                      objectFit: "contain",
+                      display: "block",
+                      filter: "invert(1) hue-rotate(180deg) drop-shadow(0 2px 16px rgba(245,166,35,0.5)) brightness(1.08)",
+                    }}
+                  />
                 </motion.div>
               ) : (
                 /* Collapsed: mostra apenas botao de expandir, sem logo */
