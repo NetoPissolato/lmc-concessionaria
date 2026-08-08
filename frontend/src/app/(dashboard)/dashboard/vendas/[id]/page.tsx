@@ -1,8 +1,7 @@
 "use client";
 
-import { use, useState, useRef, useCallback } from "react";
+import { use, useState } from "react";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
-import { useSwipe } from "@/hooks/useSwipe";
 
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -116,7 +115,6 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
   const StIcon = stCfg.icon;
   const payColor = PAYMENT_COLORS[sale.forma_pagamento] || "var(--text-muted)";
 
-  const photoContainerRef = useRef<HTMLDivElement>(null);
   const photos = vehiclePhotos;
   const mainPhoto = photos.find(p => p.is_main) ?? photos[0];
   // Detect moto: use vehicle_tipo field, fall back to checking brand name
@@ -126,16 +124,8 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
   const isMoto = sale.vehicle_tipo === "moto" || (!sale.vehicle_tipo && isMotoByBrand);
   const placeholderSrc = isMoto ? "/moto-placeholder.svg" : "/car-placeholder.svg";
 
-  const prevPhoto = useCallback(() => setActivePhoto(p => (p - 1 + photos.length) % photos.length), [photos.length]);
-  const nextPhoto = useCallback(() => setActivePhoto(p => (p + 1) % photos.length), [photos.length]);
-
-  // Swipe to navigate photos on mobile
-  useSwipe({
-    onSwipeLeft:  photos.length > 1 ? nextPhoto : undefined,
-    onSwipeRight: photos.length > 1 ? prevPhoto : undefined,
-    elementRef: photoContainerRef,
-    threshold: 40,
-  });
+  const prevPhoto = () => setActivePhoto(p => (p - 1 + photos.length) % photos.length);
+  const nextPhoto = () => setActivePhoto(p => (p + 1) % photos.length);
 
   return (
     <>
@@ -153,7 +143,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
         style={{ display: "grid", gridTemplateColumns: isMobileOrTablet ? "1fr" : "1fr 340px", gap: "0", borderRadius: "20px", overflow: "hidden", border: "1px solid var(--border)", background: "var(--surface)" }}>
 
         {/* Photo gallery */}
-        <div ref={photoContainerRef} style={{ position: "relative", background: "#080808", minHeight: isMobileOrTablet ? "240px" : "380px", display: "flex", flexDirection: "column" }}>
+        <div style={{ position: "relative", background: "#080808", minHeight: isMobileOrTablet ? "240px" : "380px", display: "flex", flexDirection: "column" }}>
           {/* Main photo */}
           <div style={{ flex: 1, position: "relative", overflow: "hidden", cursor: photos.length > 0 ? "zoom-in" : "default" }}
             onClick={() => photos.length > 0 && setLightboxOpen(true)}>
