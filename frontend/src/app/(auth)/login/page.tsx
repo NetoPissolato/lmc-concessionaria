@@ -259,11 +259,11 @@ export default function LoginPage() {
             src="/LogoLMC.png"
             alt="LMC Veículos"
             style={{
-              height: "80px",
+              height: "120px",
               width: "auto",
               objectFit: "contain",
               display: "block",
-              filter: "invert(1) hue-rotate(180deg) drop-shadow(0 4px 16px rgba(245,166,35,0.3))",
+              filter: "invert(1) hue-rotate(180deg) drop-shadow(0 6px 24px rgba(245,166,35,0.4))",
             }}
           />
         </motion.div>
@@ -379,11 +379,11 @@ export default function LoginPage() {
             src="/LogoLMC.png"
             alt="LMC Veículos"
             style={{
-              height: "52px",
+              height: "72px",
               width: "auto",
               objectFit: "contain",
               display: "block",
-              filter: "invert(1) hue-rotate(180deg)",
+              filter: "invert(1) hue-rotate(180deg) drop-shadow(0 2px 12px rgba(245,166,35,0.3))",
             }}
           />
         </motion.div>

@@ -174,7 +174,7 @@ function Sidebar({
         {/* ── Hero Banner Logo ── */}
         <div style={{
           position: "relative",
-          height: collapsed ? "var(--header-height)" : "90px",
+          height: collapsed ? "var(--header-height)" : "108px",
           flexShrink: 0,
           overflow: "hidden",
           borderBottom: "1px solid rgba(245,166,35,0.15)",
@@ -240,7 +240,7 @@ function Sidebar({
                       src="/LogoLMC.png"
                       alt="LMC Veículos"
                       style={{
-                        height: "42px",
+                        height: "58px",
                         width: "auto",
                         objectFit: "contain",
                         display: "block",
@@ -274,23 +274,26 @@ function Sidebar({
                   />
                 </motion.div>
               ) : (
+                /* Collapsed: mostra apenas botao de expandir, sem logo */
                 <motion.div
                   key="logo-banner-mini"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1px" }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}
                 >
-                  {/* Mini logo - sem fundo branco */}
-                  <img
-                    src="/LogoLMC.png"
-                    alt="LMC"
+                  <motion.div
+                    whileHover={{ scale: 1.1, color: "#F5A623" }}
                     style={{
-                      width: "34px",
-                      height: "34px",
-                      objectFit: "contain",
-                      filter: "invert(1) hue-rotate(180deg)",
+                      width: 32, height: 32, borderRadius: 10,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(0,0,0,0.35)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: "rgba(255,255,255,0.45)",
+                      cursor: "pointer",
                     }}
-                  />
+                  >
+                    <ChevronRight size={14} />
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
