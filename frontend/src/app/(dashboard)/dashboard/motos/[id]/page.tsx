@@ -637,30 +637,30 @@ export default function MotoDetailPage() {
                         <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>Registre manutenções, documentação e outros gastos</p>
                       </div>
                     ) : expenses.map((exp, i) => (
-                      <motion.div key={exp.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="card" style={{ padding: "14px 18px" }}>
-                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                            <div style={{ width: 4, flexShrink: 0, alignSelf: "stretch", borderRadius: 4, background: CAT_COLORS[exp.categoria] || "#64748b" }} />
-                            <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                                <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `${CAT_COLORS[exp.categoria]}22`, color: CAT_COLORS[exp.categoria] }}>{EXPENSE_CATEGORY_LABELS[exp.categoria]}</span>
-                                <span style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 3 }}><Calendar size={10} /> {fmtDate(exp.data)}</span>
-                                {exp.km_atual && <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{exp.km_atual.toLocaleString("pt-BR")} km</span>}
-                              </div>
-                              <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>{exp.descricao}</p>
-                              {exp.fornecedor && <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 3 }}><User size={10} /> {exp.fornecedor}</p>}
-                              {exp.observacoes && <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontStyle: "italic" }}>{exp.observacoes}</p>}
+                      <motion.div key={exp.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="card" style={{ padding: "14px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                          <div style={{ width: 4, flexShrink: 0, alignSelf: "stretch", borderRadius: 4, background: CAT_COLORS[exp.categoria] || "#64748b" }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "nowrap" }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: `${CAT_COLORS[exp.categoria]}22`, color: CAT_COLORS[exp.categoria], whiteSpace: "nowrap", flexShrink: 0 }}>{EXPENSE_CATEGORY_LABELS[exp.categoria]}</span>
+                              <span style={{ fontSize: 10, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap", flexShrink: 0 }}><Calendar size={9} /> {fmtDate(exp.data)}</span>
+                              {exp.km_atual && <span style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap", flexShrink: 0 }}>{exp.km_atual.toLocaleString("pt-BR")} km</span>}
                             </div>
-                          </div>
-                          <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>{fmt(exp.valor)}</p>
-                            <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{exp.forma_pagamento.replace(/_/g, " ")}{exp.parcelas && exp.parcelas > 1 ? ` · ${exp.parcelas}x` : ""}</p>
-                            {vehicle.status !== "vendido" && (
-                              <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                                <button onClick={() => setEditingExpense(exp)} style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontSize: 11, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 4, fontWeight: 500 }}><Edit size={11} /> Editar</button>
-                                <button onClick={() => setConfirmDeleteExpense(exp.id)} style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontSize: 11, color: "#ef4444", display: "flex", alignItems: "center", gap: 4, fontWeight: 500 }}><Trash2 size={11} /> Apagar</button>
+                            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", marginBottom: 2, lineHeight: 1.4 }}>{exp.descricao}</p>
+                            {exp.fornecedor && <p style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 3 }}><User size={10} /> {exp.fornecedor}</p>}
+                            {exp.observacoes && <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontStyle: "italic" }}>{exp.observacoes}</p>}
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8, flexWrap: "wrap", gap: 6 }}>
+                              <div>
+                                <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>{fmt(exp.valor)}</p>
+                                <p style={{ fontSize: 10, color: "var(--text-muted)", margin: 0 }}>{exp.forma_pagamento.replace(/_/g, " ")}{exp.parcelas && exp.parcelas > 1 ? ` · ${exp.parcelas}x` : ""}</p>
                               </div>
-                            )}
+                              {vehicle.status !== "vendido" && (
+                                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                                  <button onClick={() => setEditingExpense(exp)} style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: "5px 12px", cursor: "pointer", fontSize: 11, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 4, fontWeight: 500 }}><Edit size={11} /> Editar</button>
+                                  <button onClick={() => setConfirmDeleteExpense(exp.id)} style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "5px 12px", cursor: "pointer", fontSize: 11, color: "#ef4444", display: "flex", alignItems: "center", gap: 4, fontWeight: 500 }}><Trash2 size={11} /> Apagar</button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </motion.div>
