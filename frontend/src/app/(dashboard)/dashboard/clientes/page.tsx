@@ -443,13 +443,16 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
     >
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
 
-        {/* -- Top bar: sticky so it's always visible -- */}
+        {/* -- Top bar: sticky, sempre visivel ao rolar -- */}
         <div style={{
-          position: "sticky", top: 0, zIndex: 10,
-          background: "rgba(0,0,0,0.85)",
-          backdropFilter: "blur(8px)",
-          borderRadius: 12,
-          padding: "10px 0",
+          position: "sticky", top: 0, zIndex: 20,
+          /* margem negativa para sangrar ate a borda do overlay */
+          margin: "-16px -16px 0",
+          padding: "12px 16px",
+          background: "rgba(0,0,0,0.92)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
         }}>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onClose}
@@ -908,10 +911,12 @@ function CustomerModal({ customer, onClose, onSuccess }: {
         position: "fixed", inset: 0, zIndex: 9100,
         background: "rgba(0,0,0,0.82)",
         backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
+        display: "flex", alignItems: "flex-start", justifyContent: "center",
         overflow: "hidden",
         padding: "16px",
-        paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+        /* empurra o card pra baixo pra nao ficar atras da status bar nem da nav */
+        paddingTop: "max(16px, env(safe-area-inset-top, 16px))",
+        paddingBottom: "calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px) + 16px)",
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
@@ -924,9 +929,11 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           width: "100%", maxWidth: "600px",
           background: "var(--surface)", border: "1px solid rgba(255,255,255,0.09)",
           borderRadius: "18px", overflow: "hidden",
-          maxHeight: "min(calc(100dvh - 32px - env(safe-area-inset-bottom, 0px)), 760px)",
+          /* altura maxima = tela inteira - nav inferior - margem de cima - margem de baixo */
+          maxHeight: "calc(100dvh - var(--bottom-nav-height, 60px) - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px) - 32px)",
           display: "flex", flexDirection: "column",
           boxShadow: "0 40px 100px rgba(0,0,0,0.8)",
+          marginTop: "auto", marginBottom: "auto",
         }}
       >
         <div style={{
