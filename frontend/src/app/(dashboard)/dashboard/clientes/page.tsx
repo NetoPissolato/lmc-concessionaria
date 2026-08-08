@@ -715,7 +715,8 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
 
   const statusColors: Record<string, string> = { concluida: "#22c55e", pendente: "#f59e0b", cancelada: "#ef4444" };
   const statusLabels: Record<string, string> = { concluida: "Concluída", pendente: "Pendente", cancelada: "Cancelada" };
-  const { isMobile } = useBreakpoint();
+  const { isMobile, isMobileOrTablet } = useBreakpoint();
+
 
   return (
     <motion.div
