@@ -430,7 +430,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18 }}
       style={{
-        position: "fixed", inset: 0, zIndex: 9000,
+        position: "fixed", inset: 0, zIndex: 9200,
         background: "rgba(0,0,0,0.96)",
         backdropFilter: "blur(12px)",
         overflowY: "auto",
@@ -908,13 +908,13 @@ function CustomerModal({ customer, onClose, onSuccess }: {
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       style={{
-        position: "fixed", inset: 0, zIndex: 9100,
+        position: "fixed", inset: 0, zIndex: 9200,
         background: "rgba(0,0,0,0.82)",
         backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-        display: "flex", alignItems: "flex-start", justifyContent: "center",
+        display: "flex", alignItems: "center", justifyContent: "center",
         overflow: "hidden",
+        /* padding fixo para garantir espaco em todos os dispositivos */
         padding: "16px",
-        /* empurra o card pra baixo pra nao ficar atras da status bar nem da nav */
         paddingTop: "max(16px, env(safe-area-inset-top, 16px))",
         paddingBottom: "calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px) + 16px)",
       }}
@@ -929,11 +929,10 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           width: "100%", maxWidth: "600px",
           background: "var(--surface)", border: "1px solid rgba(255,255,255,0.09)",
           borderRadius: "18px", overflow: "hidden",
-          /* altura maxima = tela inteira - nav inferior - margem de cima - margem de baixo */
-          maxHeight: "calc(100dvh - var(--bottom-nav-height, 60px) - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px) - 32px)",
+          /* 100svh = viewport sem chrome do browser (iOS Safari seguro) */
+          maxHeight: "calc(100svh - var(--bottom-nav-height, 60px) - env(safe-area-inset-bottom, 0px) - 48px)",
           display: "flex", flexDirection: "column",
           boxShadow: "0 40px 100px rgba(0,0,0,0.8)",
-          marginTop: "auto", marginBottom: "auto",
         }}
       >
         <div style={{
