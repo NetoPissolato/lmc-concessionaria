@@ -841,7 +841,7 @@ function Header({
       padding: isMobileOrTablet ? "0 10px" : "0 20px",
       position: "sticky", top: 0, zIndex: 30, flexShrink: 0,
       gap: isMobileOrTablet ? 6 : 12,
-      overflow: "hidden",
+      // overflow: "hidden" REMOVIDO — causava os dropdowns ficarem escondidos abaixo do header
     }}>
       <style>{`@keyframes hping{75%,100%{transform:scale(2.2);opacity:0}}`}</style>
 

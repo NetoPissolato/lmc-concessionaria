@@ -2130,3 +2130,187 @@ input[type="number"] { -moz-appearance: textfield; }
     box-sizing: border-box;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ─── GLOBAL PROFESSIONAL POLISH — Desktop + Acessibilidade + Performance ────
+   Aplicado depois de todas as regras para ter prioridade máxima.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Cursor pointer em todos os elementos interativos ───────────────────────── */
+/* Faltava em divs, spans e âncoras clicáveis */
+a,
+button,
+[role="button"],
+[role="menuitem"],
+[role="option"],
+[role="tab"],
+[role="link"],
+label[for],
+summary,
+[onClick],
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+[disabled],
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ── Scroll sem ficar escondido atrás do header fixo ───────────────────────── */
+html {
+  scroll-padding-top: calc(var(--header-height) + 16px);
+}
+
+/* ── Performance: acelera GPU para elementos animados ───────────────────────── */
+/* Cards interativos com hover/transform se beneficiam de composição no GPU */
+.card,
+.kpi-card,
+.card-interactive {
+  will-change: transform;
+}
+/* Quando não há hover acontecendo, libera a GPU */
+.card:not(:hover),
+.kpi-card:not(:hover),
+.card-interactive:not(:hover) {
+  will-change: auto;
+}
+
+/* Layout containment: browser pode otimizar repaint de cards independentemente */
+.card {
+  contain: layout style;
+}
+
+/* ── Tipografia profissional ────────────────────────────────────────────────── */
+body {
+  /* Renderização de texto mais nítida em telas de alta resolução (Retina, AMOLED) */
+  text-rendering: optimizeLegibility;
+  /* Kerning entre letras mais preciso */
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Textos longos se dividem com hífen automático em vez de transbordar */
+p,
+.page-subtitle,
+.card p,
+[class*="description"] {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* ── Acessibilidade: foco visível apenas com teclado ─────────────────────────── */
+/* Remove anel de foco ao clicar com mouse, mantém ao navegar com teclado */
+:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 4px var(--brand-light);
+}
+/* Inputs já têm seu próprio estilo de foco, evitar duplo */
+.input:focus-visible {
+  outline: none;
+}
+
+/* ── Seleção de texto com a cor da marca ────────────────────────────────────── */
+::selection {
+  background: rgba(245, 166, 35, 0.2);
+  color: var(--text-primary);
+}
+
+/* ── Scrollbar ainda mais discreta ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(245, 166, 35, 0.12);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 166, 35, 0.28);
+}
+
+/* ── Transição suave ao mudar de página (evita flash) ───────────────────────── */
+.page-enter {
+  animation: pageEnterFade 0.18s ease-out both;
+}
+@keyframes pageEnterFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Prevent layout shift em imagens sem dimensões definidas ────────────────── */
+img {
+  display: block;
+}
+img[width][height] {
+  height: auto;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ─── PRINT STYLES — Para quando o usuário imprime relatórios ──────────────
+   ══════════════════════════════════════════════════════════════════════════════ */
+@media print {
+  /* Oculta elementos de navegação */
+  .sidebar-desktop,
+  .bottom-nav,
+  header,
+  [class*="sidebar"],
+  [class*="mobile-menu"],
+  [class*="bottom-nav"],
+  button:not(.print-visible),
+  .btn:not(.print-visible) {
+    display: none !important;
+  }
+
+  /* Layout de impressão: 1 coluna, sem background */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11pt;
+  }
+
+  /* Cards ficam simples em impressão */
+  .card, .kpi-card {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    break-inside: avoid;
+  }
+
+  /* Títulos visíveis */
+  h1, h2, h3 {
+    color: #000 !important;
+    break-after: avoid;
+  }
+
+  /* Texto legível em impressão */
+  p, span, td, th {
+    color: #333 !important;
+  }
+
+  /* Tabelas não quebram no meio */
+  table { break-inside: auto; }
+  tr { break-inside: avoid; }
+
+  /* Links: mostrar URL */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #666;
+  }
+  /* Exceto links internos */
+  a[href^="#"]::after,
+  a[href^="javascript"]::after {
+    content: "";
+  }
+
+  /* Conteúdo principal ocupa a página inteira */
+  #dash-main, .dashboard-main-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+}
