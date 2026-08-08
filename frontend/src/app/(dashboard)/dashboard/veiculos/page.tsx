@@ -285,7 +285,14 @@ export default function VeiculosPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => vehiclesApi.delete(id),
-    onSuccess: () => { toast.success("Veículo excluído com sucesso"); setDeleteTarget(null); queryClient.invalidateQueries({ queryKey: ["vehicles"] }); },
+    onSuccess: () => {
+      toast.success("Veículo excluído com sucesso");
+      setDeleteTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ["vehicles-carros"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+    },
     onError: () => toast.error("Erro ao excluir veículo"),
   });
 

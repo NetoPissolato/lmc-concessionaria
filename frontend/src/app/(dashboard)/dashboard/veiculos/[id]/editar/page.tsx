@@ -113,6 +113,9 @@ export default function EditarVeiculoPage() {
       toast.success("Veículo atualizado!");
       queryClient.invalidateQueries({ queryKey: ["vehicle", id] });
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ["vehicles-carros"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
       router.push(`/dashboard/veiculos/${id}`);
     },
     onError: (err: unknown) => {

@@ -118,6 +118,9 @@ export default function EditarMotoPage() {
       toast.success("Moto atualizada!");
       queryClient.invalidateQueries({ queryKey: ["vehicle", id] });
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ["vehicles-motos"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
       router.push(`/dashboard/motos/${id}`);
     },
     onError: (err: unknown) => {

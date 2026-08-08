@@ -87,10 +87,12 @@ export default function ClientesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => customersApi.delete(id),
-    onSuccess: () => {
+    onSuccess: (_data, deletedId) => {
       toast.success("Cliente excluído!");
       setProfileCustomer(null);
       queryClient.invalidateQueries({ queryKey: ["customers"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["customer-purchases", deletedId] });
     },
     onError: () => toast.error("Erro ao excluir cliente"),
   });
@@ -371,6 +373,7 @@ export default function ClientesPage() {
             onSuccess={() => {
               setShowForm(false);
               queryClient.invalidateQueries({ queryKey: ["customers"] });
+              queryClient.invalidateQueries({ queryKey: ["dashboard"] });
             }}
           />
         )}

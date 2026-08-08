@@ -403,7 +403,15 @@ export default function MotoDetailPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: (status: string) => vehiclesApi.update(id, { status }),
-    onSuccess: () => { toast.success("Status atualizado!"); queryClient.invalidateQueries({ queryKey: ["vehicle", id] }); queryClient.invalidateQueries({ queryKey: ["vehicles"] }); queryClient.invalidateQueries({ queryKey: ["dashboard"] }); setPendingStatus(null); },
+    onSuccess: () => {
+      toast.success("Status atualizado!");
+      queryClient.invalidateQueries({ queryKey: ["vehicle", id] });
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ["vehicles-motos"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      setPendingStatus(null);
+    },
     onError: () => toast.error("Erro ao atualizar status"),
   });
 
@@ -424,7 +432,13 @@ export default function MotoDetailPage() {
     onSuccess: () => {
       toast.success("Moto excluída!");
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ["vehicles-motos"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-chart"] });
+      queryClient.invalidateQueries({ queryKey: ["lucratividade-mes"] });
+      queryClient.invalidateQueries({ queryKey: ["sales-motos-page"] });
       router.replace("/dashboard/motos");
     },
     onError: () => toast.error("Erro ao excluir moto"),

@@ -10,10 +10,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 30, // 30 segundos — equilibrio entre performance e real-time
-            retry: 1,
-            refetchOnWindowFocus: true,  // recarrega ao voltar para a aba
-            refetchOnMount: true,        // recarrega ao montar o componente
+          staleTime: 1000 * 5,  // 5 segundos — dados refrescados rapidamente após mutations
+          retry: 1,
+          refetchOnWindowFocus: true,   // recarrega ao voltar para a aba
+          refetchOnMount: "always",     // SEMPRE refetch ao montar, independente de staleTime
           },
         },
       })

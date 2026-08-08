@@ -149,7 +149,14 @@ export default function MotosPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => vehiclesApi.delete(id),
-    onSuccess: () => { toast.success("Moto excluída com sucesso"); setDeleteTarget(null); queryClient.invalidateQueries({ queryKey: ["vehicles"] }); },
+    onSuccess: () => {
+      toast.success("Moto excluída com sucesso");
+      setDeleteTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ["vehicles-motos"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+    },
     onError: () => toast.error("Erro ao excluir moto"),
   });
 

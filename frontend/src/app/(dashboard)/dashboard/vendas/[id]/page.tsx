@@ -70,7 +70,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
       queryClient.invalidateQueries({ queryKey: ["financial-entries"] });
       queryClient.invalidateQueries({ queryKey: ["financial-chart"] });
-      queryClient.invalidateQueries({ queryKey: ["financial-lucratividade"] });
+      queryClient.invalidateQueries({ queryKey: ["lucratividade-mes"] });  // era "financial-lucratividade" (errado!)
       // Veículos (status muda)
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       if (sale?.vehicle_id) queryClient.invalidateQueries({ queryKey: ["vehicle", sale.vehicle_id] });

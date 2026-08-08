@@ -413,6 +413,11 @@ export default function NovaVendaPage() {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["sales-carros-page"] });
       queryClient.invalidateQueries({ queryKey: ["sales-motos-page"] });
+      // Financeiro — atualiza KPIs, lançamentos e gráfico ao criar venda
+      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-chart"] });
+      queryClient.invalidateQueries({ queryKey: ["lucratividade-mes"] });
       // Redirect to the correct sales list based on vehicle type sold
       const destino = vehicleTab === "moto"
         ? "/dashboard/vendas/motos"
