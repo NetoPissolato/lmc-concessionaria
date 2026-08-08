@@ -219,14 +219,30 @@ class SaleService:
         # Sales today
         today_sales = [s for s in monthly_sales if s.data_venda == today]
 
-        # Calculate monthly profit (revenue - cost of sold vehicles)
-        lucro_mes = Decimal("0")
-        for sale in monthly_sales:
-            vehicle = await self.vehicle_repo.get_with_expenses(sale.vehicle_id)
-            if vehicle:
-                total_expenses = sum(e.valor for e in vehicle.expenses)
-                custo = vehicle.valor_compra + total_expenses
-                lucro_mes += sale.valor_venda - custo
+        # Calculate monthly profit from financial_entries (same source as Financeiro page)
+        from sqlalchemy import select, func
+        from app.domain.models.financial import FinancialEntry
+        first_day = date(year, month, 1)
+        if month == 12:
+            last_day = date(year + 1, 1, 1)
+        else:
+            last_day = date(year, month + 1, 1)
+
+        total_entradas = await self.db.scalar(
+            select(func.coalesce(func.sum(FinancialEntry.valor), 0)).where(
+                FinancialEntry.tipo == EntryType.ENTRADA,
+                FinancialEntry.data >= first_day,
+                FinancialEntry.data < last_day,
+            )
+        ) or Decimal("0")
+        total_saidas = await self.db.scalar(
+            select(func.coalesce(func.sum(FinancialEntry.valor), 0)).where(
+                FinancialEntry.tipo == EntryType.SAIDA,
+                FinancialEntry.data >= first_day,
+                FinancialEntry.data < last_day,
+            )
+        ) or Decimal("0")
+        lucro_mes = Decimal(str(total_entradas)) - Decimal(str(total_saidas))
 
         # Build enriched ultimas_vendas with vehicle + cliente names (last 6 overall)
         recent_sales = await self.sale_repo.get_recent_sales(limit=6)
