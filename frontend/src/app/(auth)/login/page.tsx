@@ -101,8 +101,25 @@ export default function LoginPage() {
       setSuccess(true);
       await new Promise(r => setTimeout(r, 900));
       router.push("/dashboard");
-    } catch {
-      setError("Credenciais inválidas");
+    } catch (err: any) {
+      let msg = "Erro ao fazer login. Tente novamente.";
+      if (err?.response?.data?.detail) {
+        const detail = err.response.data.detail;
+        if (typeof detail === "string") {
+          if (detail.toLowerCase().includes("bloqueada") || detail.toLowerCase().includes("bloqueado")) {
+            msg = "🔒 Conta bloqueada por excesso de tentativas. Aguarde alguns minutos.";
+          } else if (detail.toLowerCase().includes("credenciais") || detail.toLowerCase().includes("inválid")) {
+            msg = "E-mail/usuário ou senha incorretos.";
+          } else {
+            msg = detail;
+          }
+        }
+      } else if (err?.response?.status === 429) {
+        msg = "⏳ Muitas tentativas. Aguarde um momento antes de tentar novamente.";
+      } else if (err?.response?.status === 401 || err?.response?.status === 403) {
+        msg = "E-mail/usuário ou senha incorretos.";
+      }
+      setError(msg);
       setIsLoading(false);
     }
   };
