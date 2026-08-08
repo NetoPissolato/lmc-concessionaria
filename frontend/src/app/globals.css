@@ -923,6 +923,69 @@ input[type="number"] { -moz-appearance: textfield; }
   .page-subtitle { font-size: 12px; }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   TABLET SYSTEM-WIDE FIXES  (640px – 1023px)
+   ─────────────────────────────────────────────────────────────────────────────
+   These CSS rules act as a safety net for tablet-sized viewports where JS
+   breakpoint checks may miss (e.g. components checking only isMobile < 640px).
+   They enforce sensible layouts without changing desktop (≥1024px) behaviour.
+   ──────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 640px) and (max-width: 1023px) {
+
+  /* ── Text overflow guard — prevent ANY text from breaking out of its container */
+  .kpi-card,
+  .form-section-card,
+  [class*="card"],
+  [class*="panel"] {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  /* ── Vehicle detail 2-col → 1-col on tablet */
+  .vehicle-detail-two-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Form section grids: max 2 columns on tablet */
+  .form-grid-auto {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)) !important;
+  }
+
+  /* ── Vehicle / Moto list cards: ensure they don't overflow */
+  .vehicle-card-grid,
+  [class*="vehicle-card"],
+  [class*="moto-card"] {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* ── Page header: allow wrapping on tablet */
+  .page-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* ── KPI cards: ensure minimum readable size */
+  .kpi-card {
+    min-width: 0;
+    padding: clamp(12px, 2vw, 16px) !important;
+  }
+  .kpi-card p { min-width: 0; }
+
+  /* ── Flex rows that should stack at tablet width */
+  .tablet-stack {
+    flex-direction: column !important;
+  }
+
+  /* ── Right sidebar panels: collapse below main content on tablet */
+  .vehicle-detail-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+
 /* ─── KPI Strip — 5 → 3 → 2 columns (content-driven breakpoints) ────────────── */
 .kpi-strip {
   display: grid;

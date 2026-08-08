@@ -226,6 +226,8 @@ export default function FinanceiroPage() {
         display: "grid",
         gridTemplateColumns: isMobile
           ? "1fr 1fr"
+          : isMobileOrTablet
+          ? "repeat(3, 1fr)"
           : "repeat(5, 1fr)",
         gap: isMobileOrTablet ? "10px" : "12px",
       }}>
@@ -260,7 +262,7 @@ export default function FinanceiroPage() {
         </motion.div>
 
         {/* Lucro Líquido */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="kpi-card" style={{ overflow: "hidden", gridColumn: isMobile ? "span 2" : undefined, border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="kpi-card" style={{ overflow: "hidden", gridColumn: isMobile ? "span 2" : isMobileOrTablet ? "span 1" : undefined, border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: lucro >= 0 ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <DollarSign size={16} color={lucro >= 0 ? "#22c55e" : "#ef4444"} />

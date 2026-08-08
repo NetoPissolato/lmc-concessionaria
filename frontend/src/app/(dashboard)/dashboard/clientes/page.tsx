@@ -403,7 +403,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
   const histRef  = useRef<HTMLDivElement>(null);
   const [histPage, setHistPage] = useState(0);
   const HIST_PER = 5;
-  const { isMobile } = useBreakpoint();
+  const { isMobile, isMobileOrTablet } = useBreakpoint();
 
   const { data: purchases = [], isLoading } = useQuery<Purchase[]>({
     queryKey: ["customer-purchases", customer.id],
@@ -456,72 +456,73 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
 
         {/* -- Hero card -- */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: isMobile ? "16px" : "26px 28px" }}>
-          <div style={{ display: "flex", alignItems: isMobile ? "flex-start" : "center", gap: isMobile ? 14 : 24, flexWrap: "wrap" }}>
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: isMobile ? "16px" : "22px 24px" }}>
+          {/* Row 1: Avatar + Name + Badge */}
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 14 : 20, marginBottom: 20 }}>
             {/* Avatar */}
-            <div style={{ width: 90, height: 90, borderRadius: 14, flexShrink: 0, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <User size={42} color="rgba(255,255,255,0.18)" strokeWidth={1.5} />
+            <div style={{ width: isMobile ? 72 : 88, height: isMobile ? 72 : 88, borderRadius: 14, flexShrink: 0, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <User size={isMobile ? 34 : 42} color="rgba(255,255,255,0.18)" strokeWidth={1.5} />
             </div>
             {/* ID + Name + Badge */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: "rgba(245,166,35,0.12)", color: "#F5A623", letterSpacing: "0.06em", display: "inline-block", marginBottom: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: "rgba(245,166,35,0.12)", color: "#F5A623", letterSpacing: "0.06em", display: "inline-block", marginBottom: 6 }}>
                 ID #{customer.id.slice(-5).toUpperCase()}
               </span>
-              <h2 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8, lineHeight: 1.1 }}>{customer.nome}</h2>
+              <h2 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8, lineHeight: 1.1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{customer.nome}</h2>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700, background: "rgba(34,197,94,0.08)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
                 Cliente Ativo
               </span>
             </div>
-            {/* Contact row */}
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-start" }}>
-              {customer.telefone && (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                    <Phone size={13} color="#F5A623" />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{customer.telefone}</span>
-                  </div>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Telefone</p>
-                  <a
-                    href={`tel:${customer.telefone.replace(/\D/g, "")}`}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
-                  >
-                    <Phone size={12} /> Ligar
-                  </a>
+          </div>
+          {/* Row 2: Contact info - always full width below */}
+          <div style={{ display: "flex", gap: isMobile ? 10 : 16, flexWrap: "wrap", alignItems: "flex-start", paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            {customer.telefone && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                  <Phone size={13} color="#F5A623" />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{customer.telefone}</span>
                 </div>
-              )}
-              {(customer.whatsapp || customer.telefone) && (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                    <MessageCircle size={13} color="#25d366" />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{customer.whatsapp || customer.telefone}</span>
-                  </div>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>WhatsApp</p>
-                  <a
-                    href={`https://wa.me/55${(customer.whatsapp || customer.telefone || "").replace(/\D/g, "")}`}
-                    target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.25)", color: "#25d366", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
-                  >
-                    <WhatsAppIcon size={12} color="#25d366" /> Abrir WhatsApp
-                  </a>
+                <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Telefone</p>
+                <a
+                  href={`tel:${customer.telefone.replace(/\D/g, "")}`}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
+                >
+                  <Phone size={12} /> Ligar
+                </a>
+              </div>
+            )}
+            {(customer.whatsapp || customer.telefone) && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                  <MessageCircle size={13} color="#25d366" />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{customer.whatsapp || customer.telefone}</span>
                 </div>
-              )}
-              {customer.email && (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                    <Mail size={13} color="#F5A623" />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{customer.email}</span>
-                  </div>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>E-mail</p>
-                  <a
-                    href={`mailto:${customer.email}`}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
-                  >
-                    <Mail size={12} /> Enviar E-mail
-                  </a>
+                <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>WhatsApp</p>
+                <a
+                  href={`https://wa.me/55${(customer.whatsapp || customer.telefone || "").replace(/\D/g, "")}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.25)", color: "#25d366", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
+                >
+                  <WhatsAppIcon size={12} color="#25d366" /> Abrir WhatsApp
+                </a>
+              </div>
+            )}
+            {customer.email && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                  <Mail size={13} color="#F5A623" />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "clamp(160px, 22vw, 260px)", display: "block" }}>{customer.email}</span>
                 </div>
-              )}
-            </div>
+                <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>E-mail</p>
+                <a
+                  href={`mailto:${customer.email}`}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
+                >
+                  <Mail size={12} /> Enviar E-mail
+                </a>
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -720,7 +721,7 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
     <motion.div
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.05 + i * 0.06 }}
-      style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "150px 1fr", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)" }}
+      style={{ display: "grid", gridTemplateColumns: isMobileOrTablet ? "1fr" : "150px 1fr", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)" }}
     >
       {/* Vehicle photo */}
       <div style={{ background: "#0a0a0a", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", minHeight: 120 }}>
