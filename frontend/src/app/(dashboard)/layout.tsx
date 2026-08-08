@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Car, Users, ShoppingBag, DollarSign,
   UserCog, LogOut, Search, Bell, FileText, ChevronLeft,
-  ChevronRight, Menu, X, Bike, Clock, CheckCircle2,
+  ChevronRight, Menu, X, Bike, Clock, CheckCircle2, XCircle,
   ChevronDown,
 } from "lucide-react";
 import { authApi, salesApi } from "@/lib/api";
@@ -694,15 +694,15 @@ function Header({
   const [time, setTime] = useState(new Date());
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
-  const [pendingSales, setPendingSales] = useState<{id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string}[]>([]);
+  const [recentSales, setRecentSales] = useState<{id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string; status: string}[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
   const { isMobileOrTablet, isMobile, isDesktop } = useBreakpoint();
 
-  // Fetch pending sales for notifications — polls every 30s
+  // Fetch recent sales for notifications — polls every 30s
   const fetchPending = useCallback(() => {
-    salesApi.list({ status: "pendente", limit: 10 }).then((data: unknown[]) => {
-      setPendingSales(
-        (data as {id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string}[])
+    salesApi.list({ limit: 8 }).then((data: unknown[]) => {
+      setRecentSales(
+        (data as {id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string; status: string}[])
           .slice(0, 8)
       );
     }).catch(() => {});
@@ -922,7 +922,7 @@ function Header({
             }}
           >
             <Bell size={13} />
-            {pendingSales.length > 0 && (
+            {recentSales.length > 0 && (
               <span style={{ position: "absolute", top: "6px", right: "6px", width: "7px", height: "7px" }}>
                 <span style={{
                   display: "block", width: "7px", height: "7px", borderRadius: "50%",
@@ -962,12 +962,12 @@ function Header({
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <Bell size={13} color="var(--brand)" />
                     <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>Notificações</span>
-                    {pendingSales.length > 0 && (
+                    {recentSales.length > 0 && (
                       <span style={{
                         fontSize: "10px", fontWeight: "700", color: "#fff",
                         background: "var(--brand)", borderRadius: "20px",
                         padding: "1px 7px", lineHeight: "16px",
-                      }}>{pendingSales.length}</span>
+                      }}>{recentSales.length}</span>
                     )}
                   </div>
                   <button onClick={() => setShowNotif(false)}
@@ -978,20 +978,20 @@ function Header({
 
                 {/* Content */}
                 <div style={{ maxHeight: "360px", overflowY: "auto" }}>
-                  {pendingSales.length === 0 ? (
+                  {recentSales.length === 0 ? (
                     <div style={{ padding: "32px 16px", textAlign: "center" }}>
                       <CheckCircle2 size={28} color="#22c55e" style={{ margin: "0 auto 10px", display: "block" }} />
-                      <p style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>Tudo em dia!</p>
-                      <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: 4 }}>Nenhuma venda pendente.</p>
+                      <p style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>Sem vendas ainda.</p>
+                      <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: 4 }}>Nenhuma venda registrada.</p>
                     </div>
                   ) : (
                     <>
                       <div style={{ padding: "10px 16px 6px" }}>
                         <p style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                          Vendas Pendentes
+                          Vendas Recentes
                         </p>
                       </div>
-                      {pendingSales.map((sale, i) => (
+                      {recentSales.map((sale, i) => (
                         <motion.a
                           key={sale.id}
                           href={`/dashboard/vendas/${sale.id}`}
@@ -1011,10 +1011,15 @@ function Header({
                         >
                           <div style={{
                             width: 32, height: 32, borderRadius: 9, flexShrink: 0,
-                            background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.25)",
+                            background: sale.status === "concluida" ? "rgba(34,197,94,0.12)" : sale.status === "cancelada" ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)",
+                            border: `1px solid ${sale.status === "concluida" ? "rgba(34,197,94,0.25)" : sale.status === "cancelada" ? "rgba(239,68,68,0.25)" : "rgba(245,158,11,0.25)"}`,
                             display: "flex", alignItems: "center", justifyContent: "center",
                           }}>
-                            <Clock size={14} color="#f59e0b" />
+                            {sale.status === "concluida"
+                              ? <CheckCircle2 size={14} color="#22c55e" />
+                              : sale.status === "cancelada"
+                              ? <XCircle size={14} color="#ef4444" />
+                              : <Clock size={14} color="#f59e0b" />}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -1025,10 +1030,12 @@ function Header({
                             </p>
                           </div>
                           <span style={{
-                            fontSize: "9px", fontWeight: "700", color: "#f59e0b",
-                            background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)",
-                            padding: "2px 7px", borderRadius: "20px", whiteSpace: "nowrap",
-                          }}>PENDENTE</span>
+                            fontSize: "9px", fontWeight: "700",
+                            color: sale.status === "concluida" ? "#22c55e" : sale.status === "cancelada" ? "#ef4444" : "#f59e0b",
+                            background: sale.status === "concluida" ? "rgba(34,197,94,0.1)" : sale.status === "cancelada" ? "rgba(239,68,68,0.1)" : "rgba(245,158,11,0.1)",
+                            border: `1px solid ${sale.status === "concluida" ? "rgba(34,197,94,0.2)" : sale.status === "cancelada" ? "rgba(239,68,68,0.2)" : "rgba(245,158,11,0.2)"}`,
+                            padding: "2px 7px", borderRadius: "20px", whiteSpace: "nowrap", textTransform: "uppercase",
+                          }}>{sale.status === "concluida" ? "Concluída" : sale.status === "cancelada" ? "Cancelada" : "Pendente"}</span>
                         </motion.a>
                       ))}
                     </>
