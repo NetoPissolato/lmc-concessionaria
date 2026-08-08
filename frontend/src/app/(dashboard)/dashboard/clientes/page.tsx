@@ -857,6 +857,38 @@ function CustomerModal({ customer, onClose, onSuccess }: {
   const { isMobile } = useBreakpoint();
   useBodyScrollLock(true);
 
+  // ── Dirty state: só mostra Salvar se algo mudou ─────────────────────
+  const initialRef = useRef({
+    nome: customer?.nome || "", cpf_cnpj: customer?.cpf_cnpj || "",
+    telefone: customer?.telefone || "", whatsapp: customer?.whatsapp || "",
+    email: customer?.email || "", rua: customer?.endereco || "",
+    cidade: customer?.cidade || "", estado: customer?.estado || "",
+    observacoes: customer?.observacoes || "",
+  });
+  const isDirty = !customer ||
+    form.nome !== initialRef.current.nome ||
+    form.cpf_cnpj !== initialRef.current.cpf_cnpj ||
+    form.telefone !== initialRef.current.telefone ||
+    form.whatsapp !== initialRef.current.whatsapp ||
+    form.email !== initialRef.current.email ||
+    form.cidade !== initialRef.current.cidade ||
+    form.estado !== initialRef.current.estado ||
+    form.observacoes !== initialRef.current.observacoes ||
+    !!form.cep || !!form.numero || !!form.complemento;
+
+  // ── Refs para navegação Enter / auto-avanço ─────────────────────
+  // Ordem dos campos: 0=nome, 1=cpf, 2=email, 3=fone, 4=whats, 5=cep, 6=uf, 7=rua, 8=num, 9=comp, 10=cidade, 11=obs
+  const fieldRefs = useRef<(HTMLInputElement | HTMLTextAreaElement | null)[]>(Array(12).fill(null));
+  const focusField = (idx: number) => {
+    const el = fieldRefs.current[idx];
+    if (!el) return;
+    el.focus();
+    // scrollIntoView garante que o campo fica visivel dentro do modal
+    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
+  };
+  const onEnter = (e: React.KeyboardEvent, nextIdx: number) => {
+    if (e.key === "Enter") { e.preventDefault(); focusField(nextIdx); }
+  };
 
   const handleCEP = async (raw: string) => {
     const masked = maskCEP(raw);
@@ -946,8 +978,12 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           background: "var(--surface)",
         }}>
           <div>
-            <h2 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
               {customer ? "Editar Cliente" : "Novo Cliente"}
+              {/* ponto laranja quando ha mudancas nao salvas */}
+              {isDirty && customer && (
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--brand)", display: "inline-block", flexShrink: 0 }} title="Alterações não salvas" />
+              )}
             </h2>
             <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "3px" }}>
               {customer ? "Atualize as informações do cliente" : "Preencha os dados do novo cliente"}
@@ -975,12 +1011,22 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Nome completo *</label>
             <input required value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })}
+              ref={el => { fieldRefs.current[0] = el; }}
+              onKeyDown={e => onEnter(e, 1)}
               className="input" placeholder="Ex: João da Silva" style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>CPF / CNPJ</label>
             <input value={form.cpf_cnpj}
-              onChange={e => setForm({ ...form, cpf_cnpj: maskCPFOrCNPJ(e.target.value) })}
+              ref={el => { fieldRefs.current[1] = el; }}
+              onChange={e => {
+                const masked = maskCPFOrCNPJ(e.target.value);
+                setForm({ ...form, cpf_cnpj: masked });
+                // auto-avanca quando CPF(11) ou CNPJ(14) completo
+                const digits = unmask(masked);
+                if (digits.length === 11 || digits.length === 14) focusField(2);
+              }}
+              onKeyDown={e => onEnter(e, 2)}
               className="input" placeholder="000.000.000-00" inputMode="numeric" style={{ minHeight: 44 }} />
             {form.cpf_cnpj && unmask(form.cpf_cnpj).length === 11 && !validateCPF(form.cpf_cnpj) && (
               <p style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "11px", color: "var(--error)", marginTop: 4 }}>
@@ -996,16 +1042,30 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           <div>
             <label style={lbl}>Email</label>
             <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+              ref={el => { fieldRefs.current[2] = el; }}
+              onKeyDown={e => onEnter(e, 3)}
               className="input" placeholder="email@exemplo.com" style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>Telefone</label>
-            <input value={form.telefone} onChange={e => setForm({ ...form, telefone: maskPhone(e.target.value) })}
+            <input value={form.telefone} onChange={e => {
+                const masked = maskPhone(e.target.value);
+                setForm({ ...form, telefone: masked });
+                if (masked.length >= 14) focusField(4); // auto-avanca quando completo
+              }}
+              ref={el => { fieldRefs.current[3] = el; }}
+              onKeyDown={e => onEnter(e, 4)}
               className="input" placeholder="(00) 00000-0000" inputMode="tel" maxLength={15} style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>WhatsApp</label>
-            <input value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: maskPhone(e.target.value) })}
+            <input value={form.whatsapp} onChange={e => {
+                const masked = maskPhone(e.target.value);
+                setForm({ ...form, whatsapp: masked });
+                if (masked.length >= 14) focusField(5); // auto-avanca para CEP
+              }}
+              ref={el => { fieldRefs.current[4] = el; }}
+              onKeyDown={e => onEnter(e, 5)}
               className="input" placeholder="(00) 00000-0000" inputMode="tel" maxLength={15} style={{ minHeight: 44 }} />
           </div>
 
@@ -1015,6 +1075,8 @@ function CustomerModal({ customer, onClose, onSuccess }: {
             <label style={lbl}>CEP</label>
             <div style={{ position: "relative" }}>
               <input value={form.cep} onChange={e => handleCEP(e.target.value)}
+                ref={el => { fieldRefs.current[5] = el; }}
+                onKeyDown={e => onEnter(e, 6)}
                 className="input" placeholder="00000-000" inputMode="numeric" maxLength={9} style={{ minHeight: 44 }} />
               {cepLoading && <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
                 <Loader2 size={13} color="var(--text-muted)" style={{ animation: "spin 1s linear infinite" }} />
@@ -1028,32 +1090,43 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           <div>
             <label style={lbl}>Estado (UF)</label>
             <input value={form.estado}
-              onChange={e => setForm({ ...form, estado: e.target.value.toUpperCase().slice(0, 2) })}
+              onChange={e => { setForm({ ...form, estado: e.target.value.toUpperCase().slice(0, 2) }); }}
+              ref={el => { fieldRefs.current[6] = el; }}
+              onKeyDown={e => onEnter(e, 7)}
               className="input" placeholder="SP" maxLength={2} style={{ minHeight: 44 }} />
           </div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Logradouro e Bairro</label>
             <input value={form.rua} onChange={e => setForm({ ...form, rua: e.target.value })}
+              ref={el => { fieldRefs.current[7] = el; }}
+              onKeyDown={e => onEnter(e, 8)}
               className="input" placeholder="Rua, Bairro (preenchido pelo CEP)" style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>Número</label>
             <input value={form.numero} onChange={e => setForm({ ...form, numero: e.target.value })}
+              ref={el => { fieldRefs.current[8] = el; }}
+              onKeyDown={e => onEnter(e, 9)}
               className="input" placeholder="123" inputMode="numeric" style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>Complemento</label>
             <input value={form.complemento} onChange={e => setForm({ ...form, complemento: e.target.value })}
+              ref={el => { fieldRefs.current[9] = el; }}
+              onKeyDown={e => onEnter(e, 10)}
               className="input" placeholder="Apto, Casa..." style={{ minHeight: 44 }} />
           </div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Cidade</label>
             <input value={form.cidade} onChange={e => setForm({ ...form, cidade: e.target.value })}
+              ref={el => { fieldRefs.current[10] = el; }}
+              onKeyDown={e => onEnter(e, 11)}
               className="input" placeholder="Cidade" style={{ minHeight: 44 }} />
           </div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Observações</label>
             <textarea value={form.observacoes} onChange={e => setForm({ ...form, observacoes: e.target.value })}
+              ref={el => { fieldRefs.current[11] = el as HTMLTextAreaElement; }}
               className="input" rows={2} style={{ height: "auto", paddingTop: "8px", minHeight: 88 }}
               placeholder="Anotações sobre o cliente..." />
           </div>
@@ -1068,7 +1141,17 @@ function CustomerModal({ customer, onClose, onSuccess }: {
           flexShrink: 0,
         }}>
           <button type="button" className="btn btn-secondary" onClick={onClose} style={{ minHeight: 44 }}>Cancelar</button>
-          <motion.button type="submit" className="btn btn-primary" whileTap={{ scale: 0.97 }} disabled={loading} style={{ minHeight: 44 }}>
+          <motion.button
+            type="submit"
+            className="btn btn-primary"
+            whileTap={{ scale: 0.97 }}
+            disabled={loading || !isDirty}
+            style={{
+              minHeight: 44,
+              opacity: isDirty ? 1 : 0.4,
+              transition: "opacity 0.2s",
+            }}
+          >
             {loading
               ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Salvando...</>
               : <><Check size={13} /> {customer ? "Salvar alterações" : "Cadastrar"}</>
