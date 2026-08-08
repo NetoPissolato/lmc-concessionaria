@@ -422,7 +422,6 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
   const fmtDateSale = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("pt-BR");
 
   return (
-    /* Overlay: flex column — topbar fixo no topo, conteudo rola abaixo */
     <motion.div
       key="profile-overlay"
       initial={{ opacity: 0 }}
@@ -433,41 +432,27 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
         position: "fixed", inset: 0, zIndex: 9200,
         background: "rgba(0,0,0,0.96)",
         backdropFilter: "blur(12px)",
-        display: "flex", flexDirection: "column",
-      }}
-    >
-      {/* ── Topbar FIXO — nunca rola ─────────────────────────────────── */}
-      <div style={{
-        flexShrink: 0,
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-        padding: "12px 16px",
-        background: "rgba(0,0,0,0.95)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
-        zIndex: 1,
-      }}>
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onClose}
-          style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", borderRadius: 10, color: "#F5A623", fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          Voltar para clientes
-        </motion.button>
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onEdit}
-          style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>
-          <Edit size={13} /> Editar Cliente
-        </motion.button>
-      </div>
-
-      {/* ── Conteudo rolavel ─────────────────────────────────────────── */}
-      <div style={{
-        flex: 1, overflowY: "auto",
+        overflowY: "auto",
         WebkitOverflowScrolling: "touch" as "touch",
         padding: "16px",
         paddingBottom: "calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px) + 24px)",
       }}
-        onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      >
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+
+        {/* Botoes de acao no topo */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onClose}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", borderRadius: 10, color: "#F5A623", fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            Voltar para clientes
+          </motion.button>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onEdit}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>
+            <Edit size={13} /> Editar Cliente
+          </motion.button>
+        </div>
 
         {/* -- Hero card -- */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
@@ -709,7 +694,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
           )}
         </motion.div>
 
-      </div>
+      </div>{/* end maxWidth */}
     </motion.div>
   );
 }
@@ -834,7 +819,6 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
           </div>
         )}
       </div>
-      </div>{/* end scroll container */}
     </motion.div>
   );
 }
