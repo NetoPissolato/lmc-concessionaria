@@ -314,11 +314,21 @@ export default function DashboardPage() {
           border: "1px solid rgba(245,166,35,0.2)",
         }}
       >
-        {/* Subtle grid background */}
+        {/* Imagem de fundo - carro */}
+        <img
+          src="/BANNERHERO.png"
+          alt="Banner"
+          style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover", objectPosition: "center",
+            opacity: 0.5,
+          }}
+        />
+        {/* Overlay escuro para destacar logo */}
         <div style={{
           position: "absolute", inset: 0,
-          backgroundImage: "linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
+          background: "radial-gradient(ellipse at center, rgba(6,6,6,0.35) 0%, rgba(6,6,6,0.82) 100%)",
         }} />
 
         {/* Radial glow center */}

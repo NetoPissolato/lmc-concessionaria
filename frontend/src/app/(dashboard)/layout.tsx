@@ -240,11 +240,11 @@ function Sidebar({
                       src="/LogoLMC.png"
                       alt="LMC Veículos"
                       style={{
-                        height: "58px",
+                        height: "72px",
                         width: "auto",
                         objectFit: "contain",
                         display: "block",
-                        filter: "invert(1) hue-rotate(180deg)",
+                        filter: "invert(1) hue-rotate(180deg) drop-shadow(0 2px 12px rgba(245,166,35,0.45)) brightness(1.05)",
                       }}
                     />
                     {/* Pulsing amber accent dot */}
