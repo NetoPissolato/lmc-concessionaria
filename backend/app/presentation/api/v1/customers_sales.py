@@ -24,6 +24,7 @@ from app.domain.models.user import User as UserModel
 from app.domain.models.vehicle import Vehicle, VehicleStatus
 from app.domain.models.vehicle_photo import VehiclePhoto
 from app.infrastructure.repositories.financial_repository import FinancialRepository
+from app.infrastructure.ws_manager import ws_manager
 
 # ─── Customers ────────────────────────────────────────────────────────────────
 customers_router = APIRouter(prefix="/customers", tags=["Clientes"])
@@ -326,6 +327,13 @@ async def update_sale_status(
     s.status = SaleStatus(new_status)
     await db.commit()
     await db.refresh(s)
+
+    # Broadcast real-time event to all connected browsers
+    await ws_manager.broadcast("sale_updated", {
+        "sale_id": s.id,
+        "old_status": old_status,
+        "new_status": new_status,
+    })
 
     return {"id": s.id, "status": s.status.value}
 

@@ -15,6 +15,8 @@ import { toast } from "@/lib/toast";
 import { CommandPalette } from "@/components/CommandPalette";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useSwipe } from "@/hooks/useSwipe";
+import { useWebSocket, WSStatus } from "@/hooks/useWebSocket";
+import { useMobileFormScroll } from "@/hooks/useMobileFormScroll";
 
 // ─── Route Access Control ────────────────────────────────────────────────────
 // Routes restricted to ADMIN only
@@ -90,6 +92,7 @@ function Sidebar({
   onToggle: () => void;
   mobileOpen: boolean;
   onMobileClose: () => void;
+  wsStatus: WSStatus;
 }) {
   const pathname = usePathname();
   const router   = useRouter();
@@ -260,6 +263,26 @@ function Sidebar({
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* WebSocket connection status indicator */}
+            {!collapsed && (
+              <motion.div
+                title={wsStatus === "connected" ? "Tempo real ativo" : wsStatus === "connecting" ? "Conectando..." : "Sem conexão em tempo real"}
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: wsStatus === "connecting" ? 1.2 : 2.5, repeat: Infinity }}
+                style={{
+                  width: "8px", height: "8px", borderRadius: "50%", flexShrink: 0,
+                  background: wsStatus === "connected" ? "#22c55e"
+                    : wsStatus === "connecting" ? "#F5A623"
+                    : "#ef4444",
+                  boxShadow: wsStatus === "connected"
+                    ? "0 0 8px rgba(34,197,94,0.7)"
+                    : wsStatus === "connecting"
+                    ? "0 0 8px rgba(245,166,35,0.7)"
+                    : "0 0 8px rgba(239,68,68,0.7)",
+                }}
+              />
+            )}
 
             {/* Collapse button */}
             {!collapsed && (
@@ -1128,6 +1151,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [searchOpen, setSearchOpen]             = useState(false);
   const [vendaPickerOpen, setVendaPickerOpen]   = useState(false);
 
+  // Real-time WebSocket connection
+  const { status: wsStatus } = useWebSocket();
+
+  // Mobile: auto-scroll focused inputs above virtual keyboard
+  useMobileFormScroll();
+
   // ─── ALL hooks must be called before any early return ─────────────────────
   const { isMobile, isMobileOrTablet, isDesktop, isXs } = useBreakpoint();
 
@@ -1194,6 +1223,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onToggle={() => setSidebarCollapsed(v => !v)}
           mobileOpen={mobileMenuOpen}
           onMobileClose={() => setMobileMenuOpen(false)}
+          wsStatus={wsStatus}
         />
       )}
       {isMobileOrTablet && (
@@ -1202,6 +1232,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onToggle={() => setMobileMenuOpen(false)}
           mobileOpen={mobileMenuOpen}
           onMobileClose={() => setMobileMenuOpen(false)}
+          wsStatus={wsStatus}
         />
       )}
 

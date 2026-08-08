@@ -12,6 +12,7 @@ from app.domain.models.sale import Sale, SaleStatus
 from app.domain.models.vehicle import VehicleStatus
 from app.domain.models.financial import EntryType, FinancialCategory
 from app.application.schemas.sale_customer import SaleCreate
+from app.infrastructure.ws_manager import ws_manager
 
 
 class SaleService:
@@ -150,6 +151,14 @@ class SaleService:
             dados_depois=data.model_dump(mode="json"),
             descricao=f"Venda registrada ({sale_status}): {vehicle.placa} por R${data.valor_venda}",
         )
+
+        # Broadcast real-time event to all connected browsers
+        await ws_manager.broadcast("sale_created", {
+            "sale_id": sale.id,
+            "vehicle_placa": vehicle.placa,
+            "valor_venda": float(data.valor_venda),
+            "status": str(sale_status),
+        })
 
         return sale
 
