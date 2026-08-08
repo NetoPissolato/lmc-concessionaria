@@ -183,27 +183,17 @@ function Sidebar({
         }}
           onClick={collapsed ? onToggle : undefined}
         >
-          {/* BMW background image - only visible when expanded */}
-          <img
-            src="/lmbbmw.png"
-            alt="LMC BMW"
-            style={{
-              position: "absolute", inset: 0,
-              width: "100%", height: "100%",
-              objectFit: "cover",
-              objectPosition: "60% center",
-              opacity: collapsed ? 0 : 0.72,
-              transition: "opacity 0.25s ease",
-            }}
-          />
 
-          {/* Dark gradient overlay */}
+
+          {/* Dark premium background */}
           <div style={{
             position: "absolute", inset: 0,
-            background: collapsed
-              ? "rgba(13,13,13,1)"
-              : "linear-gradient(90deg, rgba(13,13,13,0.88) 0%, rgba(13,13,13,0.55) 45%, rgba(13,13,13,0.1) 100%)",
-            transition: "background 0.25s ease",
+            background: "linear-gradient(135deg, #0f0d0a 0%, #0d0d0d 60%, #0a0d0a 100%)",
+          }} />
+          {/* Subtle amber glow */}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "radial-gradient(ellipse 80% 120% at 30% 50%, rgba(245,166,35,0.08) 0%, transparent 70%)",
           }} />
 
           {/* Golden top accent line */}
