@@ -391,7 +391,7 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
     setPage(1);
     // Skeleton loader 350ms
     setIsLoading(true);
-    clearTimeout(loadingTimer.current);
+    clearTimeout(loadingTimer.current ?? undefined);
     loadingTimer.current = setTimeout(() => setIsLoading(false), 350);
   }, [router]);
 
