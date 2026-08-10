@@ -8,6 +8,10 @@ const BACKEND_INTERNAL_URL =
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Pula a checagem de tipos no servidor (já verificamos localmente com tsc --noEmit)
+  // Economiza 10-15 min de build na VPS com pouca CPU
+  typescript: { ignoreBuildErrors: true },
+  eslint:     { ignoreDuringBuilds: true },
   images: {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
