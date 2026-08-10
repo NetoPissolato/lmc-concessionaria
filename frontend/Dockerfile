@@ -26,7 +26,8 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copiar código fonte
 COPY . .
 
-# Build da aplicação
+# Build da aplicação — limite de memória para VPS com pouca RAM
+ENV NODE_OPTIONS="--max-old-space-size=768"
 RUN npm run build
 
 # ─── Runtime Stage ─────────────────────────────────────────────────────────────
