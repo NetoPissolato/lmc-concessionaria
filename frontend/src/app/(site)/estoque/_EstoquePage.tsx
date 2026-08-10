@@ -238,9 +238,10 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
   return (
     <div
       className="s-v-card"
-      style={{ textDecoration:"none" } as React.CSSProperties}
+      style={{ textDecoration:"none", display:"flex", flexDirection:"column" } as React.CSSProperties}
     >
-      <Link href={`/estoque/${v.id}`} style={{ textDecoration:"none", display:"contents" }}>
+      {/* Clickable area — image + info */}
+      <Link href={`/veiculo/${v.id}`} style={{ textDecoration:"none", display:"flex", flexDirection:"column", flex:"1 1 auto" }}>
         <div className="s-v-img" style={isPlaceholder ? { background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" } : {}}>
           {isPlaceholder ? (
             <img src={imgSrc} alt={`${v.marca} ${v.modelo}`} style={{ width:"70%", height:"70%", objectFit:"contain", opacity:0.55 }} />
@@ -256,7 +257,7 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
             <Heart size={14} fill={fav ? "currentColor" : "none"} strokeWidth={2} />
           </button>
         </div>
-        <div className="s-v-info">
+        <div className="s-v-info" style={{ flex:"1 1 auto" }}>
           <p className="s-v-make">{v.marca}</p>
           <p className="s-v-name">{v.modelo}</p>
           <p className="s-v-version">{v.versao}</p>
@@ -276,23 +277,24 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
           </div>
         </div>
       </Link>
-      {/* Compare button */}
-      <button
-        onClick={() => onToggleCompare(v.id)}
-        style={{
-          position:"absolute", bottom:14, left:16,
-          display:"flex", alignItems:"center", gap:5,
-          background: isComparing ? "rgba(244,121,32,0.12)" : "transparent",
-          border: isComparing ? "1.5px solid var(--s-orange)" : "1.5px solid var(--s-border)",
-          color: isComparing ? "var(--s-orange)" : "var(--s-text-3)",
-          fontSize:11, fontWeight:700, cursor:"pointer", borderRadius:6,
-          padding:"4px 10px", fontFamily:"inherit",
-          transition:"all 180ms",
-        }}
-      >
-        <GitCompare size={11} strokeWidth={2} />
-        {isComparing ? "Adicionado" : "Comparar"}
-      </button>
+      {/* Comparar — fora do link para não navegar ao clicar */}
+      <div style={{ padding:"0 16px 14px", borderTop:"1px solid var(--s-border)" }}>
+        <button
+          onClick={() => onToggleCompare(v.id)}
+          style={{
+            width:"100%", marginTop:10,
+            display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+            background: isComparing ? "rgba(244,121,32,0.10)" : "transparent",
+            border: isComparing ? "1.5px solid var(--s-orange)" : "1.5px solid var(--s-border)",
+            color: isComparing ? "var(--s-orange)" : "var(--s-text-3)",
+            fontSize:11, fontWeight:700, cursor:"pointer", borderRadius:8,
+            padding:"6px 12px", fontFamily:"inherit", transition:"all 180ms",
+          }}
+        >
+          <GitCompare size={11} strokeWidth={2} />
+          {isComparing ? "Adicionado" : "Comparar"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -307,7 +309,7 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
   const isPlaceholder = !mainPhoto?.url;
   return (
     <div className="s-v-card-list" style={{ textDecoration:"none", display:"grid", gridTemplateColumns:"220px 1fr auto", background:"var(--s-card)", border:"1px solid var(--s-border)", borderRadius:14, overflow:"hidden", transition:"all 220ms", position:"relative" }}>
-      <Link href={"/estoque/" + v.id} style={{ display:"contents", textDecoration:"none" }}>
+      <Link href={"/veiculo/" + v.id} style={{ display:"contents", textDecoration:"none" }}>
         <div style={{ position:"relative", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background: isPlaceholder ? "transparent" : undefined }}>
           {isPlaceholder ? (
             <img src={imgSrc} alt={v.marca + " " + v.modelo} style={{ width:"65%", height:"65%", objectFit:"contain", opacity:0.55 }} />
@@ -335,7 +337,7 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
           </button>
           <div style={{ textAlign:"right" }}>
             <p style={{ fontSize:10, color:"var(--s-text-3)", marginBottom:3 }}>a partir de</p>
-            <p style={{ fontSize:22, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-1px", lineHeight:1, marginBottom:12 }}>
+            <p style={{ fontSize:22, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-1px", lineHeight:1, marginBottom:8 }}>
               <span style={{ fontSize:12, fontWeight:600, color:"var(--s-text-3)", verticalAlign:"super", marginRight:2 }}>R$</span>
               {fmtPrice(v.valor_anunciado ?? 0)}
             </p>
@@ -343,10 +345,11 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
           </div>
         </div>
       </Link>
+      {/* Comparar fora do link */}
       <button
         onClick={() => onToggleCompare(v.id)}
         style={{
-          position:"absolute", bottom:12, left:12,
+          position:"absolute", bottom:12, right:12,
           display:"flex", alignItems:"center", gap:5,
           background: isComparing ? "rgba(244,121,32,0.12)" : "transparent",
           border: isComparing ? "1.5px solid var(--s-orange)" : "1.5px solid var(--s-border)",
