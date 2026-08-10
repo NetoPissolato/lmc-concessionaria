@@ -6,19 +6,26 @@
  * ✅ Fallback seguro: retorna array/null em caso de erro para o site não quebrar.
  */
 
-// NEXT_PUBLIC_API_URL já termina em /api/v1 — apenas adicionamos /public
-const API_BASE =
-  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1") + "/public";
+// No servidor (SSR/ISR), usa a URL interna Docker para evitar hairpinning no VPS.
+// No browser (client), usa a URL pública.
+const isServer = typeof window === "undefined";
 
-// Base do backend para resolver URLs relativas de fotos (ex: /uploads/...)
-const BACKEND_BASE =
-  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1").replace(/\/api\/v1\/?$/, "");
+const API_BASE = isServer
+  ? (process.env.BACKEND_INTERNAL_URL ?? "http://localhost:8000") + "/api/v1/public"
+  : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1") + "/public";
 
-/** Converte URL relativa de foto em URL absoluta. */
+/**
+ * Converte URL relativa de foto (/uploads/...) para uso no browser.
+ * Mantemos como relativa: o nginx de AMBOS os domínios já roteia /uploads/ -> backend.
+ * Isso evita cross-domain e problemas de hairpinning.
+ */
 export function resolvePhotoUrl(url: string | null | undefined): string {
   if (!url) return "";
+  // URLs já absolutas: manter como estão
   if (url.startsWith("http")) return url;
-  return BACKEND_BASE + url;
+  // URLs relativas (/uploads/...): manter relativas
+  // O nginx roteia /uploads/ -> backend tanto no site quanto no dashboard
+  return url;
 }
 
 
