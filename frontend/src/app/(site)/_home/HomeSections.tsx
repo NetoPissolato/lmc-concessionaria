@@ -657,7 +657,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
                 return (
                   <Link
                     key={v.id}
-                    href={`/estoque/${v.id}`}
+                    href={`/veiculo/${v.id}`}
                     style={{ textDecoration:"none", borderRadius:18, overflow:"hidden", background:"var(--s-dark)", border:"1px solid rgba(255,255,255,0.07)", display:"flex", flexDirection:"column", transition:"all 220ms ease", animation:`s-fadeInUp 0.5s ${i * 80}ms both` }}
                     onMouseEnter={e => {
                       (e.currentTarget as HTMLElement).style.borderColor = "rgba(244,121,32,0.35)";
@@ -673,14 +673,15 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
                     {/* Imagem */}
                     <div style={{ position:"relative", height:200, background:"rgba(255,255,255,0.03)", overflow:"hidden" }}>
                       {mainPhoto?.url ? (
-                        <Image src={mainPhoto.url} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover" }} sizes="(max-width:768px) 100vw, 33vw" />
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={mainPhoto.url} alt={`${v.marca} ${v.modelo}`} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
                       ) : (
                         <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                          <svg viewBox="0 0 120 50" fill="none" width="100" height="42">
-                            <path d="M8 34 L8 27 C8 27 12 18 26 16 L46 14 C46 14 56 14 64 20 L82 20 L88 16 L100 16 L104 20 L112 22 L112 34 Z" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.25)" strokeWidth="1.5" strokeLinejoin="round"/>
-                            <circle cx="28" cy="36" r="7" fill="none" stroke="rgba(244,121,32,0.25)" strokeWidth="1.5"/>
-                            <circle cx="92" cy="36" r="7" fill="none" stroke="rgba(244,121,32,0.25)" strokeWidth="1.5"/>
-                          </svg>
+                          <img
+                            src={v.tipo === "moto" ? "/moto-placeholder.png" : "/car-placeholder.png"}
+                            alt={`${v.marca} ${v.modelo}`}
+                            style={{ width:"60%", height:"60%", objectFit:"contain", opacity:0.5 }}
+                          />
                         </div>
                       )}
                       {/* Tipo badge */}
@@ -704,12 +705,12 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
                       {/* Specs */}
                       <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
                         {[
-                          { icon:"📅", val:v.ano },
-                          { icon:"🛣️", val:fmtKm(v.quilometragem) },
-                          { icon:"⚙️", val:v.cambio },
-                        ].map(s => (
-                          <span key={s.icon} style={{ fontSize:11, color:"rgba(255,255,255,0.40)", display:"flex", alignItems:"center", gap:4 }}>
-                            <span style={{ fontSize:10 }}>{s.icon}</span> {s.val}
+                          { icon: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, val:v.ano },
+                          { icon: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 1 0 20A10 10 0 0 1 12 2z"/><path d="M12 6v6l4 2"/></svg>, val:fmtKm(v.quilometragem) },
+                          { icon: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>, val:v.cambio },
+                        ].map((s, idx) => (
+                          <span key={idx} style={{ fontSize:11, color:"rgba(255,255,255,0.40)", display:"flex", alignItems:"center", gap:5 }}>
+                            <span style={{ color:"rgba(255,255,255,0.25)" }}>{s.icon}</span> {s.val}
                           </span>
                         ))}
                       </div>
