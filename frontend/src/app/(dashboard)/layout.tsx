@@ -157,7 +157,7 @@ function Sidebar({
             onClick={onMobileClose}
             style={{
               position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)",
-              zIndex: 49, backdropFilter: "blur(4px)",
+              zIndex: 101, backdropFilter: "blur(4px)",
             }}
           />
         )}
@@ -177,12 +177,12 @@ function Sidebar({
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
-          overflow: "hidden",
-          // Desktop: sticky. Mobile/Tablet: fixed drawer
+          overflowX: "hidden",   // apenas horizontal; vertical fica livre p/ nav scrollar
+          // Desktop: sticky. Mobile/Tablet: fixed drawer acima do bottom-nav (z:100)
           position: isMobileOrTablet ? "fixed" : "sticky",
           top: 0,
           left: 0,
-          zIndex: 50,
+          zIndex: isMobileOrTablet ? 102 : 50,
         }}
       >
         {/* ── Hero Banner Logo ── */}
