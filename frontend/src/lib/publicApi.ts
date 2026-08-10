@@ -174,3 +174,52 @@ export async function getPublicMarcas(tipo?: "carro" | "moto"): Promise<string[]
   const result = await fetchPublic<PublicMarcas>("/marcas", params);
   return result?.marcas ?? [];
 }
+
+// ─── Configurações públicas da loja ───────────────────────────────────────────
+
+export interface PublicSettings {
+  whatsapp:       string;
+  telefone:       string;
+  email_contato:  string;
+  instagram:      string;
+  facebook:       string;
+  youtube:        string;
+  nome_loja:      string;
+  slogan:         string;
+  endereco:       string;
+  cidade:         string;
+  estado:         string;
+  horario:        string;
+  hero_titulo:    string;
+  hero_subtitulo: string;
+  stat_clientes:  number;
+  stat_anos:      number;
+  stat_satisfacao: number;
+  modo_manutencao: boolean;
+}
+
+const DEFAULT_SETTINGS: PublicSettings = {
+  whatsapp:        "",
+  telefone:        "",
+  email_contato:   "",
+  instagram:       "",
+  facebook:        "",
+  youtube:         "",
+  nome_loja:       "LMC Veículos",
+  slogan:          "Seu próximo veículo está aqui",
+  endereco:        "",
+  cidade:          "",
+  estado:          "",
+  horario:         "Seg–Sex: 8h–18h | Sáb: 8h–13h",
+  hero_titulo:     "Encontre seu próximo veículo",
+  hero_subtitulo:  "Carros e motos selecionados com qualidade e transparência",
+  stat_clientes:   0,
+  stat_anos:       0,
+  stat_satisfacao: 98,
+  modo_manutencao: false,
+};
+
+/** Retorna configurações públicas da loja (ISR 30s). */
+export async function getPublicSettings(): Promise<PublicSettings> {
+  return (await fetchPublic<PublicSettings>("/settings")) ?? DEFAULT_SETTINGS;
+}

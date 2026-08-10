@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import HomeSections from "../_home/HomeSections";
-import { getPublicVehicles, getPublicStats } from "@/lib/publicApi";
+import { getPublicVehicles, getPublicStats, getPublicSettings } from "@/lib/publicApi";
 
 export const metadata: Metadata = {
   title: "LMC Veículos — Concessionária com os melhores veículos",
@@ -11,15 +11,16 @@ export const metadata: Metadata = {
   robots: "index, follow",
 };
 
-// Revalida a cada 60s (ISR) — sem rebuild manual quando novo veículo for cadastrado
-export const revalidate = 60;
+// Revalida a cada 30s (ISR) — settings e veículos sempre atualizados sem rebuild
+export const revalidate = 30;
 
 export default async function HomePage() {
   // Busca dados reais em paralelo — se o backend cair, retorna fallback vazio
-  const [featuredVehicles, recentVehicles, stats] = await Promise.all([
+  const [featuredVehicles, recentVehicles, stats, settings] = await Promise.all([
     getPublicVehicles({ destaque: true, limit: 6 }),
-    getPublicVehicles({ limit: 8 }),   // recém adicionados (sem filtro de destaque)
+    getPublicVehicles({ limit: 8 }),
     getPublicStats(),
+    getPublicSettings(),
   ]);
 
   return (
@@ -28,6 +29,7 @@ export default async function HomePage() {
         featuredVehicles={featuredVehicles}
         recentVehicles={recentVehicles}
         stats={stats}
+        settings={settings}
       />
     </Suspense>
   );

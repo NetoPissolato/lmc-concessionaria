@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ArrowRight, ShieldCheck, FileCheck, CreditCard, Handshake, ChevronRight, Car } from "lucide-react";
-import type { PublicVehicle, PublicStats } from "@/lib/publicApi";
+import type { PublicVehicle, PublicStats, PublicSettings } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
 
 // Cores fallback por marca
@@ -124,7 +124,7 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
   const badgeLabel = v.destaque ? "Destaque" : "Disponível";
 
   return (
-    <Link href={`/veiculo/${v.id}`} className="s-v-card" style={{ textDecoration:"none" }}>
+    <Link href={`/estoque/${v.id}`} className="s-v-card" style={{ textDecoration:"none" }}>
       <div className="s-v-img">
         {isPlaceholder ? (
           <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"contain", padding:20, filter:"opacity(0.55)" }} />
@@ -176,15 +176,15 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
   );
 }
 
-// ─── AvalieSection component ─────────────────────────────────────
- const WPP_AVALIE = "5511999999999";
-function AvalieSection() {
+// ─── AvalieSection component ──────────────────────────────────────────────────────
+function AvalieSection({ whatsapp = "" }: { whatsapp?: string }) {
   const [form, setForm] = useState({ marca:"", modelo:"", ano:"", km:"" });
   const update = (k: string, v: string) => setForm(p => ({ ...p, [k]:v }));
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const num = whatsapp.replace(/\D/g, "");
     const msg = `Olá! Gostaria de avaliar meu veículo:\n\nMarca: ${form.marca}\nModelo: ${form.modelo}\nAno: ${form.ano}\nQuilometragem: ${form.km} km`;
-    window.open(`https://wa.me/${WPP_AVALIE}?text=${encodeURIComponent(msg)}`, "_blank");
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
   };
   return (
     <section style={{ background:"var(--s-bg)", padding:"80px 0", borderTop:"1px solid var(--s-border)" }} aria-label="Avalie seu veículo">
@@ -254,9 +254,21 @@ interface HomeSectionsProps {
   featuredVehicles?: PublicVehicle[];
   recentVehicles?: PublicVehicle[];   // todos os disponíveis (sem filtro destaque)
   stats?: PublicStats;
+  settings?: PublicSettings;
 }
 
-export default function HomeSections({ featuredVehicles = [], recentVehicles = [], stats }: HomeSectionsProps) {
+const DEFAULT_SETTINGS: PublicSettings = {
+  whatsapp: "", telefone: "", email_contato: "",
+  instagram: "", facebook: "", youtube: "",
+  nome_loja: "LMC Veículos", slogan: "Seu próximo veículo está aqui",
+  endereco: "", cidade: "", estado: "", horario: "",
+  hero_titulo: "Encontre seu próximo veículo",
+  hero_subtitulo: "Carros e motos selecionados com qualidade e transparência",
+  stat_clientes: 0, stat_anos: 0, stat_satisfacao: 98,
+  modo_manutencao: false,
+};
+
+export default function HomeSections({ featuredVehicles = [], recentVehicles = [], stats, settings = DEFAULT_SETTINGS }: HomeSectionsProps) {
   const [tab, setTab]               = useState<"carro" | "moto">("carro");
   const [marca, setMarca]           = useState("");
   const [modelo, setModelo]         = useState("");
@@ -564,50 +576,70 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
               </div>
             </>
           ) : (
-            /* Estado vazio — SVG ilustrativo */
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))", gap:20 }}>
-              {[
-                { label:"Carros", desc:"Sedãs, SUVs, hatches e mais", svg:(
-                  <svg viewBox="0 0 120 50" fill="none" xmlns="http://www.w3.org/2000/svg" width="90" height="38">
-                    <path d="M8 34 L8 27 C8 27 12 18 26 16 L46 14 C46 14 56 14 64 20 L82 20 L88 16 L100 16 L104 20 L112 22 L112 34 Z" fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5" strokeLinejoin="round"/>
-                    <circle cx="28" cy="36" r="7" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
-                    <circle cx="28" cy="36" r="3.5" fill="rgba(244,121,32,0.25)"/>
-                    <circle cx="92" cy="36" r="7" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
-                    <circle cx="92" cy="36" r="3.5" fill="rgba(244,121,32,0.25)"/>
-                  </svg>
-                )},
-                { label:"SUVs", desc:"Robustos, espaçosos e potentes", svg:(
-                  <svg viewBox="0 0 120 55" fill="none" xmlns="http://www.w3.org/2000/svg" width="90" height="42">
-                    <path d="M6 38 L6 26 C6 26 10 14 28 12 L52 11 C52 11 66 11 78 16 L100 16 L106 13 L114 13 L114 38 Z" fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5" strokeLinejoin="round"/>
-                    <circle cx="30" cy="41" r="8" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
-                    <circle cx="30" cy="41" r="4" fill="rgba(244,121,32,0.25)"/>
-                    <circle cx="94" cy="41" r="8" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
-                    <circle cx="94" cy="41" r="4" fill="rgba(244,121,32,0.25)"/>
-                    <rect x="30" y="12" width="56" height="14" rx="2" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.25)" strokeWidth="1"/>
-                  </svg>
-                )},
-                { label:"Motos", desc:"Agilidade e liberdade nas estradas", svg:(
-                  <svg viewBox="0 0 100 55" fill="none" xmlns="http://www.w3.org/2000/svg" width="75" height="42">
-                    <circle cx="22" cy="38" r="12" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
-                    <circle cx="22" cy="38" r="5" fill="rgba(244,121,32,0.20)"/>
-                    <circle cx="78" cy="38" r="12" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
-                    <circle cx="78" cy="38" r="5" fill="rgba(244,121,32,0.20)"/>
-                    <path d="M22 27 L36 18 L55 16 L68 22 L78 26" stroke="rgba(244,121,32,0.5)" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-                    <path d="M36 18 L44 28 L58 28 L68 22" fill="rgba(244,121,32,0.10)" stroke="rgba(244,121,32,0.35)" strokeWidth="1" strokeLinejoin="round"/>
-                  </svg>
-                )},
-              ].map((ph, i) => (
-                <div key={i} style={{ borderRadius:20, border:"1px solid rgba(244,121,32,0.18)", background:"linear-gradient(145deg, rgba(20,20,22,0.97) 0%, rgba(28,28,32,0.92) 100%)", overflow:"hidden", position:"relative", minHeight:200, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:14, padding:"32px 24px" }}>
-                  <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", width:200, height:80, background:"radial-gradient(ellipse, rgba(244,121,32,0.10) 0%, transparent 70%)", pointerEvents:"none" }}/>
-                  <div style={{ position:"absolute", top:14, right:14, background:"rgba(244,121,32,0.10)", border:"1px solid rgba(244,121,32,0.25)", borderRadius:999, padding:"3px 10px", fontSize:9, fontWeight:700, color:"var(--s-orange)", letterSpacing:1.5, textTransform:"uppercase" }}>Em breve</div>
-                  <div style={{ opacity:0.85 }}>{ph.svg}</div>
-                  <div style={{ textAlign:"center" }}>
-                    <p style={{ fontSize:16, fontWeight:900, color:"rgba(255,255,255,0.85)", letterSpacing:"-0.3px", marginBottom:4 }}>{ph.label}</p>
-                    <p style={{ fontSize:12, color:"rgba(255,255,255,0.30)", lineHeight:1.6 }}>{ph.desc}</p>
-                  </div>
-                  <div style={{ position:"absolute", bottom:0, left:0, right:0, height:2, background:"linear-gradient(90deg, transparent, rgba(244,121,32,0.35), transparent)" }}/>
-                </div>
-              ))}
+            /* Estado vazio — design limpo e profissional */
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "56px 24px",
+              gap: 28,
+              borderRadius: 24,
+              background: "linear-gradient(135deg, rgba(18,18,22,0.98) 0%, rgba(26,26,32,0.95) 100%)",
+              border: "1px solid rgba(244,121,32,0.14)",
+              position: "relative",
+              overflow: "hidden",
+            }}>
+              {/* glow de fundo */}
+              <div style={{ position:"absolute", top:"30%", left:"50%", transform:"translate(-50%,-50%)", width:500, height:250, background:"radial-gradient(ellipse, rgba(244,121,32,0.07) 0%, transparent 65%)", pointerEvents:"none" }}/>
+              {/* Linha decorativa topo */}
+              <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", width:200, height:1, background:"linear-gradient(90deg, transparent, rgba(244,121,32,0.5), transparent)" }}/>
+
+              {/* Ilustração SVG de carro único e elegante */}
+              <div style={{ position:"relative", zIndex:1 }}>
+                <svg viewBox="0 0 280 100" fill="none" xmlns="http://www.w3.org/2000/svg" width="220" height="79">
+                  {/* Sombra no chão */}
+                  <ellipse cx="140" cy="94" rx="95" ry="6" fill="rgba(244,121,32,0.08)"/>
+                  {/* Corpo do carro */}
+                  <path d="M20 70 L20 52 C20 52 30 28 65 24 L108 20 C108 20 130 19 152 26 L196 26 L210 20 L234 20 L240 26 L258 30 L260 70 Z"
+                    fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.45)" strokeWidth="1.8" strokeLinejoin="round"/>
+                  {/* Janela dianteira */}
+                  <path d="M105 40 L115 25 L152 23 L165 40 Z"
+                    fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.35)" strokeWidth="1"/>
+                  {/* Janela traseira */}
+                  <path d="M68 40 L78 26 L104 24 L104 40 Z"
+                    fill="rgba(244,121,32,0.10)" stroke="rgba(244,121,32,0.28)" strokeWidth="1"/>
+                  {/* Rodas */}
+                  <circle cx="72" cy="73" r="16" fill="rgba(18,18,22,1)" stroke="rgba(244,121,32,0.50)" strokeWidth="2"/>
+                  <circle cx="72" cy="73" r="8" fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.35)" strokeWidth="1.5"/>
+                  <circle cx="72" cy="73" r="3" fill="rgba(244,121,32,0.40)"/>
+                  <circle cx="208" cy="73" r="16" fill="rgba(18,18,22,1)" stroke="rgba(244,121,32,0.50)" strokeWidth="2"/>
+                  <circle cx="208" cy="73" r="8" fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.35)" strokeWidth="1.5"/>
+                  <circle cx="208" cy="73" r="3" fill="rgba(244,121,32,0.40)"/>
+                  {/* Farol dianteiro */}
+                  <path d="M258 40 L262 45 L258 52" stroke="rgba(244,121,32,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
+                  {/* Detalhe lateral */}
+                  <path d="M25 58 L255 58" stroke="rgba(244,121,32,0.12)" strokeWidth="1" strokeDasharray="4 6"/>
+                </svg>
+              </div>
+
+              {/* Texto */}
+              <div style={{ textAlign:"center", position:"relative", zIndex:1 }}>
+                <p style={{ fontSize:18, fontWeight:800, color:"rgba(255,255,255,0.80)", letterSpacing:"-0.3px", marginBottom:8 }}>
+                  Em breve novidades
+                </p>
+                <p style={{ fontSize:13, color:"rgba(255,255,255,0.28)", lineHeight:1.7, maxWidth:340 }}>
+                  Nosso estoque de destaques está sendo preparado.<br/>Confira todos os veículos disponíveis.
+                </p>
+              </div>
+
+              {/* CTA */}
+              <Link href="/estoque" className="s-btn s-btn-outline s-btn-md" style={{ position:"relative", zIndex:1 }}>
+                Ver estoque completo <ArrowRight size={15} strokeWidth={2.5} />
+              </Link>
+
+              {/* Linha decorativa baixo */}
+              <div style={{ position:"absolute", bottom:0, left:"50%", transform:"translateX(-50%)", width:200, height:1, background:"linear-gradient(90deg, transparent, rgba(244,121,32,0.5), transparent)" }}/>
             </div>
           )}
         </div>
@@ -790,7 +822,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
       </section>
 
       {/* ============== AVALIE SEU CARRO ============== */}
-      <AvalieSection />
+      <AvalieSection whatsapp={settings.whatsapp} />
 
       {/* ============== CTA ============== */}
       <section className="s-cta-section" style={{ background:"var(--s-dark-2)", position:"relative", overflow:"hidden", borderTop:"1px solid rgba(255,255,255,0.06)" }} aria-label="Call to action">
@@ -813,30 +845,38 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
                 <Link href="/estoque" className="s-btn s-btn-primary s-btn-lg">
                   Ver estoque completo <ArrowRight size={17} strokeWidth={2.5} />
                 </Link>
-                <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="s-btn s-btn-wpp s-btn-lg">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-                  Falar no WhatsApp
-                </a>
+                {settings.whatsapp && (
+                  <a href={`https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="s-btn s-btn-wpp s-btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                    Falar no WhatsApp
+                  </a>
+                )}
               </div>
             </div>
 
-            {/* Direita — stats verticais */}
-            <div className="s-cta-stats">
-              {[
-                { num:"47",  suffix:"+",  label:"Veículos disponíveis",  sub:"no estoque agora"     },
-                { num:"500", suffix:"+",  label:"Clientes satisfeitos",  sub:"em 10 anos"           },
-                { num:"10",  suffix:" anos", label:"De experiência",     sub:"no mercado"           },
-              ].map((s, i) => (
-                <div key={s.label}>
-                  {i > 0 && <div style={{ height:1, background:"rgba(255,255,255,0.06)", margin:"24px 0" }} />}
-                  <p style={{ fontSize:42, fontWeight:900, color:"#fff", letterSpacing:"-2px", lineHeight:1 }}>
-                    {s.num}<span style={{ color:"var(--s-orange)", fontSize:24 }}>{s.suffix}</span>
-                  </p>
-                  <p style={{ fontSize:14, fontWeight:700, color:"rgba(255,255,255,0.70)", marginTop:5 }}>{s.label}</p>
-                  <p style={{ fontSize:11, color:"rgba(255,255,255,0.25)", marginTop:2 }}>{s.sub}</p>
-                </div>
-              ))}
-            </div>
+            {/* Stats — só mostra se a loja já configurou os números */}
+            {(settings.stat_clientes > 0 || settings.stat_anos > 0) && (
+              <div className="s-cta-stats">
+                {([
+                  settings.stat_clientes > 0
+                    ? { num: String(settings.stat_clientes), suffix: "+", label: "Clientes satisfeitos", sub: settings.stat_anos > 0 ? `em ${settings.stat_anos} anos` : "e contando" }
+                    : null,
+                  settings.stat_anos > 0
+                    ? { num: String(settings.stat_anos), suffix: " anos", label: "De experiência", sub: "no mercado" }
+                    : null,
+                  { num: String(settings.stat_satisfacao), suffix: "%", label: "Satisfação", sub: "dos clientes" },
+                ].filter(Boolean) as { num: string; suffix: string; label: string; sub: string }[]).map((s, i) => (
+                  <div key={s.label}>
+                    {i > 0 && <div style={{ height:1, background:"rgba(255,255,255,0.06)", margin:"24px 0" }} />}
+                    <p style={{ fontSize:42, fontWeight:900, color:"#fff", letterSpacing:"-2px", lineHeight:1 }}>
+                      {s.num}<span style={{ color:"var(--s-orange)", fontSize:24 }}>{s.suffix}</span>
+                    </p>
+                    <p style={{ fontSize:14, fontWeight:700, color:"rgba(255,255,255,0.70)", marginTop:5 }}>{s.label}</p>
+                    <p style={{ fontSize:11, color:"rgba(255,255,255,0.25)", marginTop:2 }}>{s.sub}</p>
+                  </div>
+                ))}
+              </div>
+            )}
 
           </div>
         </div>

@@ -245,3 +245,60 @@ async def get_public_marcas(
     result = await db.execute(stmt)
     marcas = [row[0] for row in result.fetchall()]
     return {"marcas": marcas}
+
+
+# ─── GET /public/settings ─────────────────────────────────────────────────────
+@router.get("/settings", summary="Configurações públicas da loja (site público)")
+async def get_public_settings(db: AsyncSession = Depends(get_db)):
+    """
+    Retorna apenas os dados públicos da loja:
+    contato, redes sociais, stats, hero text.
+    Nunca expõe CNPJ, horário interno, sistema, etc.
+    """
+    from app.domain.models.store_settings import StoreSettings
+    result = await db.execute(select(StoreSettings).limit(1))
+    s = result.scalar_one_or_none()
+
+    if not s:
+        # Defaults quando a tabela ainda está vazia
+        return {
+            "whatsapp":       "",
+            "instagram":      "",
+            "facebook":       "",
+            "youtube":        "",
+            "telefone":       "",
+            "email_contato":  "",
+            "nome_loja":      "LMC Veículos",
+            "slogan":         "Seu próximo veículo está aqui",
+            "endereco":       "",
+            "cidade":         "",
+            "estado":         "",
+            "horario":        "Seg–Sex: 8h–18h | Sáb: 8h–13h",
+            "hero_titulo":    "Encontre seu próximo veículo",
+            "hero_subtitulo": "Carros e motos selecionados com qualidade e transparência",
+            "stat_clientes":  0,
+            "stat_anos":      0,
+            "stat_satisfacao": 98,
+            "modo_manutencao": False,
+        }
+
+    return {
+        "whatsapp":       s.whatsapp,
+        "instagram":      s.instagram,
+        "facebook":       s.facebook,
+        "youtube":        s.youtube,
+        "telefone":       s.telefone,
+        "email_contato":  s.email_contato,
+        "nome_loja":      s.nome_loja,
+        "slogan":         s.slogan,
+        "endereco":       s.endereco,
+        "cidade":         s.cidade,
+        "estado":         s.estado,
+        "horario":        s.horario,
+        "hero_titulo":    s.hero_titulo,
+        "hero_subtitulo": s.hero_subtitulo,
+        "stat_clientes":  s.stat_clientes,
+        "stat_anos":      s.stat_anos,
+        "stat_satisfacao": s.stat_satisfacao,
+        "modo_manutencao": s.modo_manutencao,
+    }

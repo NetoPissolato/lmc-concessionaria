@@ -10,6 +10,7 @@ from app.domain.models.customer import Customer  # noqa: F401
 from app.domain.models.sale import Sale  # noqa: F401
 from app.domain.models.financial import FinancialEntry  # noqa: F401
 from app.domain.models.audit_log import AuditLog  # noqa: F401
+from app.domain.models.store_settings import StoreSettings  # noqa: F401
 
 __all__ = [
     "Base",
@@ -21,4 +22,5 @@ __all__ = [
     "Sale",
     "FinancialEntry",
     "AuditLog",
+    "StoreSettings",
 ]
