@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import {
   SlidersHorizontal, X, ChevronRight,
   Search, LayoutGrid, List, Heart, Gauge, Fuel,
-  Calendar, ArrowUpDown, GitCompare, Car, ChevronLeft,
+  Calendar, ArrowUpDown, Car, ChevronLeft,
 } from "lucide-react";
 import type { PublicVehicle } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
@@ -226,11 +226,10 @@ function CompareBar({ ids, vehicles, onRemove, onClear }: { ids: string[]; vehic
   );
 }
 
-function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
-  v: Vehicle; compareIds: string[]; onToggleCompare(id:string):void; staggerIndex: number;
+function VehicleCard({ v, staggerIndex }: {
+  v: Vehicle; staggerIndex: number;
 }) {
   const [fav, setFav] = useState(false);
-  const isComparing = compareIds.includes(v.id);
   const mainPhoto = v.photos?.find((p: {is_main:boolean}) => p.is_main) ?? v.photos?.[0];
   const imgSrc = mainPhoto?.url
     ? mainPhoto.url
@@ -240,134 +239,104 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
   const badgeClass = isReservado ? "s-v-badge s-v-badge-reservado" : "s-v-badge s-v-badge-disponivel";
 
   return (
-    <div
+    <Link
+      href={`/veiculo/${v.id}`}
       className="s-v-card"
-      style={{ textDecoration:"none", display:"flex", flexDirection:"column" } as React.CSSProperties}
+      style={{ textDecoration:"none", display:"flex", flexDirection:"column" }}
     >
-      {/* Clickable area — image + info */}
-      <Link href={`/veiculo/${v.id}`} style={{ textDecoration:"none", display:"flex", flexDirection:"column", flex:"1 1 auto" }}>
-        <div className="s-v-img" style={isPlaceholder ? { background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" } : {}}>
-          {isPlaceholder ? (
-            <img src={imgSrc} alt={`${v.marca} ${v.modelo}`} style={{ width:"70%", height:"70%", objectFit:"contain", opacity:0.55 }} />
-          ) : (
-            <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover" }} />
-          )}
-          <span className={badgeClass}>{isReservado ? "Reservado" : "Disponível"}</span>
-          <button
-            className={`s-v-fav${fav ? " active" : ""}`}
-            onClick={e => { e.preventDefault(); setFav(x => !x); }}
-            aria-label={fav ? "Remover dos favoritos" : "Favoritar"}
-          >
-            <Heart size={14} fill={fav ? "currentColor" : "none"} strokeWidth={2} />
-          </button>
-        </div>
-        <div className="s-v-info" style={{ flex:"1 1 auto" }}>
-          <p className="s-v-make">{v.marca}</p>
-          <p className="s-v-name">{v.modelo}</p>
-          <p className="s-v-version">{v.versao}</p>
-          <div className="s-v-specs">
-            <span className="s-v-spec"><Calendar size={11} strokeWidth={2} />{v.ano}</span>
-            <span className="s-v-spec"><Gauge size={11} strokeWidth={2} />{fmtKm(v.quilometragem)} km</span>
-            <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{CAMBIO_LABELS[v.cambio] ?? v.cambio}</span>
-            <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{FUEL_LABELS[v.combustivel] ?? v.combustivel}</span>
-          </div>
-          <div className="s-v-divider" />
-          <div className="s-v-bottom">
-            <div>
-              <p className="s-v-price-label">Preço</p>
-              <p className="s-v-price"><span className="s-v-price-cur">R$</span>{fmtPrice(v.valor_anunciado ?? 0)}</p>
-            </div>
-            <span className="s-btn s-btn-primary s-btn-sm" style={{ pointerEvents:"none" }}>Ver <ChevronRight size={13} strokeWidth={2.5} /></span>
-          </div>
-        </div>
-      </Link>
-      {/* Comparar — fora do link para não navegar ao clicar */}
-      <div style={{ padding:"0 16px 14px", borderTop:"1px solid var(--s-border)" }}>
+      <div className="s-v-img" style={isPlaceholder ? { background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" } : {}}>
+        {isPlaceholder ? (
+          <img src={imgSrc} alt={`${v.marca} ${v.modelo}`} style={{ width:"70%", height:"70%", objectFit:"contain", opacity:0.55 }} />
+        ) : (
+          <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover" }} />
+        )}
+        <span className={badgeClass}>{isReservado ? "Reservado" : "Disponível"}</span>
         <button
-          onClick={() => onToggleCompare(v.id)}
-          style={{
-            width:"100%", marginTop:10,
-            display:"flex", alignItems:"center", justifyContent:"center", gap:6,
-            background: isComparing ? "rgba(244,121,32,0.10)" : "transparent",
-            border: isComparing ? "1.5px solid var(--s-orange)" : "1.5px solid var(--s-border)",
-            color: isComparing ? "var(--s-orange)" : "var(--s-text-3)",
-            fontSize:11, fontWeight:700, cursor:"pointer", borderRadius:8,
-            padding:"6px 12px", fontFamily:"inherit", transition:"all 180ms",
-          }}
+          className={`s-v-fav${fav ? " active" : ""}`}
+          onClick={e => { e.preventDefault(); setFav(x => !x); }}
+          aria-label={fav ? "Remover dos favoritos" : "Favoritar"}
         >
-          <GitCompare size={11} strokeWidth={2} />
-          {isComparing ? "Adicionado" : "Comparar"}
+          <Heart size={14} fill={fav ? "currentColor" : "none"} strokeWidth={2} />
         </button>
       </div>
-    </div>
+      <div className="s-v-info" style={{ flex:"1 1 auto" }}>
+        <p className="s-v-make">{v.marca}</p>
+        <p className="s-v-name">{v.modelo}</p>
+        <p className="s-v-version">{v.versao}</p>
+        <div className="s-v-specs">
+          <span className="s-v-spec"><Calendar size={11} strokeWidth={2} />{v.ano}</span>
+          <span className="s-v-spec"><Gauge size={11} strokeWidth={2} />{fmtKm(v.quilometragem)} km</span>
+          <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{CAMBIO_LABELS[v.cambio] ?? v.cambio}</span>
+          <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{FUEL_LABELS[v.combustivel] ?? v.combustivel}</span>
+        </div>
+        <div className="s-v-divider" />
+        <div className="s-v-bottom">
+          <div>
+            <p className="s-v-price-label">Preço</p>
+            <p className="s-v-price"><span className="s-v-price-cur">R$</span>{fmtPrice(v.valor_anunciado ?? 0)}</p>
+          </div>
+          <span className="s-btn s-btn-primary s-btn-sm" style={{ pointerEvents:"none" }}>Ver <ChevronRight size={13} strokeWidth={2.5} /></span>
+        </div>
+      </div>
+    </Link>
   );
 }
 
-function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compareIds: string[]; onToggleCompare(id:string):void }) {
+function VehicleCardList({ v }: { v: Vehicle }) {
   const [fav, setFav] = useState(false);
-  const isComparing = compareIds.includes(v.id);
   const mainPhoto = v.photos?.find((p: {is_main:boolean}) => p.is_main) ?? v.photos?.[0];
   const imgSrc = mainPhoto?.url
     ? mainPhoto.url
     : (v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg");
   const isPlaceholder = !mainPhoto?.url;
   return (
-    <div className="s-v-card-list" style={{ textDecoration:"none", display:"grid", gridTemplateColumns:"220px 1fr auto", background:"var(--s-card)", border:"1px solid var(--s-border)", borderRadius:14, overflow:"hidden", transition:"all 220ms", position:"relative" }}>
-      <Link href={"/veiculo/" + v.id} style={{ display:"contents", textDecoration:"none" }}>
-        <div style={{ position:"relative", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background: isPlaceholder ? "transparent" : undefined }}>
-          {isPlaceholder ? (
-            <img src={imgSrc} alt={v.marca + " " + v.modelo} style={{ width:"65%", height:"65%", objectFit:"contain", opacity:0.55 }} />
-          ) : (
-            <Image src={imgSrc} alt={v.marca + " " + v.modelo} fill style={{ objectFit:"cover" }} />
-          )}
-          <span className={"s-v-badge " + ((v.status as string) === "reservado" ? "s-v-badge-reservado" : "s-v-badge-disponivel")} style={{ position:"absolute", top:8, left:8 }}>
-            {(v.status as string) === "reservado" ? "Reservado" : "Disponivel"}
-          </span>
+    <Link href={"/veiculo/" + v.id} className="s-v-card-list"
+      style={{ textDecoration:"none", display:"grid", gridTemplateColumns:"220px 1fr auto",
+        background:"var(--s-card)", border:"1px solid var(--s-border)", borderRadius:14,
+        overflow:"hidden", transition:"all 220ms", position:"relative" }}>
+      <div style={{ position:"relative", overflow:"hidden", display:"flex", alignItems:"center",
+        justifyContent:"center", background: isPlaceholder ? "transparent" : undefined }}>
+        {isPlaceholder ? (
+          <img src={imgSrc} alt={v.marca + " " + v.modelo} style={{ width:"65%", height:"65%", objectFit:"contain", opacity:0.55 }} />
+        ) : (
+          <Image src={imgSrc} alt={v.marca + " " + v.modelo} fill style={{ objectFit:"cover" }} />
+        )}
+        <span className={"s-v-badge " + ((v.status as string) === "reservado" ? "s-v-badge-reservado" : "s-v-badge-disponivel")}>
+          {(v.status as string) === "reservado" ? "Reservado" : "Dispon\u00edvel"}
+        </span>
+      </div>
+      <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", justifyContent:"center" }}>
+        <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"var(--s-text-3)", marginBottom:2 }}>{v.marca}</p>
+        <p style={{ fontSize:17, fontWeight:800, color:"var(--s-text-1)", letterSpacing:"-0.3px", marginBottom:2 }}>{v.modelo}</p>
+        <p style={{ fontSize:12, color:"var(--s-text-3)", marginBottom:12 }}>{v.versao}</p>
+        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+          <span className="s-v-spec"><Calendar size={11} strokeWidth={2} />{v.ano}</span>
+          <span className="s-v-spec"><Gauge size={11} strokeWidth={2} />{fmtKm(v.quilometragem)} km</span>
+          <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{CAMBIO_LABELS[v.cambio] ?? v.cambio}</span>
+          <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{FUEL_LABELS[v.combustivel] ?? v.combustivel}</span>
         </div>
-        <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", justifyContent:"center" }}>
-          <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"var(--s-text-3)", marginBottom:2 }}>{v.marca}</p>
-          <p style={{ fontSize:17, fontWeight:800, color:"var(--s-text-1)", letterSpacing:"-0.3px", marginBottom:2 }}>{v.modelo}</p>
-          <p style={{ fontSize:12, color:"var(--s-text-3)", marginBottom:12 }}>{v.versao}</p>
-          <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-            <span className="s-v-spec"><Calendar size={11} strokeWidth={2} />{v.ano}</span>
-            <span className="s-v-spec"><Gauge size={11} strokeWidth={2} />{fmtKm(v.quilometragem)} km</span>
-            <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{CAMBIO_LABELS[v.cambio] ?? v.cambio}</span>
-            <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{FUEL_LABELS[v.combustivel] ?? v.combustivel}</span>
-          </div>
+      </div>
+      <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", alignItems:"flex-end",
+        justifyContent:"space-between", borderLeft:"1px solid var(--s-border)", minWidth:160 }}>
+        <button className={"s-v-fav" + (fav ? " active" : "")}
+          style={{ position:"static", width:32, height:32 }}
+          onClick={e => { e.preventDefault(); setFav(x => !x); }}
+          aria-label="Favoritar">
+          <Heart size={14} fill={fav ? "currentColor" : "none"} strokeWidth={2} />
+        </button>
+        <div style={{ textAlign:"right" }}>
+          <p style={{ fontSize:10, color:"var(--s-text-3)", marginBottom:3 }}>a partir de</p>
+          <p style={{ fontSize:22, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-1px", lineHeight:1, marginBottom:8 }}>
+            <span style={{ fontSize:12, fontWeight:600, color:"var(--s-text-3)", verticalAlign:"super", marginRight:2 }}>R$</span>
+            {fmtPrice(v.valor_anunciado ?? 0)}
+          </p>
+          <span className="s-btn s-btn-primary s-btn-sm">Ver oferta <ChevronRight size={13} strokeWidth={2.5} /></span>
         </div>
-        <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", alignItems:"flex-end", justifyContent:"space-between", borderLeft:"1px solid var(--s-border)", minWidth:160 }}>
-          <button className={"s-v-fav" + (fav ? " active" : "")} style={{ position:"static", width:32, height:32 }} onClick={e => { e.preventDefault(); setFav(x => !x); }} aria-label="Favoritar">
-            <Heart size={14} fill={fav ? "currentColor" : "none"} strokeWidth={2} />
-          </button>
-          <div style={{ textAlign:"right" }}>
-            <p style={{ fontSize:10, color:"var(--s-text-3)", marginBottom:3 }}>a partir de</p>
-            <p style={{ fontSize:22, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-1px", lineHeight:1, marginBottom:8 }}>
-              <span style={{ fontSize:12, fontWeight:600, color:"var(--s-text-3)", verticalAlign:"super", marginRight:2 }}>R$</span>
-              {fmtPrice(v.valor_anunciado ?? 0)}
-            </p>
-            <span className="s-btn s-btn-primary s-btn-sm">Ver oferta <ChevronRight size={13} strokeWidth={2.5} /></span>
-          </div>
-        </div>
-      </Link>
-      {/* Comparar fora do link */}
-      <button
-        onClick={() => onToggleCompare(v.id)}
-        style={{
-          position:"absolute", bottom:12, right:12,
-          display:"flex", alignItems:"center", gap:5,
-          background: isComparing ? "rgba(244,121,32,0.12)" : "transparent",
-          border: isComparing ? "1.5px solid var(--s-orange)" : "1.5px solid var(--s-border)",
-          color: isComparing ? "var(--s-orange)" : "var(--s-text-3)",
-          fontSize:11, fontWeight:700, cursor:"pointer", borderRadius:6,
-          padding:"4px 10px", fontFamily:"inherit", transition:"all 180ms",
-        }}
-      >
-        <GitCompare size={11} strokeWidth={2} />
-        {isComparing ? "Adicionado" : "Comparar"}
-      </button>
-    </div>
+      </div>
+    </Link>
   );
 }
+
 
 export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehicle[] }) {
   // Filtra só disponíveis (redundante mas seguro)
@@ -394,7 +363,6 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
   const [mobileFiltersOpen, setMob] = useState(false);
   const [isLoading, setIsLoading]   = useState(false);
   const [page, setPage]             = useState(1);
-  const [compareIds, setCompareIds] = useState<string[]>([]);
   const loadingTimer                = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync URL when filters change
@@ -452,13 +420,7 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
     ...(filters.precoMax < 999999 ? [{ label: "Ate R$ "+fmtPrice(filters.precoMax), onRemove: () => updateFilters({ precoMax: 999999 }) }] : []),
   ];
 
-  const toggleCompare = (id: string) => {
-    setCompareIds(prev => {
-      if (prev.includes(id)) return prev.filter(x => x !== id);
-      if (prev.length >= 3) return prev; // max 3
-      return [...prev, id];
-    });
-  };
+
 
   return (
     <>
@@ -581,7 +543,7 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
                 <>
                   <div className="s-grid-3">
                     {paginated.map((v, i) => (
-                      <VehicleCard key={v.id} v={v} compareIds={compareIds} onToggleCompare={toggleCompare} staggerIndex={i % PAGE_SIZE} />
+                      <VehicleCard key={v.id} v={v} staggerIndex={i % PAGE_SIZE} />
                     ))}
                   </div>
                   {hasMore && (
@@ -598,7 +560,7 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
                 </>
               ) : (
                 <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                  {paginated.map(v => <VehicleCardList key={v.id} v={v} compareIds={compareIds} onToggleCompare={toggleCompare} />)}
+                  {paginated.map(v => <VehicleCardList key={v.id} v={v} />)}
                   {hasMore && (
                     <div style={{ textAlign:"center", marginTop:16 }}>
                       <button onClick={() => setPage(p => p + 1)} className="s-btn s-btn-outline s-btn-md">
@@ -623,8 +585,7 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
         </div>
       )}
 
-      {/* Compare bar */}
-      <CompareBar ids={compareIds} vehicles={vehicles} onRemove={id => setCompareIds(p => p.filter(x => x !== id))} onClear={() => setCompareIds([])} />
+
 
       <style>{`
         #mobile-filter-btn { display: none; }

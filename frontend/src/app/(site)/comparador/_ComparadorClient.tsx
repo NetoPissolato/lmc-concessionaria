@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   Car, Bike, Plus, X, ChevronRight, Trophy,
   Gauge, Calendar, Settings, Droplets, Zap,
-  ArrowRight, CheckCircle, Star,
+  ArrowRight, CheckCircle, Star, Search,
 } from "lucide-react";
 import type { PublicVehicle } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
@@ -62,11 +62,13 @@ const BRAND_COLORS: Record<string, string> = {
 export default function ComparadorClient({ initialVehicles }: { initialVehicles: Vehicle[] }) {
   const [selected, setSelected] = useState<(Vehicle | null)[]>([null, null, null]);
   const [pickSlot, setPickSlot] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
 
   function choose(v: Vehicle) {
     if (pickSlot === null) return;
     setSelected(s => { const n = [...s]; n[pickSlot] = v; return n; });
     setPickSlot(null);
+    setSearch("");
   }
   function remove(i: number) {
     setSelected(s => { const n = [...s]; n[i] = null; return n; });
@@ -74,6 +76,9 @@ export default function ComparadorClient({ initialVehicles }: { initialVehicles:
 
   const chosen  = selected.filter(Boolean) as Vehicle[];
   const avail   = initialVehicles.filter(v => !chosen.find(c => c.id === v.id));
+  const filtered = search.trim()
+    ? avail.filter(v => (v.marca + " " + v.modelo + " " + (v.versao ?? "")).toLowerCase().includes(search.toLowerCase()))
+    : avail;
   const scores  = chosen.map(v => getScore(v, chosen));
   const maxScore = Math.max(...scores, 0);
 
@@ -139,14 +144,21 @@ export default function ComparadorClient({ initialVehicles }: { initialVehicles:
                         color:"#ef4444", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
                       <X size={14} />
                     </button>
-                    {/* image placeholder */}
+                    {/* image — real photo or fallback */}
                     <div style={{ height:120, background:`linear-gradient(135deg,${BRAND_COLORS[v.marca] ?? "#1a1d24"}22,#1a1d24)`,
-                      display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
-                      <Image src={v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg"} alt={v.modelo}
-                        fill style={{ objectFit:"cover", opacity:0.6, mixBlendMode:"luminosity" }} />
-                      <div style={{ position:"relative", zIndex:1 }}>
-                        {v.tipo === "moto" ? <Bike size={52} strokeWidth={0.7} color="rgba(255,255,255,0.5)" /> : <Car size={52} strokeWidth={0.7} color="rgba(255,255,255,0.5)" />}
-                      </div>
+                      display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
+                      {(() => {
+                        const photo = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
+                        return photo?.url
+                          ? <Image src={photo.url} alt={v.modelo} fill style={{ objectFit:"cover" }} />
+                          : <>
+                              <Image src={v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg"} alt={v.modelo}
+                                fill style={{ objectFit:"cover", opacity:0.5, mixBlendMode:"luminosity" }} />
+                              <div style={{ position:"relative", zIndex:1 }}>
+                                {v.tipo === "moto" ? <Bike size={52} strokeWidth={0.7} color="rgba(255,255,255,0.5)" /> : <Car size={52} strokeWidth={0.7} color="rgba(255,255,255,0.5)" />}
+                              </div>
+                            </>;
+                      })()}
                     </div>
                     <div style={{ padding:"14px 16px 16px" }}>
                       <p style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1.2, color:BRAND_COLORS[v.marca] ?? "var(--s-orange)", marginBottom:3 }}>{v.marca}</p>
@@ -312,47 +324,74 @@ export default function ComparadorClient({ initialVehicles }: { initialVehicles:
         <div className="s-comp-modal-wrap" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:16, backdropFilter:"blur(6px)" }}>
           <div className="s-comp-modal-box">
             {/* modal header */}
-            <div style={{ padding:"20px 22px 18px", borderBottom:"1px solid var(--s-border)", display:"flex", alignItems:"center", gap:14 }}>
-              <div style={{ flex:1 }}>
-                <p style={{ fontSize:16, fontWeight:800, color:"var(--s-text-1)", marginBottom:2 }}>Selecionar veiculo</p>
-                <p style={{ fontSize:12, color:"var(--s-text-3)" }}>Slot {(pickSlot ?? 0) + 1} &mdash; escolha um veiculo</p>
+            <div style={{ padding:"20px 22px 0", borderBottom:"1px solid var(--s-border)" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
+                <div style={{ flex:1 }}>
+                  <p style={{ fontSize:16, fontWeight:800, color:"var(--s-text-1)", marginBottom:2 }}>Selecionar veículo</p>
+                  <p style={{ fontSize:12, color:"var(--s-text-3)" }}>Slot {(pickSlot ?? 0) + 1} &mdash; escolha um veículo</p>
+                </div>
+                <button onClick={() => { setPickSlot(null); setSearch(""); }}
+                  style={{ width:34, height:34, borderRadius:"50%", background:"var(--s-bg)", border:"1px solid var(--s-border)", color:"var(--s-text-3)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <X size={16} />
+                </button>
               </div>
-              <button onClick={() => setPickSlot(null)}
-                style={{ width:34, height:34, borderRadius:"50%", background:"var(--s-bg)", border:"1px solid var(--s-border)", color:"var(--s-text-3)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <X size={16} />
-              </button>
+              {/* search bar */}
+              <div style={{ position:"relative", marginBottom:14 }}>
+                <Search size={14} style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"var(--s-text-3)" }} />
+                <input
+                  type="text"
+                  placeholder="Buscar por marca ou modelo..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  autoFocus
+                  style={{ width:"100%", padding:"9px 12px 9px 36px", borderRadius:10, border:"1.5px solid var(--s-border)",
+                    background:"var(--s-bg)", color:"var(--s-text-1)", fontSize:13, fontFamily:"inherit",
+                    outline:"none", boxSizing:"border-box", transition:"border-color 150ms" }}
+                  onFocus={e => (e.target.style.borderColor = "var(--s-orange)")}
+                  onBlur={e => (e.target.style.borderColor = "var(--s-border)")}
+                />
+              </div>
             </div>
             {/* modal list */}
             <div style={{ overflowY:"auto", padding:"12px 16px", display:"flex", flexDirection:"column", gap:8 }}>
-              {avail.length === 0 ? (
-                <p style={{ textAlign:"center", padding:"30px 0", color:"var(--s-text-3)", fontSize:14 }}>Todos os veiculos ja foram adicionados.</p>
-              ) : avail.map(v => (
-                <button key={v.id} onClick={() => choose(v)}
-                  style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 14px", borderRadius:12,
-                    border:"1.5px solid var(--s-border)", background:"transparent", cursor:"pointer",
-                    textAlign:"left", transition:"border-color 140ms, background 140ms, box-shadow 140ms", fontFamily:"inherit",
-                    width:"100%" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--s-orange)"; (e.currentTarget as HTMLElement).style.background="rgba(244,121,32,0.04)"; (e.currentTarget as HTMLElement).style.boxShadow="0 2px 12px rgba(244,121,32,0.10)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--s-border)"; (e.currentTarget as HTMLElement).style.background="transparent"; (e.currentTarget as HTMLElement).style.boxShadow="none"; }}>
-                  <div style={{ width:48, height:48, borderRadius:10, background:`linear-gradient(135deg,${BRAND_COLORS[v.marca] ?? "#1a1d24"}33,#1a1d24)`,
-                    display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative", overflow:"hidden" }}>
-                    <Image src={v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg"} alt={v.modelo}
-                      fill style={{ objectFit:"cover", opacity:0.5, mixBlendMode:"luminosity" }} />
-                    <div style={{ position:"relative", zIndex:1 }}>
-                      {v.tipo === "moto" ? <Bike size={20} strokeWidth={1} color="rgba(255,255,255,0.8)" /> : <Car size={20} strokeWidth={1} color="rgba(255,255,255,0.8)" />}
+              {filtered.length === 0 ? (
+                <p style={{ textAlign:"center", padding:"30px 0", color:"var(--s-text-3)", fontSize:14 }}>
+                  {search ? `Nenhum resultado para "${search}"` : "Todos os veículos já foram adicionados."}
+                </p>
+              ) : filtered.map(v => {
+                const photo = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
+                return (
+                  <button key={v.id} onClick={() => choose(v)}
+                    style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 14px", borderRadius:12,
+                      border:"1.5px solid var(--s-border)", background:"transparent", cursor:"pointer",
+                      textAlign:"left", transition:"border-color 140ms, background 140ms, box-shadow 140ms", fontFamily:"inherit",
+                      width:"100%" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--s-orange)"; (e.currentTarget as HTMLElement).style.background="rgba(244,121,32,0.04)"; (e.currentTarget as HTMLElement).style.boxShadow="0 2px 12px rgba(244,121,32,0.10)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--s-border)"; (e.currentTarget as HTMLElement).style.background="transparent"; (e.currentTarget as HTMLElement).style.boxShadow="none"; }}>
+                    <div style={{ width:56, height:56, borderRadius:10, flexShrink:0, position:"relative", overflow:"hidden",
+                      background: photo?.url ? "#000" : `linear-gradient(135deg,${BRAND_COLORS[v.marca] ?? "#1a1d24"}33,#1a1d24)` }}>
+                      {photo?.url
+                        ? <Image src={photo.url} alt={v.modelo} fill style={{ objectFit:"cover" }} />
+                        : <>
+                            <Image src={v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg"} alt={v.modelo}
+                              fill style={{ objectFit:"cover", opacity:0.5, mixBlendMode:"luminosity" }} />
+                            <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", zIndex:1 }}>
+                              {v.tipo === "moto" ? <Bike size={22} strokeWidth={1} color="rgba(255,255,255,0.8)" /> : <Car size={22} strokeWidth={1} color="rgba(255,255,255,0.8)" />}
+                            </div>
+                          </>}
                     </div>
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1, color:BRAND_COLORS[v.marca] ?? "var(--s-orange)", marginBottom:2 }}>{v.marca}</p>
-                    <p style={{ fontSize:14, fontWeight:700, color:"var(--s-text-1)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{v.modelo}</p>
-                    <p style={{ fontSize:11, color:"var(--s-text-3)" }}>{v.versao} &middot; {v.ano}</p>
-                  </div>
-                  <div style={{ flexShrink:0, textAlign:"right" }}>
-                    <p style={{ fontSize:10, color:"var(--s-text-3)", fontWeight:600, marginBottom:2 }}>Preco</p>
-                    <p style={{ fontSize:15, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px" }}>{fmtPrice(v.valor_anunciado ?? 0)}</p>
-                  </div>
-                </button>
-              ))}
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1, color:BRAND_COLORS[v.marca] ?? "var(--s-orange)", marginBottom:2 }}>{v.marca}</p>
+                      <p style={{ fontSize:14, fontWeight:700, color:"var(--s-text-1)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{v.modelo}</p>
+                      <p style={{ fontSize:11, color:"var(--s-text-3)" }}>{v.versao} &middot; {v.ano}</p>
+                    </div>
+                    <div style={{ flexShrink:0, textAlign:"right" }}>
+                      <p style={{ fontSize:10, color:"var(--s-text-3)", fontWeight:600, marginBottom:2 }}>Preço</p>
+                      <p style={{ fontSize:15, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px" }}>{fmtPrice(v.valor_anunciado ?? 0)}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
