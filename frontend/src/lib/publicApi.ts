@@ -6,8 +6,10 @@
  * ✅ Fallback seguro: retorna array/null em caso de erro para o site não quebrar.
  */
 
+// NEXT_PUBLIC_API_URL já termina em /api/v1 — apenas adicionamos /public
 const API_BASE =
-  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000") + "/api/v1/public";
+  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1") + "/public";
+
 
 // ─── Tipos públicos ────────────────────────────────────────────────────────────
 
