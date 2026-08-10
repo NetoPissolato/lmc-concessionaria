@@ -124,7 +124,7 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
   const badgeLabel = v.destaque ? "Destaque" : "Disponível";
 
   return (
-    <Link href={`/estoque/${v.id}`} className="s-v-card" style={{ textDecoration:"none" }}>
+    <Link href={`/veiculo/${v.id}`} className="s-v-card" style={{ textDecoration:"none" }}>
       <div className="s-v-img" style={isPlaceholder ? { background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" } : {}}>
         {isPlaceholder ? (
           // PNG sem fundo — mesmo estilo do painel de gestão
@@ -422,12 +422,14 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
             {/* ── COLUNA DIREITA — Carousel ── */}
             <div className="s-hero-right" style={{ position:"relative", height:520 }}>
 
-              {/* Slides — só mostra quando tem veículos em destaque */}
+              {/* Slides — usa foto real do veículo, fallback para imagem hero */}
               {CAROUSEL.length > 0 ? CAROUSEL.map((v, i) => {
-                const img = v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg";
+                const heroPhoto = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
+                const heroImg = heroPhoto?.url || (v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg");
                 return (
                   <div key={v.id} style={{ position:"absolute", inset:0, borderRadius:24, overflow:"hidden", opacity: i === activeSlide ? 1 : 0, transition:"opacity 800ms ease", pointerEvents: i === activeSlide ? "auto" : "none" }}>
-                    <Image src={img} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover", objectPosition:"center" }} priority={i === 0} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={heroImg} alt={`${v.marca} ${v.modelo}`} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center" }} />
                     <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg, rgba(14,15,17,0.05) 0%, rgba(14,15,17,0.30) 40%, rgba(14,15,17,0.90) 100%)" }} />
                     <div style={{ position:"absolute", inset:0, background:"linear-gradient(270deg, transparent 45%, rgba(14,15,17,0.92) 100%)" }} />
                   </div>
