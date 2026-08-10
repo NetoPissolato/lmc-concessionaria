@@ -188,9 +188,31 @@ async def get_public_stats(db: AsyncSession = Depends(get_db)):
     )
     total_marcas = marcas_q.scalar_one()
 
+    # Carros disponíveis
+    carros_q = await db.execute(
+        select(func.count(Vehicle.id)).where(
+            Vehicle.status == VehicleStatus.DISPONIVEL,
+            Vehicle.tipo == "carro",
+            Vehicle.deleted_at.is_(None),
+        )
+    )
+    total_carros = carros_q.scalar_one()
+
+    # Motos disponíveis
+    motos_q = await db.execute(
+        select(func.count(Vehicle.id)).where(
+            Vehicle.status == VehicleStatus.DISPONIVEL,
+            Vehicle.tipo == "moto",
+            Vehicle.deleted_at.is_(None),
+        )
+    )
+    total_motos = motos_q.scalar_one()
+
     return {
         "total_veiculos": total_veiculos,
         "total_marcas": total_marcas,
+        "total_carros": total_carros,
+        "total_motos": total_motos,
         "satisfacao": 98,
     }
 

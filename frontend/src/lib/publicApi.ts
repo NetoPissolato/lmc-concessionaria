@@ -42,6 +42,8 @@ export interface PublicVehicle {
 export interface PublicStats {
   total_veiculos: number;
   total_marcas: number;
+  total_carros: number;
+  total_motos: number;
   satisfacao: number;
 }
 
@@ -142,6 +144,8 @@ export async function getPublicStats(): Promise<PublicStats> {
   return (await fetchPublic<PublicStats>("/stats")) ?? {
     total_veiculos: 0,
     total_marcas: 0,
+    total_carros: 0,
+    total_motos: 0,
     satisfacao: 98,
   };
 }

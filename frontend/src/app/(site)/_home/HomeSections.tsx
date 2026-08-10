@@ -242,9 +242,9 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
     : featuredVehicles.filter(v => v.tipo === filter);
 
   const STATS = [
-    { num:"47", suffix:"+", label:"Veículos" },
-    { num:"12", suffix:"+", label:"Marcas"   },
-    { num:"98", suffix:"%", label:"Satisfação"},
+    { num: String(stats?.total_veiculos ?? 0), suffix:"+", label:"Veículos"  },
+    { num: String(stats?.total_marcas  ?? 0), suffix:"+", label:"Marcas"    },
+    { num: String(stats?.satisfacao    ?? 98), suffix:"%", label:"Satisfação" },
   ];
 
   return (
@@ -293,7 +293,9 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
                         {tipo === "carro" ? "Carros" : "Motos"}
                       </p>
                       <p style={{ fontSize:11, color:"rgba(255,255,255,0.40)", fontWeight:500 }}>
-                        {tipo === "carro" ? "47" : "12"} disponíveis
+                        {tipo === "carro"
+                          ? `${stats?.total_carros ?? 0} disponíveis`
+                          : `${stats?.total_motos ?? 0} disponíveis`}
                       </p>
                     </div>
                     {tab === tipo && (
@@ -476,6 +478,7 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
       </section>
 
       {/* ══════════════ FEATURED ══════════════ */}
+      {featuredVehicles.length > 0 && (
       <section className="s-section" aria-label="Destaques da semana">
         <div className="s-container">
           <div className="s-section-head" style={{ marginBottom:28 }}>
@@ -526,7 +529,7 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
           </div>
         </div>
       </section>
-
+      )}
 
       {/* ══════════════ WHY ══════════════ */}
       <section className="s-why-section" style={{ background:"var(--s-dark)", position:"relative", overflow:"hidden" }} aria-label="Diferenciais LMC">
