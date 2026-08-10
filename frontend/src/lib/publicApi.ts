@@ -10,6 +10,17 @@
 const API_BASE =
   (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1") + "/public";
 
+// Base do backend para resolver URLs relativas de fotos (ex: /uploads/...)
+const BACKEND_BASE =
+  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1").replace(/\/api\/v1\/?$/, "");
+
+/** Converte URL relativa de foto em URL absoluta. */
+export function resolvePhotoUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return BACKEND_BASE + url;
+}
+
 
 // ─── Tipos públicos ────────────────────────────────────────────────────────────
 
@@ -133,7 +144,12 @@ export async function getPublicVehicles(
   if (filters.skip)        params.skip        = filters.skip;
   if (filters.limit)       params.limit       = filters.limit;
 
-  return (await fetchPublic<PublicVehicle[]>("/vehicles", params)) ?? [];
+  const data = (await fetchPublic<PublicVehicle[]>("/vehicles", params)) ?? [];
+  // Corrige URLs relativas de fotos para URLs absolutas
+  return data.map(v => ({
+    ...v,
+    photos: v.photos.map(p => ({ ...p, url: resolvePhotoUrl(p.url) })),
+  }));
 }
 
 /** Busca detalhe de um veículo pelo ID. Retorna null se não encontrado. */

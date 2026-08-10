@@ -252,10 +252,11 @@ function AvalieSection() {
 // ─── Main ─────────────────────────────────────────────────────────────
 interface HomeSectionsProps {
   featuredVehicles?: PublicVehicle[];
+  recentVehicles?: PublicVehicle[];   // todos os disponíveis (sem filtro destaque)
   stats?: PublicStats;
 }
 
-export default function HomeSections({ featuredVehicles = [], stats }: HomeSectionsProps) {
+export default function HomeSections({ featuredVehicles = [], recentVehicles = [], stats }: HomeSectionsProps) {
   const [tab, setTab]               = useState<"carro" | "moto">("carro");
   const [marca, setMarca]           = useState("");
   const [modelo, setModelo]         = useState("");
@@ -265,7 +266,8 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
 
   const marcasBusca = tab === "moto" ? BRANDS_MOTOS : BRANDS_CARROS;
 
-  const CAROUSEL = (featuredVehicles.length > 0 ? featuredVehicles : FEATURED_VEHICLES_FALLBACK).slice(0, 5);
+  // Hero carousel: usa veículos reais (recentes), sem exigir destaque
+  const CAROUSEL = (recentVehicles.length > 0 ? recentVehicles : FEATURED_VEHICLES_FALLBACK).slice(0, 5);
 
   useEffect(() => {
     const t = setInterval(() => setActiveSlide(i => (i + 1) % CAROUSEL.length), 4000);
@@ -530,19 +532,28 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
       </section>
 
       {/* ══════════════ FEATURED ══════════════ */}
+      {/* Mostra destaques quando existirem; senão, mostra recém adicionados */}
+      {(() => {
+        const showVehicles = featuredVehicles.length > 0 ? featuredVehicles : recentVehicles;
+        const isDestaque = featuredVehicles.length > 0;
+        return (<>
       <section className="s-section" aria-label="Destaques da semana">
         <div className="s-container">
           <div className="s-section-head" style={{ marginBottom:28 }}>
             <div>
-              <h2 className="s-section-title">Destaques da <em>semana</em></h2>
-              <p className="s-section-sub">Selecionados especialmente para você</p>
+              <h2 className="s-section-title">
+                {isDestaque ? <>Destaques da <em>semana</em></> : <>Recém <em>adicionados</em></>}
+              </h2>
+              <p className="s-section-sub">
+                {isDestaque ? "Selecionados especialmente para você" : "Veja as últimas novidades do estoque"}
+              </p>
             </div>
             <Link href="/estoque" className="s-see-all">
               Ver todos <ArrowRight size={15} strokeWidth={2.5} />
             </Link>
           </div>
 
-          {featuredVehicles.length > 0 ? (
+          {showVehicles.length > 0 ? (
             /* Carousel com veículos reais */
             <>
               <div className="s-carousel-wrap" style={{ margin:"0 -8px", padding:"0 8px" }}>
@@ -550,7 +561,7 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
                 <div id="featured-track" className="s-carousel-track">
-                  {featuredVehicles.map(v => <VehicleCard key={v.id} v={v} />)}
+                  {showVehicles.map(v => <VehicleCard key={v.id} v={v} />)}
                 </div>
                 <button className="s-carousel-btn s-carousel-btn-next" onClick={() => { const el = document.getElementById("featured-track"); if (el) el.scrollBy({ left: 300, behavior:"smooth" }); }} aria-label="Próximo">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -563,115 +574,169 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
               </div>
             </>
           ) : (
-            /* Estado vazio elegante — 3 cards placeholder */
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(260px, 1fr))", gap:20, pointerEvents:"none" }}>
+            /* Estado vazio elegante com SVG */
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))", gap:20 }}>
               {[
-                { titulo:"Novidade chegando", subtitulo:"Sedan Premium", emoji:"🚗" },
-                { titulo:"Em breve no estoque", subtitulo:"SUV 4x4",       emoji:"🚙" },
-                { titulo:"Aguarde!",           subtitulo:"Esportivo",       emoji:"🏎️" },
+                {
+                  label: "Carros",
+                  desc: "Sedãs, SUVs, hatches e mais",
+                  svg: (
+                    <svg viewBox="0 0 120 50" fill="none" xmlns="http://www.w3.org/2000/svg" width="90" height="38">
+                      <path d="M8 34 L8 27 C8 27 12 18 26 16 L46 14 C46 14 56 14 64 20 L82 20 L88 16 L100 16 L104 20 L112 22 L112 34 Z" fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5" strokeLinejoin="round"/>
+                      <circle cx="28" cy="36" r="7" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
+                      <circle cx="28" cy="36" r="3.5" fill="rgba(244,121,32,0.25)"/>
+                      <circle cx="92" cy="36" r="7" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
+                      <circle cx="92" cy="36" r="3.5" fill="rgba(244,121,32,0.25)"/>
+                      <path d="M27 20 L38 15 L70 15 L80 22" stroke="rgba(244,121,32,0.35)" strokeWidth="1" fill="none"/>
+                    </svg>
+                  ),
+                },
+                {
+                  label: "SUVs",
+                  desc: "Robustos, espaçosos e potentes",
+                  svg: (
+                    <svg viewBox="0 0 120 55" fill="none" xmlns="http://www.w3.org/2000/svg" width="90" height="42">
+                      <path d="M6 38 L6 26 C6 26 10 14 28 12 L52 11 C52 11 66 11 78 16 L100 16 L106 13 L114 13 L114 38 Z" fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5" strokeLinejoin="round"/>
+                      <circle cx="30" cy="41" r="8" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
+                      <circle cx="30" cy="41" r="4" fill="rgba(244,121,32,0.25)"/>
+                      <circle cx="94" cy="41" r="8" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
+                      <circle cx="94" cy="41" r="4" fill="rgba(244,121,32,0.25)"/>
+                      <rect x="30" y="12" width="56" height="14" rx="2" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.25)" strokeWidth="1"/>
+                    </svg>
+                  ),
+                },
+                {
+                  label: "Motos",
+                  desc: "Agilidade e liberdade nas estradas",
+                  svg: (
+                    <svg viewBox="0 0 100 55" fill="none" xmlns="http://www.w3.org/2000/svg" width="75" height="42">
+                      <circle cx="22" cy="38" r="12" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
+                      <circle cx="22" cy="38" r="5" fill="rgba(244,121,32,0.20)"/>
+                      <circle cx="78" cy="38" r="12" fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.5)" strokeWidth="1.5"/>
+                      <circle cx="78" cy="38" r="5" fill="rgba(244,121,32,0.20)"/>
+                      <path d="M22 27 L36 18 L55 16 L68 22 L78 26" stroke="rgba(244,121,32,0.5)" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+                      <path d="M50 15 L58 8 L66 10" stroke="rgba(244,121,32,0.35)" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+                      <path d="M36 18 L44 28 L58 28 L68 22" fill="rgba(244,121,32,0.10)" stroke="rgba(244,121,32,0.35)" strokeWidth="1" strokeLinejoin="round"/>
+                    </svg>
+                  ),
+                },
               ].map((ph, i) => (
                 <div key={i} style={{
                   borderRadius:20,
-                  border:"1.5px dashed rgba(244,121,32,0.25)",
-                  background:"linear-gradient(135deg, rgba(244,121,32,0.04) 0%, rgba(255,255,255,0.02) 100%)",
+                  border:"1px solid rgba(244,121,32,0.18)",
+                  background:"linear-gradient(145deg, rgba(20,20,22,0.97) 0%, rgba(28,28,32,0.92) 100%)",
                   overflow:"hidden",
                   position:"relative",
-                  minHeight:300,
+                  minHeight:220,
                   display:"flex",
                   flexDirection:"column",
                   alignItems:"center",
                   justifyContent:"center",
-                  gap:12,
-                  padding:32,
-                  animation:`s-fadeInUp 0.5s ${i * 120}ms both`,
+                  gap:14,
+                  padding:"36px 28px",
                 }}>
+                  {/* Glow sutil */}
+                  <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", width:200, height:80, background:"radial-gradient(ellipse, rgba(244,121,32,0.10) 0%, transparent 70%)", pointerEvents:"none" }}/>
                   {/* Badge */}
-                  <div style={{ position:"absolute", top:16, left:16, background:"rgba(244,121,32,0.15)", border:"1px solid rgba(244,121,32,0.30)", borderRadius:999, padding:"4px 12px", fontSize:10, fontWeight:700, color:"var(--s-orange)", letterSpacing:1.5, textTransform:"uppercase" }}>
+                  <div style={{ position:"absolute", top:16, right:16, background:"rgba(244,121,32,0.10)", border:"1px solid rgba(244,121,32,0.25)", borderRadius:999, padding:"3px 10px", fontSize:9, fontWeight:700, color:"var(--s-orange)", letterSpacing:1.5, textTransform:"uppercase" }}>
                     Em breve
                   </div>
-                  {/* Ícone */}
-                  <div style={{ width:72, height:72, borderRadius:"50%", background:"rgba(244,121,32,0.08)", border:"1.5px solid rgba(244,121,32,0.20)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:32 }}>
-                    {ph.emoji}
+                  {/* SVG Ícone */}
+                  <div style={{ opacity:0.85 }}>{ph.svg}</div>
+                  <div style={{ textAlign:"center" }}>
+                    <p style={{ fontSize:17, fontWeight:900, color:"rgba(255,255,255,0.85)", letterSpacing:"-0.3px", marginBottom:6 }}>{ph.label}</p>
+                    <p style={{ fontSize:12, color:"rgba(255,255,255,0.30)", lineHeight:1.6 }}>{ph.desc}</p>
                   </div>
-                  <p style={{ fontSize:12, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"rgba(244,121,32,0.70)", marginTop:4 }}>
-                    {ph.subtitulo}
-                  </p>
-                  <p style={{ fontSize:18, fontWeight:900, color:"rgba(255,255,255,0.70)", letterSpacing:"-0.3px", textAlign:"center" }}>
-                    {ph.titulo}
-                  </p>
-                  <p style={{ fontSize:12, color:"rgba(255,255,255,0.30)", textAlign:"center", lineHeight:1.6 }}>
-                    Novos veículos serão adicionados em breve
-                  </p>
-                  {/* Shimmer */}
-                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.03) 50%, transparent 60%)", backgroundSize:"200% 100%", animation:"s-shimmer 2.5s linear infinite" }} />
+                  {/* Shimmer line */}
+                  <div style={{ position:"absolute", bottom:0, left:0, right:0, height:2, background:"linear-gradient(90deg, transparent, rgba(244,121,32,0.35), transparent)" }}/>
                 </div>
               ))}
             </div>
+
           )}
         </div>
       </section>
 
-      {/* ══════════════ CATEGORIAS ══════════════ */}
-      <section style={{ background:"var(--s-dark-2)", padding:"64px 0 72px", borderTop:"1px solid rgba(255,255,255,0.05)" }} aria-label="Explore por categoria">
+
+      {/* ══════════════ COMO FUNCIONA ══════════════ */}
+      <section style={{ background:"var(--s-dark)", padding:"72px 0 80px", borderTop:"1px solid rgba(255,255,255,0.05)" }} aria-label="Como funciona">
         <div className="s-container">
-          <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:36, flexWrap:"wrap", gap:12 }}>
-            <div>
-              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:2.5, color:"var(--s-orange)", marginBottom:8 }}>Explore o estoque</p>
-              <h2 style={{ fontSize:"clamp(20px,3vw,28px)", fontWeight:900, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.1 }}>
-                Encontre pelo <em style={{ color:"var(--s-orange)", fontStyle:"normal" }}>tipo de veículo</em>
-              </h2>
-            </div>
-            <Link href="/estoque" className="s-see-all" style={{ fontSize:13 }}>
-              Ver estoque <ArrowRight size={14} strokeWidth={2.5} />
-            </Link>
+          {/* Header */}
+          <div style={{ textAlign:"center", marginBottom:52 }}>
+            <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:2.5, color:"var(--s-orange)", marginBottom:10 }}>Simples e transparente</p>
+            <h2 style={{ fontSize:"clamp(22px,3.5vw,32px)", fontWeight:900, color:"#fff", letterSpacing:"-0.6px" }}>
+              Como <em style={{ color:"var(--s-orange)", fontStyle:"normal" }}>funciona</em>?
+            </h2>
           </div>
 
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))", gap:16 }}>
+          {/* Steps */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))", gap:32, position:"relative" }}>
             {[
-              { label:"SUV",        emoji:"🚙", href:"/estoque?tipo=carro&categoria=suv",       desc:"Espaço e potência" },
-              { label:"Sedan",      emoji:"🚗", href:"/estoque?tipo=carro&categoria=sedan",     desc:"Conforto e estilo" },
-              { label:"Hatch",      emoji:"🏎️", href:"/estoque?tipo=carro&categoria=hatch",     desc:"Compacto e ágil" },
-              { label:"Pickup",     emoji:"🛻", href:"/estoque?tipo=carro&categoria=pickup",    desc:"Força e versatilidade" },
-              { label:"Motos",      emoji:"🏍️", href:"/estoque?tipo=moto",                      desc:"Liberdade nas estradas" },
-            ].map((cat, i) => (
-              <Link
-                key={cat.label}
-                href={cat.href}
-                style={{
-                  display:"flex",
-                  flexDirection:"column",
-                  alignItems:"center",
-                  gap:10,
-                  padding:"28px 16px",
-                  borderRadius:18,
-                  background:"rgba(255,255,255,0.03)",
-                  border:"1.5px solid rgba(255,255,255,0.07)",
-                  textDecoration:"none",
-                  transition:"all 220ms ease",
-                  transitionDelay:`${i * 60}ms`,
-                  animation:`s-fadeInUp 0.5s ${i * 80}ms both`,
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(244,121,32,0.06)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(244,121,32,0.30)";
-                  (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
-                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                }}
-              >
-                <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(244,121,32,0.10)", border:"1.5px solid rgba(244,121,32,0.20)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26 }}>
-                  {cat.emoji}
+              {
+                n:"01",
+                title:"Explore o estoque",
+                desc:"Navegue pelos nossos veículos disponíveis, filtre por marca, modelo, faixa de preço e muito mais.",
+                icon:(
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                  </svg>
+                ),
+              },
+              {
+                n:"02",
+                title:"Fale com um consultor",
+                desc:"Entre em contato pelo WhatsApp ou formulário. Nossa equipe agenda a visita e tira todas as suas dúvidas.",
+                icon:(
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.28h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.91.35 1.85.58 2.81.71a2 2 0 0 1 1.72 2.02z"/>
+                  </svg>
+                ),
+              },
+              {
+                n:"03",
+                title:"Leve para casa",
+                desc:"Financiamento aprovado, documentação 100% regularizada. Seu veículo entregue sem burocracia.",
+                icon:(
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>
+                  </svg>
+                ),
+              },
+            ].map((step, i) => (
+              <div key={step.n} style={{ display:"flex", gap:18, alignItems:"flex-start" }}>
+                {/* Ícone + número */}
+                <div style={{ flexShrink:0, position:"relative" }}>
+                  <div style={{ width:54, height:54, borderRadius:16, background:"rgba(244,121,32,0.08)", border:"1.5px solid rgba(244,121,32,0.25)", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--s-orange)" }}>
+                    {step.icon}
+                  </div>
+                  <div style={{ position:"absolute", top:-8, right:-8, width:20, height:20, borderRadius:"50%", background:"var(--s-orange)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:900, color:"#fff" }}>
+                    {i+1}
+                  </div>
                 </div>
-                <p style={{ fontSize:15, fontWeight:800, color:"#fff", letterSpacing:"-0.2px" }}>{cat.label}</p>
-                <p style={{ fontSize:11, color:"rgba(255,255,255,0.35)", textAlign:"center" }}>{cat.desc}</p>
-              </Link>
+                {/* Texto */}
+                <div style={{ paddingTop:6 }}>
+                  <p style={{ fontSize:9, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"rgba(244,121,32,0.60)", marginBottom:6 }}>PASSO {step.n}</p>
+                  <p style={{ fontSize:16, fontWeight:800, color:"#fff", letterSpacing:"-0.3px", marginBottom:8, lineHeight:1.3 }}>{step.title}</p>
+                  <p style={{ fontSize:13, color:"rgba(255,255,255,0.38)", lineHeight:1.65 }}>{step.desc}</p>
+                </div>
+              </div>
             ))}
+          </div>
+
+          {/* CTA */}
+          <div style={{ textAlign:"center", marginTop:52, display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+            <Link href="/estoque" className="s-btn s-btn-primary s-btn-md">
+              Ver estoque <ArrowRight size={15} strokeWidth={2.5} />
+            </Link>
+            <Link href="/contato" className="s-btn s-btn-outline s-btn-md">
+              Falar com consultor
+            </Link>
           </div>
         </div>
       </section>
+      </>
+        );
+      })()}
 
       {/* ══════════════ WHY ══════════════ */}
       <section className="s-why-section" style={{ background:"var(--s-dark)", position:"relative", overflow:"hidden" }} aria-label="Diferenciais LMC">

@@ -16,8 +16,9 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   // Busca dados reais em paralelo — se o backend cair, retorna fallback vazio
-  const [featuredVehicles, stats] = await Promise.all([
+  const [featuredVehicles, recentVehicles, stats] = await Promise.all([
     getPublicVehicles({ destaque: true, limit: 6 }),
+    getPublicVehicles({ limit: 8 }),   // recém adicionados (sem filtro de destaque)
     getPublicStats(),
   ]);
 
@@ -25,6 +26,7 @@ export default async function HomePage() {
     <Suspense>
       <HomeSections
         featuredVehicles={featuredVehicles}
+        recentVehicles={recentVehicles}
         stats={stats}
       />
     </Suspense>
