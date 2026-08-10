@@ -305,7 +305,7 @@ export default function VeiculosPage() {
   });
 
   const destacarMutation = useMutation({
-    mutationFn: (v: Vehicle) => vehiclesApi.patch(v.id, { destaque: !v.destaque }),
+    mutationFn: (v: Vehicle) => vehiclesApi.toggleDestaque(v.id),
     onSuccess: (_data, v) => {
       toast.success(v.destaque ? "Removido dos destaques" : "Adicionado aos destaques da semana!");
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });

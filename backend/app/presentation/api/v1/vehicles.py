@@ -81,6 +81,32 @@ async def update_vehicle(
     return await service.update_vehicle(vehicle_id, body, updated_by=user["sub"])
 
 
+@router.patch("/{vehicle_id}/destaque", response_model=VehicleResponse)
+async def toggle_destaque(
+    vehicle_id: str,
+    db: AsyncSession = Depends(get_db),
+    _user: dict = Depends(get_current_user_payload),
+):
+    """Toggle vehicle destaque (featured) flag."""
+    from app.domain.models.vehicle import Vehicle as VehicleModel
+    from sqlalchemy import update as sql_update
+    # Busca o veículo atual
+    result = await db.execute(select(VehicleModel).where(VehicleModel.id == vehicle_id))
+    vehicle = result.scalar_one_or_none()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    # Inverte o destaque
+    new_destaque = not vehicle.destaque
+    await db.execute(
+        sql_update(VehicleModel)
+        .where(VehicleModel.id == vehicle_id)
+        .values(destaque=new_destaque)
+    )
+    await db.commit()
+    await db.refresh(vehicle)
+    return vehicle
+
+
 @router.delete("/{vehicle_id}", status_code=204)
 async def delete_vehicle(
     vehicle_id: str,
@@ -90,6 +116,7 @@ async def delete_vehicle(
     """Soft-delete vehicle. Only ADMIN can delete."""
     service = VehicleService(db)
     await service.delete_vehicle(vehicle_id, deleted_by=user["sub"])
+
 
 
 @router.get("/{vehicle_id}/cost-center")
