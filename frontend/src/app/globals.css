@@ -1074,14 +1074,21 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 /* ─── Vehicle / Moto card grid — fully fluid ────────────────────────────────── */
-/* auto-fill with minmax makes this work at ANY width without media queries */
 .vehicle-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: 16px;
 }
 
-/* On very small phones force 1 column — 2×260px wouldn't fit */
+/* Tablets (480px–1023px): sempre 2 colunas */
+@media (min-width: 480px) and (max-width: 1023px) {
+  .vehicle-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+/* Phones pequenos (<480px): 1 coluna */
 @media (max-width: 479px) {
   .vehicle-grid {
     grid-template-columns: 1fr;
