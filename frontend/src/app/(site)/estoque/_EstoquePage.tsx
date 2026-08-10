@@ -131,15 +131,19 @@ function FilterSidebar({ filters, onChange, onClear, vehicles, onClose }: {
       </div>
       <div className="s-filter-group">
         <p className="s-filter-group-title">Câmbio</p>
-        {["Automatico","CVT","Manual"].map(c => (
-          <CheckRow key={c} label={c} count={countBy("cambio",c)} checked={filters.cambio.includes(c)} onToggle={() => onChange({ cambio: toggleArr(filters.cambio,c) })} />
-        ))}
+        {Object.entries(CAMBIO_LABELS)
+          .filter(([val]) => vehicles.some(v => v.cambio === val))
+          .map(([val, label]) => (
+            <CheckRow key={val} label={label} count={countBy("cambio",val)} checked={filters.cambio.includes(val)} onToggle={() => onChange({ cambio: toggleArr(filters.cambio,val) })} />
+          ))}
       </div>
       <div className="s-filter-group">
         <p className="s-filter-group-title">Combustível</p>
-        {["Flex","Gasolina","Diesel"].map(c => (
-          <CheckRow key={c} label={c} count={countBy("combustivel",c)} checked={filters.combustivel.includes(c)} onToggle={() => onChange({ combustivel: toggleArr(filters.combustivel,c) })} />
-        ))}
+        {Object.entries(FUEL_LABELS)
+          .filter(([val]) => vehicles.some(v => v.combustivel === val))
+          .map(([val, label]) => (
+            <CheckRow key={val} label={label} count={countBy("combustivel",val)} checked={filters.combustivel.includes(val)} onToggle={() => onChange({ combustivel: toggleArr(filters.combustivel,val) })} />
+          ))}
       </div>
       <div className="s-filter-group">
         <p className="s-filter-group-title">Marca</p>
@@ -264,8 +268,8 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
           <div className="s-v-specs">
             <span className="s-v-spec"><Calendar size={11} strokeWidth={2} />{v.ano}</span>
             <span className="s-v-spec"><Gauge size={11} strokeWidth={2} />{fmtKm(v.quilometragem)} km</span>
-            <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{v.cambio}</span>
-            <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{v.combustivel}</span>
+            <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{CAMBIO_LABELS[v.cambio] ?? v.cambio}</span>
+            <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{FUEL_LABELS[v.combustivel] ?? v.combustivel}</span>
           </div>
           <div className="s-v-divider" />
           <div className="s-v-bottom">
@@ -327,8 +331,8 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
           <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
             <span className="s-v-spec"><Calendar size={11} strokeWidth={2} />{v.ano}</span>
             <span className="s-v-spec"><Gauge size={11} strokeWidth={2} />{fmtKm(v.quilometragem)} km</span>
-            <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{v.cambio}</span>
-            <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{v.combustivel}</span>
+            <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{CAMBIO_LABELS[v.cambio] ?? v.cambio}</span>
+            <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{FUEL_LABELS[v.combustivel] ?? v.combustivel}</span>
           </div>
         </div>
         <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", alignItems:"flex-end", justifyContent:"space-between", borderLeft:"1px solid var(--s-border)", minWidth:160 }}>

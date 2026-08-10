@@ -163,7 +163,7 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
           </span>
           <span className="s-v-spec">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M4.93 4.93l14.14 14.14"/></svg>
-            {v.cambio}
+            {CAMBIO_LABELS[v.cambio] ?? v.cambio}
           </span>
         </div>
         <div className="s-v-divider" />
