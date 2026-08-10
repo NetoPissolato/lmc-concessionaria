@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 
-// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �"?�"?�"? SVG Icons �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 const IconPhone = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.28h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.91.35 1.85.58 2.81.71a2 2 0 0 1 1.72 2.02z"/>
@@ -74,7 +74,7 @@ const IconPower = () => (
   </svg>
 );
 
-// â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �"?�"?�"? API �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 const API = (process.env.NEXT_PUBLIC_API_URL ?? "") + "/settings";
 
 async function fetchSettings(token: string) {
@@ -82,7 +82,7 @@ async function fetchSettings(token: string) {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Falha ao carregar configuraÃ§Ãµes");
+  if (!res.ok) throw new Error("Falha ao carregar configurações");
   return res.json();
 }
 
@@ -95,11 +95,11 @@ async function saveSettings(token: string, data: Settings) {
     },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Falha ao salvar configuraÃ§Ãµes");
+  if (!res.ok) throw new Error("Falha ao salvar configurações");
   return res.json();
 }
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �"?�"?�"? Types �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 interface Settings {
   whatsapp: string; telefone: string; email_contato: string;
   instagram: string; facebook: string; youtube: string;
@@ -111,12 +111,12 @@ interface Settings {
   updated_at: string | null;
 }
 
-// â”€â”€â”€ Componentes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �"?�"?�"? Componentes �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-2)", display: "flex", alignItems: "center", gap: 6 }}>
-        {icon && <span style={{ color: "var(--primary)", opacity: 0.7 }}>{icon}</span>}
+      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 6 }}>
+        {icon && <span style={{ color: "var(--brand)", opacity: 0.7 }}>{icon}</span>}
         {label}
       </label>
       {children}
@@ -131,7 +131,7 @@ function Input({ value, onChange, placeholder, type = "text", prefix }: {
     <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
       {prefix && (
         <span style={{
-          position: "absolute", left: 12, fontSize: 13, color: "var(--text-3)",
+          position: "absolute", left: 12, fontSize: 13, color: "var(--text-muted)",
           fontFamily: "monospace", userSelect: "none", pointerEvents: "none"
         }}>{prefix}</span>
       )}
@@ -149,12 +149,12 @@ function Input({ value, onChange, placeholder, type = "text", prefix }: {
           border: "1.5px solid var(--border)",
           borderRadius: 10,
           fontSize: 14,
-          color: "var(--text-1)",
+          color: "var(--text-primary)",
           fontFamily: "inherit",
           outline: "none",
           transition: "border-color 150ms",
         }}
-        onFocus={e => { e.target.style.borderColor = "var(--primary)"; }}
+        onFocus={e => { e.target.style.borderColor = "var(--brand)"; }}
         onBlur={e => { e.target.style.borderColor = "var(--border)"; }}
       />
     </div>
@@ -181,15 +181,15 @@ function NumberInput({ value, onChange, min = 0, max = 9999, suffix }: {
           borderRadius: 10,
           fontSize: 15,
           fontWeight: 700,
-          color: "var(--text-1)",
+          color: "var(--text-primary)",
           fontFamily: "inherit",
           outline: "none",
           textAlign: "center",
         }}
-        onFocus={e => { e.target.style.borderColor = "var(--primary)"; }}
+        onFocus={e => { e.target.style.borderColor = "var(--brand)"; }}
         onBlur={e => { e.target.style.borderColor = "var(--border)"; }}
       />
-      {suffix && <span style={{ fontSize: 13, color: "var(--text-3)" }}>{suffix}</span>}
+      {suffix && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{suffix}</span>}
     </div>
   );
 }
@@ -202,16 +202,16 @@ function Toggle({ checked, onChange, label, description }: {
       display: "flex", alignItems: "center", justifyContent: "space-between",
       padding: "16px 20px", borderRadius: 12,
       background: checked ? "rgba(var(--primary-rgb), 0.06)" : "var(--surface)",
-      border: `1.5px solid ${checked ? "var(--primary)" : "var(--border)"}`,
+      border: `1.5px solid ${checked ? "var(--brand)" : "var(--border)"}`,
       cursor: "pointer", transition: "all 200ms",
     }} onClick={() => onChange(!checked)}>
       <div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-1)" }}>{label}</p>
-        {description && <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 2 }}>{description}</p>}
+        <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{label}</p>
+        {description && <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{description}</p>}
       </div>
       <div style={{
         width: 44, height: 24, borderRadius: 999,
-        background: checked ? "var(--primary)" : "var(--border)",
+        background: checked ? "var(--brand)" : "var(--border)",
         position: "relative", transition: "background 200ms", flexShrink: 0,
       }}>
         <div style={{
@@ -224,22 +224,22 @@ function Toggle({ checked, onChange, label, description }: {
   );
 }
 
-// â”€â”€â”€ Section Wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �"?�"?�"? Section Wrapper �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 function Section({ title, icon, children, description }: { title: string; icon: React.ReactNode; children: React.ReactNode; description?: string }) {
   return (
-    <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px", marginBottom: 16 }}>
+    <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px", marginBottom: 16 }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 24 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 12, flexShrink: 0,
           background: "linear-gradient(135deg, rgba(244,121,32,0.18) 0%, rgba(244,121,32,0.06) 100%)",
           border: "1px solid rgba(244,121,32,0.18)",
-          display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)"
+          display: "flex", alignItems: "center", justifyContent: "center", color: "var(--brand)"
         }}>
           {icon}
         </div>
         <div>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-1)", marginBottom: description ? 3 : 0 }}>{title}</h3>
-          {description && <p style={{ fontSize: 12, color: "var(--text-3)", lineHeight: 1.5 }}>{description}</p>}
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: description ? 3 : 0 }}>{title}</h3>
+          {description && <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>{description}</p>}
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
@@ -249,15 +249,15 @@ function Section({ title, icon, children, description }: { title: string; icon: 
   );
 }
 
-// â”€â”€â”€ TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �"?�"?�"? TABS �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 const TABS = [
   { id: "contato",  label: "Contato & Redes",   icon: <IconPhone /> },
   { id: "loja",     label: "Dados da Loja",      icon: <IconBuilding /> },
-  { id: "site",     label: "Site PÃºblico",       icon: <IconGlobe /> },
+  { id: "site",     label: "Site Público",       icon: <IconGlobe /> },
   { id: "sistema",  label: "Sistema",            icon: <IconSettings /> },
 ];
 
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �"?�"?�"? Main Component �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 export default function ConfiguracoesPage() {
   const [tab, setTab] = useState("contato");
   const [form, setForm] = useState<Settings | null>(null);
@@ -271,7 +271,7 @@ export default function ConfiguracoesPage() {
   useEffect(() => {
     fetchSettings(token)
       .then(setForm)
-      .catch(() => setError("NÃ£o foi possÃ­vel carregar as configuraÃ§Ãµes."))
+      .catch(() => setError("Não foi possível carregar as configurações."))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -297,11 +297,11 @@ export default function ConfiguracoesPage() {
   };
 
   if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", gap: 12, flexDirection: "column" }}>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" style={{ animation: "spin 0.8s linear infinite" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-muted)", gap: 12, flexDirection: "column" }}>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" strokeWidth="2.5" style={{ animation: "spin 0.8s linear infinite" }}>
         <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
       </svg>
-      <span style={{ fontSize: 14 }}>Carregando configuraÃ§Ãµes...</span>
+      <span style={{ fontSize: 14 }}>Carregando configurações...</span>
       <style>{`@keyframes spin { to { transform: rotate(360deg); }}`}</style>
     </div>
   );
@@ -309,21 +309,21 @@ export default function ConfiguracoesPage() {
   if (!form) return (
     <div style={{ margin: 32, padding: "20px 24px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontSize: 14, display: "flex", alignItems: "center", gap: 10 }}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      {error ?? "Erro ao carregar configuraÃ§Ãµes."}
+      {error ?? "Erro ao carregar configurações."}
     </div>
   );
 
   return (
     <div style={{ padding: "28px 32px", maxWidth: 1000, margin: "0 auto" }}>
 
-      {/* â”€â”€ Header â”€â”€ */}
+      {/* �"?�"? Header �"?�"? */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-1)", letterSpacing: "-0.5px", marginBottom: 4 }}>ConfiguraÃ§Ãµes</h1>
-          <p style={{ fontSize: 13, color: "var(--text-3)" }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px", marginBottom: 4 }}>Configurações</h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
             {form.updated_at
-              ? `Ãšltima alteraÃ§Ã£o: ${new Date(form.updated_at).toLocaleString("pt-BR")}`
-              : "Configure as informaÃ§Ãµes da sua loja"}
+              ? `�sltima alteração: ${new Date(form.updated_at).toLocaleString("pt-BR")}`
+              : "Configure as informações da sua loja"}
           </p>
         </div>
         <button
@@ -334,7 +334,7 @@ export default function ConfiguracoesPage() {
             height: 42, padding: "0 22px", borderRadius: 12,
             background: saved
               ? "linear-gradient(135deg, #22c55e, #16a34a)"
-              : "linear-gradient(135deg, var(--primary), #e07520)",
+              : "linear-gradient(135deg, var(--brand), #e07520)",
             color: "#fff", border: "none", cursor: saving ? "not-allowed" : "pointer",
             fontSize: 14, fontWeight: 700, fontFamily: "inherit",
             boxShadow: saved ? "0 4px 16px rgba(34,197,94,0.3)" : "0 4px 16px rgba(244,121,32,0.3)",
@@ -350,7 +350,7 @@ export default function ConfiguracoesPage() {
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
             </svg>
           )}
-          {saved ? "Salvo com sucesso!" : saving ? "Salvando..." : "Salvar alteraÃ§Ãµes"}
+          {saved ? "Salvo com sucesso!" : saving ? "Salvando..." : "Salvar alterações"}
         </button>
       </div>
 
@@ -361,7 +361,7 @@ export default function ConfiguracoesPage() {
         </div>
       )}
 
-      {/* â”€â”€ Tab Nav â€” Pill Style â”€â”€ */}
+      {/* �"?�"? Tab Nav �?" Pill Style �"?�"? */}
       <div style={{ display: "flex", gap: 6, marginBottom: 24, background: "var(--surface)", padding: 5, borderRadius: 14, width: "fit-content", border: "1px solid var(--border)" }}>
         {TABS.map(t => (
           <button
@@ -370,10 +370,10 @@ export default function ConfiguracoesPage() {
             style={{
               display: "flex", alignItems: "center", gap: 7,
               padding: "8px 16px", borderRadius: 10,
-              background: tab === t.id ? "var(--card)" : "transparent",
+              background: tab === t.id ? "var(--surface-2)" : "transparent",
               border: tab === t.id ? "1px solid var(--border)" : "1px solid transparent",
               boxShadow: tab === t.id ? "0 2px 8px rgba(0,0,0,0.15)" : "none",
-              color: tab === t.id ? "var(--primary)" : "var(--text-3)",
+              color: tab === t.id ? "var(--brand)" : "var(--text-muted)",
               cursor: "pointer", fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
               fontFamily: "inherit", transition: "all 150ms", whiteSpace: "nowrap",
             }}
@@ -384,10 +384,10 @@ export default function ConfiguracoesPage() {
         ))}
       </div>
 
-      {/* â”€â”€ TAB: Contato & Redes â”€â”€ */}
+      {/* �"?�"? TAB: Contato & Redes �"?�"? */}
       {tab === "contato" && (
         <>
-          <Section title="Contato" icon={<IconPhone />} description="NÃºmero de WhatsApp, telefone e e-mail que aparecem no site">
+          <Section title="Contato" icon={<IconPhone />} description="Número de WhatsApp, telefone e e-mail que aparecem no site">
             <Field label="WhatsApp" icon={<IconWhatsApp />}>
               <Input value={form.whatsapp} onChange={v => set("whatsapp", v)} placeholder="5511999999999" prefix="+" />
             </Field>
@@ -401,7 +401,7 @@ export default function ConfiguracoesPage() {
             </div>
           </Section>
 
-          <Section title="Redes Sociais" icon={<IconInstagram />} description="Links das redes sociais exibidos no rodapÃ© e pÃ¡gina de contato">
+          <Section title="Redes Sociais" icon={<IconInstagram />} description="Links das redes sociais exibidos no rodapé e página de contato">
             <Field label="Instagram" icon={<IconInstagram />}>
               <Input value={form.instagram} onChange={v => set("instagram", v)} placeholder="https://instagram.com/suaempresa" />
             </Field>
@@ -416,7 +416,7 @@ export default function ConfiguracoesPage() {
           {form.whatsapp && (
             <div style={{ padding: "14px 18px", borderRadius: 12, background: "rgba(37,211,102,0.06)", border: "1px solid rgba(37,211,102,0.20)", display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ color: "#25d366", flexShrink: 0 }}><IconWhatsApp /></span>
-              <span style={{ fontSize: 13, color: "var(--text-2)" }}>
+              <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
                 Link gerado:{" "}
                 <a href={`https://wa.me/${form.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
                   style={{ color: "#25d366", fontWeight: 700, textDecoration: "none" }}>
@@ -428,32 +428,32 @@ export default function ConfiguracoesPage() {
         </>
       )}
 
-      {/* â”€â”€ TAB: Dados da Loja â”€â”€ */}
+      {/* �"?�"? TAB: Dados da Loja �"?�"? */}
       {tab === "loja" && (
         <>
-          <Section title="Identidade" icon={<IconBuilding />} description="Nome e identidade da concessionÃ¡ria">
+          <Section title="Identidade" icon={<IconBuilding />} description="Nome e identidade da concessionária">
             <Field label="Nome da loja">
-              <Input value={form.nome_loja} onChange={v => set("nome_loja", v)} placeholder="LMC VeÃ­culos" />
+              <Input value={form.nome_loja} onChange={v => set("nome_loja", v)} placeholder="LMC Veículos" />
             </Field>
             <Field label="Slogan">
-              <Input value={form.slogan} onChange={v => set("slogan", v)} placeholder="Seu prÃ³ximo veÃ­culo estÃ¡ aqui" />
+              <Input value={form.slogan} onChange={v => set("slogan", v)} placeholder="Seu próximo veículo está aqui" />
             </Field>
             <Field label="CNPJ">
               <Input value={form.cnpj} onChange={v => set("cnpj", v)} placeholder="00.000.000/0001-00" />
             </Field>
-            <Field label="HorÃ¡rio de funcionamento">
-              <Input value={form.horario} onChange={v => set("horario", v)} placeholder="Segâ€“Sex: 8hâ€“18h | SÃ¡b: 8hâ€“13h" />
+            <Field label="Horário de funcionamento">
+              <Input value={form.horario} onChange={v => set("horario", v)} placeholder="Seg�?"Sex: 8h�?"18h | Sáb: 8h�?"13h" />
             </Field>
           </Section>
 
-          <Section title="EndereÃ§o" icon={<IconMapPin />} description="LocalizaÃ§Ã£o fÃ­sica da loja">
+          <Section title="Endereço" icon={<IconMapPin />} description="Localização física da loja">
             <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="EndereÃ§o completo">
+              <Field label="Endereço completo">
                 <Input value={form.endereco} onChange={v => set("endereco", v)} placeholder="Rua Exemplo, 123" />
               </Field>
             </div>
             <Field label="Cidade">
-              <Input value={form.cidade} onChange={v => set("cidade", v)} placeholder="SÃ£o Paulo" />
+              <Input value={form.cidade} onChange={v => set("cidade", v)} placeholder="São Paulo" />
             </Field>
             <Field label="Estado (UF)">
               <Input value={form.estado} onChange={v => set("estado", v)} placeholder="SP" />
@@ -465,46 +465,46 @@ export default function ConfiguracoesPage() {
         </>
       )}
 
-      {/* â”€â”€ TAB: Site PÃºblico â”€â”€ */}
+      {/* �"?�"? TAB: Site Público �"?�"? */}
       {tab === "site" && (
         <>
-          <Section title="Texto do Hero" icon={<IconImage />} description="TÃ­tulo e subtÃ­tulo exibidos na pÃ¡gina inicial do site">
+          <Section title="Texto do Hero" icon={<IconImage />} description="Título e subtítulo exibidos na página inicial do site">
             <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="TÃ­tulo principal">
-                <Input value={form.hero_titulo} onChange={v => set("hero_titulo", v)} placeholder="Encontre seu prÃ³ximo veÃ­culo" />
+              <Field label="Título principal">
+                <Input value={form.hero_titulo} onChange={v => set("hero_titulo", v)} placeholder="Encontre seu próximo veículo" />
               </Field>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="SubtÃ­tulo">
+              <Field label="Subtítulo">
                 <Input value={form.hero_subtitulo} onChange={v => set("hero_subtitulo", v)} placeholder="Carros e motos selecionados com qualidade" />
               </Field>
             </div>
           </Section>
 
-          <Section title="EstatÃ­sticas" icon={<IconBarChart />} description="NÃºmeros exibidos no hero do site. Se zerados, a seÃ§Ã£o fica oculta.">
+          <Section title="Estatísticas" icon={<IconBarChart />} description="Números exibidos no hero do site. Se zerados, a seção fica oculta.">
             <Field label="Clientes satisfeitos">
               <NumberInput value={form.stat_clientes} onChange={v => set("stat_clientes", v)} suffix="clientes" />
             </Field>
-            <Field label="Anos de experiÃªncia">
+            <Field label="Anos de experiência">
               <NumberInput value={form.stat_anos} onChange={v => set("stat_anos", v)} suffix="anos" />
             </Field>
-            <Field label="Taxa de satisfaÃ§Ã£o">
+            <Field label="Taxa de satisfação">
               <NumberInput value={form.stat_satisfacao} onChange={v => set("stat_satisfacao", v)} min={0} max={100} suffix="%" />
             </Field>
           </Section>
         </>
       )}
 
-      {/* â”€â”€ TAB: Sistema â”€â”€ */}
+      {/* �"?�"? TAB: Sistema �"?�"? */}
       {tab === "sistema" && (
         <>
-          <Section title="Fotos de VeÃ­culos" icon={<IconImage />} description="Limite de fotos por veÃ­culo no cadastro">
-            <Field label="MÃ¡ximo de fotos por veÃ­culo">
+          <Section title="Fotos de Veículos" icon={<IconImage />} description="Limite de fotos por veículo no cadastro">
+            <Field label="Máximo de fotos por veículo">
               <NumberInput value={form.max_fotos_veiculo} onChange={v => set("max_fotos_veiculo", v)} min={1} max={50} suffix="fotos" />
             </Field>
           </Section>
 
-          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px" }}>
+          <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 20 }}>
               <div style={{
                 width: 40, height: 40, borderRadius: 12, flexShrink: 0,
@@ -513,27 +513,27 @@ export default function ConfiguracoesPage() {
                   : "linear-gradient(135deg, rgba(244,121,32,0.18) 0%, rgba(244,121,32,0.06) 100%)",
                 border: `1px solid ${form.modo_manutencao ? "rgba(239,68,68,0.25)" : "rgba(244,121,32,0.18)"}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: form.modo_manutencao ? "#ef4444" : "var(--primary)"
+                color: form.modo_manutencao ? "#ef4444" : "var(--brand)"
               }}>
                 <IconPower />
               </div>
               <div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-1)", marginBottom: 3 }}>Modo ManutenÃ§Ã£o</h3>
-                <p style={{ fontSize: 12, color: "var(--text-3)", lineHeight: 1.5 }}>O site pÃºblico exibirÃ¡ uma pÃ¡gina de aviso. O painel continua funcionando.</p>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>Modo Manutenção</h3>
+                <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>O site público exibirá uma página de aviso. O painel continua funcionando.</p>
               </div>
             </div>
 
             <Toggle
               checked={form.modo_manutencao}
               onChange={v => set("modo_manutencao", v)}
-              label="Ativar modo manutenÃ§Ã£o"
-              description="Quando ativado, visitantes verÃ£o uma pÃ¡gina 'Em breve' ao acessar o site."
+              label="Ativar modo manutenção"
+              description="Quando ativado, visitantes verão uma página 'Em breve' ao acessar o site."
             />
 
             {form.modo_manutencao && (
               <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.20)", fontSize: 13, color: "#ef4444", fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Site pÃºblico em modo manutenÃ§Ã£o ativo
+                Site público em modo manutenção ativo
               </div>
             )}
           </div>
