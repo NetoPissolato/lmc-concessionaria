@@ -86,7 +86,7 @@ async function fetchSettings(token: string) {
   return res.json();
 }
 
-async function saveSettings(token: string, data: Record<string, unknown>) {
+async function saveSettings(token: string, data: Settings) {
   const res = await fetch(API, {
     method: "PUT",
     headers: {
