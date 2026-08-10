@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -117,7 +117,7 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
   const mainPhoto = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
   const imgSrc = mainPhoto?.url
     ? mainPhoto.url
-    : (v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg");
+    : (v.tipo === "moto" ? "/moto-placeholder.png" : "/car-placeholder.png");
   const isPlaceholder = !mainPhoto;
   const badgeClass =
     v.destaque ? "s-v-badge s-v-badge-destaque" : "s-v-badge s-v-badge-disponivel";
@@ -125,9 +125,14 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
 
   return (
     <Link href={`/estoque/${v.id}`} className="s-v-card" style={{ textDecoration:"none" }}>
-      <div className="s-v-img">
+      <div className="s-v-img" style={isPlaceholder ? { background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" } : {}}>
         {isPlaceholder ? (
-          <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"contain", padding:20, filter:"opacity(0.55)" }} />
+          // PNG sem fundo — mesmo estilo do painel de gestão
+          <img
+            src={imgSrc}
+            alt={`${v.marca} ${v.modelo}`}
+            style={{ width:"70%", height:"70%", objectFit:"contain", opacity:0.55, display:"block" }}
+          />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imgSrc} alt={`${v.marca} ${v.modelo}`} style={{ width:"100%", height:"100%", objectFit:"cover" }} />

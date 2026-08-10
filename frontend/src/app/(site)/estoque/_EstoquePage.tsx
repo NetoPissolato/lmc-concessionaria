@@ -227,7 +227,11 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
 }) {
   const [fav, setFav] = useState(false);
   const isComparing = compareIds.includes(v.id);
-  const imgSrc = v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg";
+  const mainPhoto = v.photos?.find((p: {is_main:boolean}) => p.is_main) ?? v.photos?.[0];
+  const imgSrc = mainPhoto?.url
+    ? mainPhoto.url
+    : (v.tipo === "moto" ? "/moto-placeholder.png" : "/car-placeholder.png");
+  const isPlaceholder = !mainPhoto?.url;
   const isReservado = (v.status as string) === "reservado";
   const badgeClass = isReservado ? "s-v-badge s-v-badge-reservado" : "s-v-badge s-v-badge-disponivel";
 
@@ -236,9 +240,13 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
       className="s-v-card"
       style={{ textDecoration:"none" } as React.CSSProperties}
     >
-      <Link href={`/veiculo/${v.id}`} style={{ textDecoration:"none", display:"contents" }}>
-        <div className="s-v-img">
-          <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover" }} />
+      <Link href={`/estoque/${v.id}`} style={{ textDecoration:"none", display:"contents" }}>
+        <div className="s-v-img" style={isPlaceholder ? { background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" } : {}}>
+          {isPlaceholder ? (
+            <img src={imgSrc} alt={`${v.marca} ${v.modelo}`} style={{ width:"70%", height:"70%", objectFit:"contain", opacity:0.55 }} />
+          ) : (
+            <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover" }} />
+          )}
           <span className={badgeClass}>{isReservado ? "Reservado" : "Disponível"}</span>
           <button
             className={`s-v-fav${fav ? " active" : ""}`}
@@ -292,12 +300,20 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
 function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compareIds: string[]; onToggleCompare(id:string):void }) {
   const [fav, setFav] = useState(false);
   const isComparing = compareIds.includes(v.id);
-  const imgSrc = v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg";
+  const mainPhoto = v.photos?.find((p: {is_main:boolean}) => p.is_main) ?? v.photos?.[0];
+  const imgSrc = mainPhoto?.url
+    ? mainPhoto.url
+    : (v.tipo === "moto" ? "/moto-placeholder.png" : "/car-placeholder.png");
+  const isPlaceholder = !mainPhoto?.url;
   return (
     <div className="s-v-card-list" style={{ textDecoration:"none", display:"grid", gridTemplateColumns:"220px 1fr auto", background:"var(--s-card)", border:"1px solid var(--s-border)", borderRadius:14, overflow:"hidden", transition:"all 220ms", position:"relative" }}>
-      <Link href={"/veiculo/" + v.id} style={{ display:"contents", textDecoration:"none" }}>
-        <div style={{ position:"relative", overflow:"hidden" }}>
-          <Image src={imgSrc} alt={v.marca + " " + v.modelo} fill style={{ objectFit:"cover" }} />
+      <Link href={"/estoque/" + v.id} style={{ display:"contents", textDecoration:"none" }}>
+        <div style={{ position:"relative", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background: isPlaceholder ? "transparent" : undefined }}>
+          {isPlaceholder ? (
+            <img src={imgSrc} alt={v.marca + " " + v.modelo} style={{ width:"65%", height:"65%", objectFit:"contain", opacity:0.55 }} />
+          ) : (
+            <Image src={imgSrc} alt={v.marca + " " + v.modelo} fill style={{ objectFit:"cover" }} />
+          )}
           <span className={"s-v-badge " + ((v.status as string) === "reservado" ? "s-v-badge-reservado" : "s-v-badge-disponivel")} style={{ position:"absolute", top:8, left:8 }}>
             {(v.status as string) === "reservado" ? "Reservado" : "Disponivel"}
           </span>
