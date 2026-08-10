@@ -592,7 +592,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
               </div>
             </>
           ) : (
-            /* Estado vazio — design limpo e premium */
+            /* Estado vazio — card dark premium sobre fundo claro */
             <div style={{
               display: "flex",
               flexDirection: "column",
@@ -601,32 +601,33 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
               padding: "64px 24px 56px",
               gap: 0,
               borderRadius: 20,
-              background: "linear-gradient(160deg, #ffffff06 0%, #ffffff03 100%)",
-              border: "1px solid rgba(255,255,255,0.07)",
+              background: "linear-gradient(160deg, #16181C 0%, #1E2026 100%)",
+              border: "1px solid rgba(255,255,255,0.08)",
               position: "relative",
               overflow: "hidden",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.18)",
             }}>
               {/* Glow sutil */}
-              <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background:"radial-gradient(ellipse 80% 50% at 50% 20%, rgba(244,121,32,0.06) 0%, transparent 70%)", pointerEvents:"none" }}/>
+              <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background:"radial-gradient(ellipse 80% 50% at 50% 20%, rgba(244,121,32,0.10) 0%, transparent 70%)", pointerEvents:"none" }}/>
 
-              {/* Foto real do carro */}
+              {/* Placeholder do carro */}
               <div style={{ position:"relative", zIndex:1, marginBottom:24 }}>
                 <img
                   src="/car-placeholder.svg"
                   alt="Destaques em breve"
-                  style={{ width:200, height:"auto", objectFit:"contain", opacity:0.80, filter:"drop-shadow(0 12px 28px rgba(0,0,0,0.6))", display:"block" }}
+                  style={{ width:200, height:"auto", objectFit:"contain", opacity:0.35, filter:"brightness(0) invert(1) drop-shadow(0 12px 28px rgba(0,0,0,0.8))", display:"block" }}
                 />
               </div>
 
               {/* Texto */}
               <div style={{ textAlign:"center", position:"relative", zIndex:1, marginBottom:28 }}>
-                <span style={{ display:"inline-block", background:"rgba(244,121,32,0.15)", color:"var(--s-orange)", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:2, padding:"4px 12px", borderRadius:999, marginBottom:14 }}>
+                <span style={{ display:"inline-block", background:"rgba(244,121,32,0.20)", color:"var(--s-orange)", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:2, padding:"4px 14px", borderRadius:999, marginBottom:14 }}>
                   Em breve
                 </span>
-                <p style={{ fontSize:20, fontWeight:800, color:"#fff", letterSpacing:"-0.4px", marginBottom:10, lineHeight:1.2 }}>
+                <p style={{ fontSize:22, fontWeight:900, color:"#FFFFFF", letterSpacing:"-0.5px", marginBottom:12, lineHeight:1.2 }}>
                   Nossos destaques estão<br/>chegando
                 </p>
-                <p style={{ fontSize:13.5, color:"rgba(255,255,255,0.55)", lineHeight:1.75, maxWidth:280 }}>
+                <p style={{ fontSize:14, color:"rgba(255,255,255,0.55)", lineHeight:1.75, maxWidth:300 }}>
                   Selecionamos os melhores veículos<br/>para você. Confira o estoque completo.
                 </p>
               </div>

@@ -133,6 +133,7 @@ export const vehiclesApi = {
   get: (id: string) => api.get(`/vehicles/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post("/vehicles", data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/vehicles/${id}`, data).then((r) => r.data),
+  patch:  (id: string, data: unknown) => api.patch(`/vehicles/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/vehicles/${id}`),
   getCostCenter: (id: string) => api.get(`/vehicles/${id}/cost-center`).then((r) => r.data),
   getExpenses: (id: string) => api.get(`/vehicles/${id}/expenses`).then((r) => r.data),
