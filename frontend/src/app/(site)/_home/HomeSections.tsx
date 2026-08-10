@@ -581,70 +581,46 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
               </div>
             </>
           ) : (
-            /* Estado vazio — design limpo e profissional */
+            /* Estado vazio — design limpo e premium */
             <div style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              padding: "56px 24px",
-              gap: 28,
-              borderRadius: 24,
-              background: "linear-gradient(135deg, rgba(18,18,22,0.98) 0%, rgba(26,26,32,0.95) 100%)",
-              border: "1px solid rgba(244,121,32,0.14)",
+              padding: "64px 24px 56px",
+              gap: 0,
+              borderRadius: 20,
+              background: "linear-gradient(160deg, #ffffff06 0%, #ffffff03 100%)",
+              border: "1px solid rgba(255,255,255,0.07)",
               position: "relative",
               overflow: "hidden",
             }}>
-              {/* glow de fundo */}
-              <div style={{ position:"absolute", top:"30%", left:"50%", transform:"translate(-50%,-50%)", width:500, height:250, background:"radial-gradient(ellipse, rgba(244,121,32,0.07) 0%, transparent 65%)", pointerEvents:"none" }}/>
-              {/* Linha decorativa topo */}
-              <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", width:200, height:1, background:"linear-gradient(90deg, transparent, rgba(244,121,32,0.5), transparent)" }}/>
+              {/* Glow sutil */}
+              <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background:"radial-gradient(ellipse 70% 60% at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%)", pointerEvents:"none" }}/>
 
-              {/* Ilustração SVG de carro único e elegante */}
-              <div style={{ position:"relative", zIndex:1 }}>
-                <svg viewBox="0 0 280 100" fill="none" xmlns="http://www.w3.org/2000/svg" width="220" height="79">
-                  {/* Sombra no chão */}
-                  <ellipse cx="140" cy="94" rx="95" ry="6" fill="rgba(244,121,32,0.08)"/>
-                  {/* Corpo do carro */}
-                  <path d="M20 70 L20 52 C20 52 30 28 65 24 L108 20 C108 20 130 19 152 26 L196 26 L210 20 L234 20 L240 26 L258 30 L260 70 Z"
-                    fill="rgba(244,121,32,0.08)" stroke="rgba(244,121,32,0.45)" strokeWidth="1.8" strokeLinejoin="round"/>
-                  {/* Janela dianteira */}
-                  <path d="M105 40 L115 25 L152 23 L165 40 Z"
-                    fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.35)" strokeWidth="1"/>
-                  {/* Janela traseira */}
-                  <path d="M68 40 L78 26 L104 24 L104 40 Z"
-                    fill="rgba(244,121,32,0.10)" stroke="rgba(244,121,32,0.28)" strokeWidth="1"/>
-                  {/* Rodas */}
-                  <circle cx="72" cy="73" r="16" fill="rgba(18,18,22,1)" stroke="rgba(244,121,32,0.50)" strokeWidth="2"/>
-                  <circle cx="72" cy="73" r="8" fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.35)" strokeWidth="1.5"/>
-                  <circle cx="72" cy="73" r="3" fill="rgba(244,121,32,0.40)"/>
-                  <circle cx="208" cy="73" r="16" fill="rgba(18,18,22,1)" stroke="rgba(244,121,32,0.50)" strokeWidth="2"/>
-                  <circle cx="208" cy="73" r="8" fill="rgba(244,121,32,0.12)" stroke="rgba(244,121,32,0.35)" strokeWidth="1.5"/>
-                  <circle cx="208" cy="73" r="3" fill="rgba(244,121,32,0.40)"/>
-                  {/* Farol dianteiro */}
-                  <path d="M258 40 L262 45 L258 52" stroke="rgba(244,121,32,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-                  {/* Detalhe lateral */}
-                  <path d="M25 58 L255 58" stroke="rgba(244,121,32,0.12)" strokeWidth="1" strokeDasharray="4 6"/>
-                </svg>
+              {/* Foto real do carro */}
+              <div style={{ position:"relative", zIndex:1, marginBottom:28 }}>
+                <img
+                  src="/car-placeholder.png"
+                  alt="Novidades em breve"
+                  style={{ width:200, height:"auto", objectFit:"contain", opacity:0.60, filter:"drop-shadow(0 16px 32px rgba(0,0,0,0.5))", display:"block" }}
+                />
               </div>
 
               {/* Texto */}
-              <div style={{ textAlign:"center", position:"relative", zIndex:1 }}>
-                <p style={{ fontSize:18, fontWeight:800, color:"rgba(255,255,255,0.80)", letterSpacing:"-0.3px", marginBottom:8 }}>
-                  Em breve novidades
+              <div style={{ textAlign:"center", position:"relative", zIndex:1, marginBottom:28 }}>
+                <p style={{ fontSize:17, fontWeight:700, color:"rgba(255,255,255,0.72)", letterSpacing:"-0.3px", marginBottom:8 }}>
+                  Novidades em breve
                 </p>
-                <p style={{ fontSize:13, color:"rgba(255,255,255,0.28)", lineHeight:1.7, maxWidth:340 }}>
-                  Nosso estoque de destaques está sendo preparado.<br/>Confira todos os veículos disponíveis.
+                <p style={{ fontSize:13, color:"rgba(255,255,255,0.28)", lineHeight:1.7, maxWidth:300 }}>
+                  Estamos preparando os melhores destaques.<br/>Confira o estoque completo.
                 </p>
               </div>
 
               {/* CTA */}
-              <Link href="/estoque" className="s-btn s-btn-outline s-btn-md" style={{ position:"relative", zIndex:1 }}>
-                Ver estoque completo <ArrowRight size={15} strokeWidth={2.5} />
+              <Link href="/estoque" className="s-btn s-btn-primary s-btn-md" style={{ position:"relative", zIndex:1 }}>
+                Ver estoque completo <ArrowRight size={14} strokeWidth={2.5} />
               </Link>
-
-              {/* Linha decorativa baixo */}
-              <div style={{ position:"absolute", bottom:0, left:"50%", transform:"translateX(-50%)", width:200, height:1, background:"linear-gradient(90deg, transparent, rgba(244,121,32,0.5), transparent)" }}/>
             </div>
           )}
         </div>

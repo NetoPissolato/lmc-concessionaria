@@ -258,7 +258,7 @@ export default function ConfiguracoesPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("lmc_token") ?? "" : "";
+  const token = typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "";
 
   useEffect(() => {
     fetchSettings(token)
