@@ -530,7 +530,6 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
       </section>
 
       {/* ══════════════ FEATURED ══════════════ */}
-      {featuredVehicles.length > 0 && (
       <section className="s-section" aria-label="Destaques da semana">
         <div className="s-container">
           <div className="s-section-head" style={{ marginBottom:28 }}>
@@ -543,45 +542,136 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
             </Link>
           </div>
 
-          {/* Carousel */}
-          <div className="s-carousel-wrap" style={{ margin:"0 -8px", padding:"0 8px" }}>
-            {/* Botão Prev */}
-            <button
-              className="s-carousel-btn s-carousel-btn-prev"
-              onClick={() => {
-                const el = document.getElementById("featured-track");
-                if (el) el.scrollBy({ left: -300, behavior:"smooth" });
-              }}
-              aria-label="Anterior"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-
-            <div id="featured-track" className="s-carousel-track">
-              {featuredVehicles.map(v => <VehicleCard key={v.id} v={v} />)}
+          {featuredVehicles.length > 0 ? (
+            /* Carousel com veículos reais */
+            <>
+              <div className="s-carousel-wrap" style={{ margin:"0 -8px", padding:"0 8px" }}>
+                <button className="s-carousel-btn s-carousel-btn-prev" onClick={() => { const el = document.getElementById("featured-track"); if (el) el.scrollBy({ left: -300, behavior:"smooth" }); }} aria-label="Anterior">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div id="featured-track" className="s-carousel-track">
+                  {featuredVehicles.map(v => <VehicleCard key={v.id} v={v} />)}
+                </div>
+                <button className="s-carousel-btn s-carousel-btn-next" onClick={() => { const el = document.getElementById("featured-track"); if (el) el.scrollBy({ left: 300, behavior:"smooth" }); }} aria-label="Próximo">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+              <div style={{ textAlign:"center", marginTop:36 }}>
+                <Link href="/estoque" className="s-btn s-btn-outline s-btn-md">
+                  Ver estoque completo <ArrowRight size={15} strokeWidth={2.5} />
+                </Link>
+              </div>
+            </>
+          ) : (
+            /* Estado vazio elegante — 3 cards placeholder */
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(260px, 1fr))", gap:20, pointerEvents:"none" }}>
+              {[
+                { titulo:"Novidade chegando", subtitulo:"Sedan Premium", emoji:"🚗" },
+                { titulo:"Em breve no estoque", subtitulo:"SUV 4x4",       emoji:"🚙" },
+                { titulo:"Aguarde!",           subtitulo:"Esportivo",       emoji:"🏎️" },
+              ].map((ph, i) => (
+                <div key={i} style={{
+                  borderRadius:20,
+                  border:"1.5px dashed rgba(244,121,32,0.25)",
+                  background:"linear-gradient(135deg, rgba(244,121,32,0.04) 0%, rgba(255,255,255,0.02) 100%)",
+                  overflow:"hidden",
+                  position:"relative",
+                  minHeight:300,
+                  display:"flex",
+                  flexDirection:"column",
+                  alignItems:"center",
+                  justifyContent:"center",
+                  gap:12,
+                  padding:32,
+                  animation:`s-fadeInUp 0.5s ${i * 120}ms both`,
+                }}>
+                  {/* Badge */}
+                  <div style={{ position:"absolute", top:16, left:16, background:"rgba(244,121,32,0.15)", border:"1px solid rgba(244,121,32,0.30)", borderRadius:999, padding:"4px 12px", fontSize:10, fontWeight:700, color:"var(--s-orange)", letterSpacing:1.5, textTransform:"uppercase" }}>
+                    Em breve
+                  </div>
+                  {/* Ícone */}
+                  <div style={{ width:72, height:72, borderRadius:"50%", background:"rgba(244,121,32,0.08)", border:"1.5px solid rgba(244,121,32,0.20)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:32 }}>
+                    {ph.emoji}
+                  </div>
+                  <p style={{ fontSize:12, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"rgba(244,121,32,0.70)", marginTop:4 }}>
+                    {ph.subtitulo}
+                  </p>
+                  <p style={{ fontSize:18, fontWeight:900, color:"rgba(255,255,255,0.70)", letterSpacing:"-0.3px", textAlign:"center" }}>
+                    {ph.titulo}
+                  </p>
+                  <p style={{ fontSize:12, color:"rgba(255,255,255,0.30)", textAlign:"center", lineHeight:1.6 }}>
+                    Novos veículos serão adicionados em breve
+                  </p>
+                  {/* Shimmer */}
+                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.03) 50%, transparent 60%)", backgroundSize:"200% 100%", animation:"s-shimmer 2.5s linear infinite" }} />
+                </div>
+              ))}
             </div>
+          )}
+        </div>
+      </section>
 
-            {/* Botão Next */}
-            <button
-              className="s-carousel-btn s-carousel-btn-next"
-              onClick={() => {
-                const el = document.getElementById("featured-track");
-                if (el) el.scrollBy({ left: 300, behavior:"smooth" });
-              }}
-              aria-label="Próximo"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
+      {/* ══════════════ CATEGORIAS ══════════════ */}
+      <section style={{ background:"var(--s-dark-2)", padding:"64px 0 72px", borderTop:"1px solid rgba(255,255,255,0.05)" }} aria-label="Explore por categoria">
+        <div className="s-container">
+          <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:36, flexWrap:"wrap", gap:12 }}>
+            <div>
+              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:2.5, color:"var(--s-orange)", marginBottom:8 }}>Explore o estoque</p>
+              <h2 style={{ fontSize:"clamp(20px,3vw,28px)", fontWeight:900, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.1 }}>
+                Encontre pelo <em style={{ color:"var(--s-orange)", fontStyle:"normal" }}>tipo de veículo</em>
+              </h2>
+            </div>
+            <Link href="/estoque" className="s-see-all" style={{ fontSize:13 }}>
+              Ver estoque <ArrowRight size={14} strokeWidth={2.5} />
+            </Link>
           </div>
 
-          <div style={{ textAlign:"center", marginTop:36 }}>
-            <Link href="/estoque" className="s-btn s-btn-outline s-btn-md">
-              Ver estoque completo <ArrowRight size={15} strokeWidth={2.5} />
-            </Link>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))", gap:16 }}>
+            {[
+              { label:"SUV",        emoji:"🚙", href:"/estoque?tipo=carro&categoria=suv",       desc:"Espaço e potência" },
+              { label:"Sedan",      emoji:"🚗", href:"/estoque?tipo=carro&categoria=sedan",     desc:"Conforto e estilo" },
+              { label:"Hatch",      emoji:"🏎️", href:"/estoque?tipo=carro&categoria=hatch",     desc:"Compacto e ágil" },
+              { label:"Pickup",     emoji:"🛻", href:"/estoque?tipo=carro&categoria=pickup",    desc:"Força e versatilidade" },
+              { label:"Motos",      emoji:"🏍️", href:"/estoque?tipo=moto",                      desc:"Liberdade nas estradas" },
+            ].map((cat, i) => (
+              <Link
+                key={cat.label}
+                href={cat.href}
+                style={{
+                  display:"flex",
+                  flexDirection:"column",
+                  alignItems:"center",
+                  gap:10,
+                  padding:"28px 16px",
+                  borderRadius:18,
+                  background:"rgba(255,255,255,0.03)",
+                  border:"1.5px solid rgba(255,255,255,0.07)",
+                  textDecoration:"none",
+                  transition:"all 220ms ease",
+                  transitionDelay:`${i * 60}ms`,
+                  animation:`s-fadeInUp 0.5s ${i * 80}ms both`,
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(244,121,32,0.06)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(244,121,32,0.30)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                }}
+              >
+                <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(244,121,32,0.10)", border:"1.5px solid rgba(244,121,32,0.20)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26 }}>
+                  {cat.emoji}
+                </div>
+                <p style={{ fontSize:15, fontWeight:800, color:"#fff", letterSpacing:"-0.2px" }}>{cat.label}</p>
+                <p style={{ fontSize:11, color:"rgba(255,255,255,0.35)", textAlign:"center" }}>{cat.desc}</p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
-      )}
 
       {/* ══════════════ WHY ══════════════ */}
       <section className="s-why-section" style={{ background:"var(--s-dark)", position:"relative", overflow:"hidden" }} aria-label="Diferenciais LMC">
