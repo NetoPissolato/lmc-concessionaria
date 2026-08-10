@@ -130,7 +130,7 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
         <div className="s-v-bottom">
           <div>
             <p className="s-v-price-label">Preço</p>
-            <p className="s-v-price"><span className="s-v-price-cur">R$</span>{fmtPrice(v.valor_anunciado)}</p>
+            <p className="s-v-price"><span className="s-v-price-cur">R$</span>{fmtPrice(v.valor_anunciado ?? 0)}</p>
           </div>
           <span className="s-btn s-btn-primary s-btn-sm" style={{ pointerEvents:"none" }}>
             Ver <ChevronRight size={13} strokeWidth={2.5} />

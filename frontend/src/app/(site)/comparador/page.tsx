@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import ComparadorClient from "./_ComparadorClient";
+import { getPublicVehicles } from "@/lib/publicApi";
 
 export const metadata: Metadata = {
-  title: "Comparador de Veículos | LMC Veículos",
-  description: "Compare até 3 veículos do nosso estoque lado a lado e tome a melhor decisão de compra.",
+  title: "Comparar Veículos | LMC Veículos",
+  description: "Compare até 3 veículos do nosso estoque lado a lado. Analise preço, quilometragem, câmbio, combustível e mais.",
   robots: "index, follow",
 };
 
-export default function ComparadorPage() {
+export const revalidate = 60;
+
+export default async function ComparadorPage() {
+  const vehicles = await getPublicVehicles({ limit: 100 });
+
   return (
     <Suspense>
-      <ComparadorClient />
+      <ComparadorClient initialVehicles={vehicles} />
     </Suspense>
   );
 }

@@ -9,28 +9,16 @@ import {
   Search, LayoutGrid, List, Heart, Gauge, Fuel,
   Calendar, ArrowUpDown, GitCompare, Car, ChevronLeft,
 } from "lucide-react";
+import type { PublicVehicle } from "@/lib/publicApi";
+import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
 
-const ALL_VEHICLES = [
-  { id:"1",  marca:"BMW",        modelo:"320i Sport",         versao:"2.0 Turbo 184cv",     ano:2023, quilometragem:32000,  combustivel:"Gasolina", cambio:"Automatico", cor:"Preto",    valor_anunciado:189900, status:"disponivel", tipo:"carro", destaque:true  },
-  { id:"2",  marca:"Toyota",     modelo:"Corolla XEi",        versao:"2.0 Flex 16V",        ano:2022, quilometragem:48000,  combustivel:"Flex",     cambio:"CVT",        cor:"Prata",    valor_anunciado:128500, status:"disponivel", tipo:"carro", destaque:false },
-  { id:"3",  marca:"Honda",      modelo:"Civic EXL",          versao:"1.5 Turbo 173cv",     ano:2023, quilometragem:29000,  combustivel:"Flex",     cambio:"CVT",        cor:"Branco",   valor_anunciado:155000, status:"reservado",  tipo:"carro", destaque:false },
-  { id:"4",  marca:"Hyundai",    modelo:"HB20S Premium",      versao:"1.0 Turbo 120cv",     ano:2024, quilometragem:8000,   combustivel:"Flex",     cambio:"Automatico", cor:"Vermelho", valor_anunciado:89900,  status:"disponivel", tipo:"carro", destaque:false },
-  { id:"5",  marca:"Jeep",       modelo:"Renegade Sport",     versao:"1.3 Turbo Flex",      ano:2022, quilometragem:42000,  combustivel:"Flex",     cambio:"Automatico", cor:"Azul",     valor_anunciado:118000, status:"disponivel", tipo:"carro", destaque:false },
-  { id:"6",  marca:"Honda",      modelo:"CB 500F",            versao:"471cc Twin",          ano:2023, quilometragem:9000,   combustivel:"Gasolina", cambio:"Manual",     cor:"Preto",    valor_anunciado:38900,  status:"disponivel", tipo:"moto",  destaque:false },
-  { id:"7",  marca:"Volkswagen", modelo:"Polo Track",         versao:"1.0 Flex 6V",         ano:2023, quilometragem:18000,  combustivel:"Flex",     cambio:"Manual",     cor:"Branco",   valor_anunciado:72900,  status:"disponivel", tipo:"carro", destaque:false },
-  { id:"8",  marca:"Chevrolet",  modelo:"Onix Plus LTZ",      versao:"1.0 Turbo 116cv",     ano:2024, quilometragem:8000,   combustivel:"Flex",     cambio:"Automatico", cor:"Preto",    valor_anunciado:89500,  status:"disponivel", tipo:"carro", destaque:false },
-  { id:"9",  marca:"Ford",       modelo:"Territory Titanium", versao:"1.5 EcoBoost 150cv",  ano:2023, quilometragem:26000,  combustivel:"Gasolina", cambio:"Automatico", cor:"Prata",    valor_anunciado:142900, status:"disponivel", tipo:"carro", destaque:false },
-  { id:"10", marca:"Mitsubishi", modelo:"Eclipse Cross HPE",  versao:"1.5 Turbo MIVEC",     ano:2024, quilometragem:5000,   combustivel:"Flex",     cambio:"CVT",        cor:"Branco",   valor_anunciado:168000, status:"disponivel", tipo:"carro", destaque:true  },
-  { id:"11", marca:"Yamaha",     modelo:"MT-07",              versao:"689cc 74cv",           ano:2023, quilometragem:12000,  combustivel:"Gasolina", cambio:"Manual",     cor:"Azul",     valor_anunciado:52900,  status:"disponivel", tipo:"moto",  destaque:false },
-  { id:"12", marca:"Toyota",     modelo:"Hilux SRX",          versao:"2.8 Diesel 204cv",    ano:2022, quilometragem:58000,  combustivel:"Diesel",   cambio:"Automatico", cor:"Branco",   valor_anunciado:278000, status:"disponivel", tipo:"carro", destaque:false },
-];
 
 const PAGE_SIZE = 9;
 
 function fmtPrice(v: number) { return new Intl.NumberFormat("pt-BR").format(v); }
 function fmtKm(v: number)    { return new Intl.NumberFormat("pt-BR").format(v); }
 
-type Vehicle = typeof ALL_VEHICLES[0];
+type Vehicle = PublicVehicle;
 
 interface Filters {
   tipo: string[];
@@ -357,7 +345,13 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
   );
 }
 
-export default function EstoquePage() {
+export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehicle[] }) {
+  // Filtra só disponíveis (redundante mas seguro)
+  const vehicles = useMemo(
+    () => initialVehicles.filter(v => v.status === "disponivel" || v.status === "DISPONIVEL"),
+    [initialVehicles]
+  );
+
   const searchParams  = useSearchParams();
   const router        = useRouter();
 
@@ -407,20 +401,20 @@ export default function EstoquePage() {
   }, [router]);
 
   const result = useMemo(() => {
-    let list = [...ALL_VEHICLES];
-    if (filters.search)          list = list.filter(v => (v.marca+" "+v.modelo+" "+v.versao).toLowerCase().includes(filters.search.toLowerCase()));
+    let list = [...vehicles];
+    if (filters.search)          list = list.filter(v => (v.marca+" "+v.modelo+" "+(v.versao??"")+" "+(v.cor??" ")).toLowerCase().includes(filters.search.toLowerCase()));
     if (filters.tipo.length)        list = list.filter(v => filters.tipo.includes(v.tipo));
-    if (filters.cambio.length)      list = list.filter(v => filters.cambio.includes(v.cambio));
-    if (filters.combustivel.length) list = list.filter(v => filters.combustivel.includes(v.combustivel));
+    if (filters.cambio.length)      list = list.filter(v => filters.cambio.some(c => v.cambio?.toLowerCase().includes(c.toLowerCase())));
+    if (filters.combustivel.length) list = list.filter(v => filters.combustivel.some(c => v.combustivel?.toLowerCase().includes(c.toLowerCase())));
     if (filters.precoMax < 999999)  list = list.filter(v => v.valor_anunciado <= filters.precoMax);
     if (filters.anoMin)             list = list.filter(v => v.ano >= Number(filters.anoMin));
     if (filters.marca)              list = list.filter(v => v.marca === filters.marca);
     if (sort === "menor-preco") list.sort((a,b) => a.valor_anunciado - b.valor_anunciado);
     if (sort === "maior-preco") list.sort((a,b) => b.valor_anunciado - a.valor_anunciado);
-    if (sort === "menor-km")    list.sort((a,b) => a.quilometragem - b.quilometragem);
-    if (sort === "maior-km")    list.sort((a,b) => b.quilometragem - a.quilometragem);
+    if (sort === "menor-km")    list.sort((a,b) => (a.quilometragem??0) - (b.quilometragem??0));
+    if (sort === "maior-km")    list.sort((a,b) => (b.quilometragem??0) - (a.quilometragem??0));
     return list;
-  }, [filters, sort]);
+  }, [vehicles, filters, sort]);
 
   const paginated = result.slice(0, page * PAGE_SIZE);
   const hasMore   = result.length > page * PAGE_SIZE;
@@ -455,13 +449,13 @@ export default function EstoquePage() {
           <div className="s-estoque-header-row" style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:20, flexWrap:"wrap", marginBottom:20 }}>
             <div>
               <h1 style={{ fontSize:"clamp(22px,3vw,32px)", fontWeight:900, color:"#fff", letterSpacing:"-0.8px", marginBottom:4 }}>Estoque de Veiculos</h1>
-              <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)" }}><span style={{ color:"var(--s-orange)", fontWeight:700 }}>{ALL_VEHICLES.length}</span> veiculos disponiveis</p>
+              <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)" }}><span style={{ color:"var(--s-orange)", fontWeight:700 }}>{vehicles.length}</span> veiculos disponiveis</p>
             </div>
             {/* Image cards — Carros / Motos */}
             <div className="s-tipo-cards-wrap" style={{ display:"flex", gap:10 }}>
               {([
-                { val:"carro", label:"Carros", sub:`${ALL_VEHICLES.filter(v=>v.tipo==="carro").length} disponiveis`, img:"/hero-carro.jpeg" },
-                { val:"moto",  label:"Motos",  sub:`${ALL_VEHICLES.filter(v=>v.tipo==="moto").length} disponiveis`,  img:"/hero-moto.png"  },
+                { val:"carro", label:"Carros", sub:`${vehicles.filter(v=>v.tipo==="carro").length} disponiveis`, img:"/hero-carro.jpeg" },
+                { val:"moto",  label:"Motos",  sub:`${vehicles.filter(v=>v.tipo==="moto").length} disponiveis`,  img:"/hero-moto.png"  },
               ]).map(t => {
                 const active = filters.tipo.includes(t.val) && filters.tipo.length === 1;
                 return (
@@ -545,7 +539,7 @@ export default function EstoquePage() {
 
           <div className="s-listing-layout">
             <div id="sidebar-desktop">
-              <FilterSidebar filters={filters} onChange={updateFilters} onClear={clearFilters} vehicles={ALL_VEHICLES} />
+              <FilterSidebar filters={filters} onChange={updateFilters} onClear={clearFilters} vehicles={vehicles} />
             </div>
             <div>
               {isLoading ? (
@@ -600,7 +594,7 @@ export default function EstoquePage() {
         <div style={{ position:"fixed", inset:0, zIndex:500, display:"flex" }}>
           <div style={{ flex:1, background:"rgba(0,0,0,0.55)", backdropFilter:"blur(4px)" }} onClick={() => setMob(false)} />
           <div style={{ width:"min(340px,100vw)", background:"var(--s-white)", overflowY:"auto", padding:20, boxShadow:"-8px 0 40px rgba(0,0,0,0.20)" }}>
-            <FilterSidebar filters={filters} onChange={updateFilters} onClear={clearFilters} vehicles={ALL_VEHICLES} onClose={() => setMob(false)} />
+            <FilterSidebar filters={filters} onChange={updateFilters} onClear={clearFilters} vehicles={vehicles} onClose={() => setMob(false)} />
           </div>
         </div>
       )}

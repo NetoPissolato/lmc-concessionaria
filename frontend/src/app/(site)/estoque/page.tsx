@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import EstoquePage from "./_EstoquePage";
+import { getPublicVehicles } from "@/lib/publicApi";
 
 export const metadata: Metadata = {
   title: "Estoque de Veículos | LMC Veículos",
@@ -9,10 +10,15 @@ export const metadata: Metadata = {
   robots: "index, follow",
 };
 
-export default function Estoque() {
+export const revalidate = 60;
+
+export default async function Estoque() {
+  // Busca TODOS os disponíveis no servidor (ISR 60s)
+  const vehicles = await getPublicVehicles({ limit: 100 });
+
   return (
     <Suspense>
-      <EstoquePage />
+      <EstoquePage initialVehicles={vehicles} />
     </Suspense>
   );
 }

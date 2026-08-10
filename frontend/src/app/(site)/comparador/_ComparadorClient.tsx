@@ -8,19 +8,10 @@ import {
   Gauge, Calendar, Settings, Droplets, Zap,
   ArrowRight, CheckCircle, Star,
 } from "lucide-react";
+import type { PublicVehicle } from "@/lib/publicApi";
+import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
 
-const ALL_VEHICLES = [
-  { id:"1", marca:"BMW",        modelo:"320i Sport",    versao:"2.0 Turbo 184cv",  ano:2023, quilometragem:32000, combustivel:"Gasolina", cambio:"8-Speed AT", cor:"Preto",    valor_anunciado:189900, status:"disponivel", tipo:"carro", potencia:184, portas:4, tracao:"Traseira" },
-  { id:"2", marca:"Toyota",     modelo:"Corolla XEi",   versao:"2.0 Flex 177cv",   ano:2022, quilometragem:48000, combustivel:"Flex",     cambio:"CVT",        cor:"Prata",    valor_anunciado:128500, status:"disponivel", tipo:"carro", potencia:177, portas:4, tracao:"Dianteira" },
-  { id:"3", marca:"Honda",      modelo:"Civic EXL",     versao:"1.5 Turbo 173cv",  ano:2023, quilometragem:29000, combustivel:"Flex",     cambio:"CVT",        cor:"Branco",   valor_anunciado:155000, status:"reservado",  tipo:"carro", potencia:173, portas:4, tracao:"Dianteira" },
-  { id:"4", marca:"Hyundai",    modelo:"HB20S Premium", versao:"1.0 Turbo 120cv",  ano:2024, quilometragem:8000,  combustivel:"Flex",     cambio:"7-Speed DCT",cor:"Vermelho", valor_anunciado:89900,  status:"disponivel", tipo:"carro", potencia:120, portas:4, tracao:"Dianteira" },
-  { id:"5", marca:"Jeep",       modelo:"Renegade Sport",versao:"1.3 Turbo Flex",   ano:2022, quilometragem:42000, combustivel:"Flex",     cambio:"Automatico", cor:"Azul",     valor_anunciado:118000, status:"disponivel", tipo:"carro", potencia:185, portas:4, tracao:"4x4" },
-  { id:"7", marca:"Volkswagen", modelo:"Polo Track",    versao:"1.0 Flex 84cv",    ano:2023, quilometragem:18000, combustivel:"Flex",     cambio:"Manual",     cor:"Branco",   valor_anunciado:72900,  status:"disponivel", tipo:"carro", potencia:84,  portas:4, tracao:"Dianteira" },
-  { id:"6", marca:"Honda",      modelo:"CB 500F",       versao:"471cc Twin",        ano:2023, quilometragem:9000,  combustivel:"Gasolina", cambio:"Manual",     cor:"Preto",    valor_anunciado:38900,  status:"disponivel", tipo:"moto",  potencia:47,  portas:0, tracao:"Traseira" },
-  { id:"11",marca:"Yamaha",     modelo:"MT-07",         versao:"689cc 74cv",        ano:2023, quilometragem:12000, combustivel:"Gasolina", cambio:"Manual",     cor:"Azul",     valor_anunciado:52900,  status:"disponivel", tipo:"moto",  potencia:74,  portas:0, tracao:"Traseira" },
-];
-
-type Vehicle = typeof ALL_VEHICLES[0];
+type Vehicle = PublicVehicle;
 
 function fmtPrice(v: number) { return "R$ " + new Intl.NumberFormat("pt-BR").format(v); }
 function fmtKm(v: number)    { return new Intl.NumberFormat("pt-BR").format(v) + " km"; }
@@ -29,17 +20,19 @@ const ROWS: { key: keyof Vehicle; label: string; icon: React.ElementType; lowerB
   { key:"valor_anunciado", label:"Preco",         icon: Star,     lowerBetter: true  },
   { key:"ano",             label:"Ano",            icon: Calendar                     },
   { key:"quilometragem",   label:"Quilometragem",  icon: Gauge,    lowerBetter: true  },
-  { key:"potencia",        label:"Potencia (cv)",  icon: Zap                          },
   { key:"cambio",          label:"Cambio",         icon: Settings                     },
   { key:"combustivel",     label:"Combustivel",    icon: Droplets                     },
-  { key:"tracao",          label:"Tracao",         icon: Car                          },
   { key:"cor",             label:"Cor",            icon: Zap                          },
+  { key:"tipo",            label:"Tipo",           icon: Car                          },
 ];
 
 function formatVal(key: keyof Vehicle, val: unknown) {
-  if (key === "valor_anunciado") return fmtPrice(val as number);
-  if (key === "quilometragem")   return fmtKm(val as number);
-  if (key === "potencia")        return val + " cv";
+  if (key === "valor_anunciado") return fmtPrice((val as number) ?? 0);
+  if (key === "quilometragem")   return fmtKm((val as number) ?? 0);
+  if (key === "combustivel")     return FUEL_LABELS[String(val)] ?? String(val);
+  if (key === "cambio")         return CAMBIO_LABELS[String(val)] ?? String(val);
+  if (key === "tipo")           return String(val) === "moto" ? "Moto" : "Carro";
+  if (val === null || val === undefined) return "—";
   return String(val);
 }
 
@@ -66,7 +59,7 @@ const BRAND_COLORS: Record<string, string> = {
   Jeep:"#78866b", Volkswagen:"#001e50", Yamaha:"#003087", Chevrolet:"#d4a017",
 };
 
-export default function ComparadorClient() {
+export default function ComparadorClient({ initialVehicles }: { initialVehicles: Vehicle[] }) {
   const [selected, setSelected] = useState<(Vehicle | null)[]>([null, null, null]);
   const [pickSlot, setPickSlot] = useState<number | null>(null);
 
@@ -80,7 +73,7 @@ export default function ComparadorClient() {
   }
 
   const chosen  = selected.filter(Boolean) as Vehicle[];
-  const avail   = ALL_VEHICLES.filter(v => !chosen.find(c => c.id === v.id));
+  const avail   = initialVehicles.filter(v => !chosen.find(c => c.id === v.id));
   const scores  = chosen.map(v => getScore(v, chosen));
   const maxScore = Math.max(...scores, 0);
 
