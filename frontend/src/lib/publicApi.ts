@@ -120,15 +120,21 @@ async function fetchPublic<T>(
       });
     }
 
+    // Timeout de 8s: evita travar o docker build quando o backend não está
+    // acessível na rede de build (ex: http://backend:8000 só existe em runtime).
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8_000);
+
     const res = await fetch(url.toString(), {
-      // ISR: revalida a cada 60s no servidor (Next.js App Router)
       next: { revalidate: 60 },
+      signal: controller.signal,
     });
+    clearTimeout(timer);
 
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
-    // Falha silenciosa — site nunca quebra se o backend cair
+    // Falha silenciosa — inclui timeout — site nunca quebra se o backend cair
     return null;
   }
 }
