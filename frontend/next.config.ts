@@ -11,7 +11,9 @@ const nextConfig: NextConfig = {
   // Pula a checagem de tipos no servidor (já verificamos localmente com tsc --noEmit)
   // Economiza 10-15 min de build na VPS com pouca CPU
   typescript: { ignoreBuildErrors: true },
-  eslint:     { ignoreDuringBuilds: true },
+  // Aumenta o timeout de geração de páginas estáticas para VPS com recursos limitados
+  // Padrão é 60s — VPS lenta pode demorar mais
+  staticPageGenerationTimeout: 300,
   images: {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
