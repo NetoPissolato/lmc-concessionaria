@@ -230,7 +230,7 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
   const mainPhoto = v.photos?.find((p: {is_main:boolean}) => p.is_main) ?? v.photos?.[0];
   const imgSrc = mainPhoto?.url
     ? mainPhoto.url
-    : (v.tipo === "moto" ? "/moto-placeholder.png" : "/car-placeholder.png");
+    : (v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg");
   const isPlaceholder = !mainPhoto?.url;
   const isReservado = (v.status as string) === "reservado";
   const badgeClass = isReservado ? "s-v-badge s-v-badge-reservado" : "s-v-badge s-v-badge-disponivel";
@@ -303,7 +303,7 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
   const mainPhoto = v.photos?.find((p: {is_main:boolean}) => p.is_main) ?? v.photos?.[0];
   const imgSrc = mainPhoto?.url
     ? mainPhoto.url
-    : (v.tipo === "moto" ? "/moto-placeholder.png" : "/car-placeholder.png");
+    : (v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg");
   const isPlaceholder = !mainPhoto?.url;
   return (
     <div className="s-v-card-list" style={{ textDecoration:"none", display:"grid", gridTemplateColumns:"220px 1fr auto", background:"var(--s-card)", border:"1px solid var(--s-border)", borderRadius:14, overflow:"hidden", transition:"all 220ms", position:"relative" }}>

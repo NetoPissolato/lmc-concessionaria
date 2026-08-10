@@ -117,7 +117,7 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
   const mainPhoto = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
   const imgSrc = mainPhoto?.url
     ? mainPhoto.url
-    : (v.tipo === "moto" ? "/moto-placeholder.png" : "/car-placeholder.png");
+    : (v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg");
   const isPlaceholder = !mainPhoto;
   const badgeClass =
     v.destaque ? "s-v-badge s-v-badge-destaque" : "s-v-badge s-v-badge-disponivel";
@@ -601,7 +601,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
               {/* Foto real do carro */}
               <div style={{ position:"relative", zIndex:1, marginBottom:24 }}>
                 <img
-                  src="/car-placeholder.png"
+                  src="/car-placeholder.svg"
                   alt="Destaques em breve"
                   style={{ width:200, height:"auto", objectFit:"contain", opacity:0.80, filter:"drop-shadow(0 12px 28px rgba(0,0,0,0.6))", display:"block" }}
                 />
@@ -678,7 +678,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
                       ) : (
                         <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>
                           <img
-                            src={v.tipo === "moto" ? "/moto-placeholder.png" : "/car-placeholder.png"}
+                            src={v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg"}
                             alt={`${v.marca} ${v.modelo}`}
                             style={{ width:"60%", height:"60%", objectFit:"contain", opacity:0.5 }}
                           />
