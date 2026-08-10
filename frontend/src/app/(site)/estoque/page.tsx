@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   robots: "index, follow",
 };
 
-export const revalidate = 60;
+// SSR dinâmico — sem cache de build; dados sempre frescos do backend
+export const dynamic = "force-dynamic";
 
 export default async function Estoque() {
   // Busca TODOS os disponíveis no servidor (ISR 60s)

@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   robots: "index, follow",
 };
 
-// Revalida a cada 30s (ISR) — settings e veículos sempre atualizados sem rebuild
-export const revalidate = 30;
+// SSR dinâmico — nunca usa cache de build (backend não disponível durante docker build)
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   // Busca dados reais em paralelo — se o backend cair, retorna fallback vazio
