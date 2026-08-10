@@ -596,24 +596,27 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
               overflow: "hidden",
             }}>
               {/* Glow sutil */}
-              <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background:"radial-gradient(ellipse 70% 60% at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%)", pointerEvents:"none" }}/>
+              <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background:"radial-gradient(ellipse 80% 50% at 50% 20%, rgba(244,121,32,0.06) 0%, transparent 70%)", pointerEvents:"none" }}/>
 
               {/* Foto real do carro */}
-              <div style={{ position:"relative", zIndex:1, marginBottom:28 }}>
+              <div style={{ position:"relative", zIndex:1, marginBottom:24 }}>
                 <img
                   src="/car-placeholder.png"
-                  alt="Novidades em breve"
-                  style={{ width:200, height:"auto", objectFit:"contain", opacity:0.60, filter:"drop-shadow(0 16px 32px rgba(0,0,0,0.5))", display:"block" }}
+                  alt="Destaques em breve"
+                  style={{ width:200, height:"auto", objectFit:"contain", opacity:0.80, filter:"drop-shadow(0 12px 28px rgba(0,0,0,0.6))", display:"block" }}
                 />
               </div>
 
               {/* Texto */}
               <div style={{ textAlign:"center", position:"relative", zIndex:1, marginBottom:28 }}>
-                <p style={{ fontSize:17, fontWeight:700, color:"rgba(255,255,255,0.72)", letterSpacing:"-0.3px", marginBottom:8 }}>
-                  Novidades em breve
+                <span style={{ display:"inline-block", background:"rgba(244,121,32,0.15)", color:"var(--s-orange)", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:2, padding:"4px 12px", borderRadius:999, marginBottom:14 }}>
+                  Em breve
+                </span>
+                <p style={{ fontSize:20, fontWeight:800, color:"#fff", letterSpacing:"-0.4px", marginBottom:10, lineHeight:1.2 }}>
+                  Nossos destaques estão<br/>chegando
                 </p>
-                <p style={{ fontSize:13, color:"rgba(255,255,255,0.28)", lineHeight:1.7, maxWidth:300 }}>
-                  Estamos preparando os melhores destaques.<br/>Confira o estoque completo.
+                <p style={{ fontSize:13.5, color:"rgba(255,255,255,0.55)", lineHeight:1.75, maxWidth:280 }}>
+                  Selecionamos os melhores veículos<br/>para você. Confira o estoque completo.
                 </p>
               </div>
 
@@ -621,6 +624,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
               <Link href="/estoque" className="s-btn s-btn-primary s-btn-md" style={{ position:"relative", zIndex:1 }}>
                 Ver estoque completo <ArrowRight size={14} strokeWidth={2.5} />
               </Link>
+
             </div>
           )}
         </div>
