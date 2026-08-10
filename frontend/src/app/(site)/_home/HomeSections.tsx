@@ -7,26 +7,13 @@ import { Search, ArrowRight, ShieldCheck, FileCheck, CreditCard, Handshake, Chev
 import type { PublicVehicle, PublicStats } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
 
-// Brand fallback logo
+// Cores fallback por marca
 const BRAND_COLORS: Record<string,string> = {
   BMW:"#1C69D4", Toyota:"#EB0A1E", Honda:"#CC0000", Chevrolet:"#D4A017",
   Volkswagen:"#003DA5", Hyundai:"#002C5F", Ford:"#003476", Jeep:"#1A1A1A",
   Mitsubishi:"#CC0000", Yamaha:"#E60012", Kawasaki:"#3D9B1B", Suzuki:"#1A4699",
   Nissan:"#C3002F", Fiat:"#9B1C1F", Renault:"#FFCD00",
 };
-function BrandLogoFallback({ marca, size = 44 }: { marca: string; size?: number }) {
-  const [failed, setFailed] = useState(false);
-  const key = marca.toLowerCase().replace(/\s+/g, "");
-  if (failed) {
-    const color = BRAND_COLORS[marca] ?? "#555";
-    return (
-      <div style={{ width:size, height:size, borderRadius:8, background:color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:size*0.35, fontWeight:900, color:"#fff", letterSpacing:-0.5 }}>
-        {marca.slice(0,2).toUpperCase()}
-      </div>
-    );
-  }
-  return <Image src={`/logos/${key}.png`} alt={marca} width={size} height={size} style={{ objectFit:"contain", width:size, height:size }} onError={() => setFailed(true)} />;
-}
 
 const BrandLogos: Record<string, React.FC<{ size?: number }>> = {
   BMW: ({ size = 40 }) => (
