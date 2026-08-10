@@ -609,6 +609,9 @@
 }
 
 .s-v-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
   display: inline-flex;
   align-items: center;
   font-size: 11px;
@@ -620,6 +623,7 @@
   backdrop-filter: blur(8px);
   white-space: nowrap;
   line-height: 1;
+  z-index: 1;
 }
 .s-v-badge-disponivel { background: rgba(22,163,74,0.90);   color: #fff; }
 .s-v-badge-reservado  { background: rgba(124,58,237,0.90);  color: #fff; }
