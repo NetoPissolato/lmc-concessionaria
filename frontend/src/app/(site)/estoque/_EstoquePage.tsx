@@ -372,7 +372,7 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
   const [isLoading, setIsLoading]   = useState(false);
   const [page, setPage]             = useState(1);
   const [compareIds, setCompareIds] = useState<string[]>([]);
-  const loadingTimer                = useRef<ReturnType<typeof setTimeout>>();
+  const loadingTimer                = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync URL when filters change
   const updateFilters = useCallback((p: Partial<Filters>) => {
@@ -407,11 +407,11 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
     if (filters.tipo.length)        list = list.filter(v => filters.tipo.includes(v.tipo));
     if (filters.cambio.length)      list = list.filter(v => filters.cambio.some(c => v.cambio?.toLowerCase().includes(c.toLowerCase())));
     if (filters.combustivel.length) list = list.filter(v => filters.combustivel.some(c => v.combustivel?.toLowerCase().includes(c.toLowerCase())));
-    if (filters.precoMax < 999999)  list = list.filter(v => v.valor_anunciado <= filters.precoMax);
+    if (filters.precoMax < 999999)  list = list.filter(v => (v.valor_anunciado ?? 0) <= filters.precoMax);
     if (filters.anoMin)             list = list.filter(v => v.ano >= Number(filters.anoMin));
     if (filters.marca)              list = list.filter(v => v.marca === filters.marca);
-    if (sort === "menor-preco") list.sort((a,b) => a.valor_anunciado - b.valor_anunciado);
-    if (sort === "maior-preco") list.sort((a,b) => b.valor_anunciado - a.valor_anunciado);
+    if (sort === "menor-preco") list.sort((a,b) => (a.valor_anunciado ?? 0) - (b.valor_anunciado ?? 0));
+    if (sort === "maior-preco") list.sort((a,b) => (b.valor_anunciado ?? 0) - (a.valor_anunciado ?? 0));
     if (sort === "menor-km")    list.sort((a,b) => (a.quilometragem??0) - (b.quilometragem??0));
     if (sort === "maior-km")    list.sort((a,b) => (b.quilometragem??0) - (a.quilometragem??0));
     return list;
