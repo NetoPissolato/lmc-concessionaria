@@ -238,8 +238,8 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
   }, [CAROUSEL.length]);
 
   const featured = filter === "todos"
-    ? FEATURED_VEHICLES
-    : FEATURED_VEHICLES.filter(v => v.tipo === filter);
+    ? featuredVehicles
+    : featuredVehicles.filter(v => v.tipo === filter);
 
   const STATS = [
     { num:"47", suffix:"+", label:"Veículos" },
@@ -409,7 +409,7 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
                     <div style={{ textAlign:"right", flexShrink:0 }}>
                       <p style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:4 }}>a partir de</p>
                       <p style={{ fontSize:20, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px", lineHeight:1, marginBottom:10 }}>
-                        R$ {new Intl.NumberFormat("pt-BR").format(v.valor_anunciado)}
+                        R$ {new Intl.NumberFormat("pt-BR").format(v.valor_anunciado ?? 0)}
                       </p>
                       <Link href={`/veiculo/${v.id}`} className="s-btn s-btn-primary s-btn-sm" style={{ fontSize:11 }}>
                         Ver oferta
@@ -503,7 +503,7 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
             </button>
 
             <div id="featured-track" className="s-carousel-track">
-              {FEATURED_VEHICLES.map(v => <VehicleCard key={v.id} v={v} />)}
+              {featuredVehicles.map(v => <VehicleCard key={v.id} v={v} />)}
             </div>
 
             {/* Botão Next */}

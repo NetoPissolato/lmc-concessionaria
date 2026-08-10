@@ -155,7 +155,7 @@ export default function ComparadorClient({ initialVehicles }: { initialVehicles:
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                         <div>
                           <p style={{ fontSize:10, color:"var(--s-text-3)", fontWeight:600 }}>Preco</p>
-                          <p style={{ fontSize:18, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px" }}>{fmtPrice(v.valor_anunciado)}</p>
+                          <p style={{ fontSize:18, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px" }}>{fmtPrice(v.valor_anunciado ?? 0)}</p>
                         </div>
                         <Link href={"/veiculo/" + v.id}
                           style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:700, color:"var(--s-orange)", textDecoration:"none" }}>
@@ -349,7 +349,7 @@ export default function ComparadorClient({ initialVehicles }: { initialVehicles:
                   </div>
                   <div style={{ flexShrink:0, textAlign:"right" }}>
                     <p style={{ fontSize:10, color:"var(--s-text-3)", fontWeight:600, marginBottom:2 }}>Preco</p>
-                    <p style={{ fontSize:15, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px" }}>{fmtPrice(v.valor_anunciado)}</p>
+                    <p style={{ fontSize:15, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px" }}>{fmtPrice(v.valor_anunciado ?? 0)}</p>
                   </div>
                 </button>
               ))}

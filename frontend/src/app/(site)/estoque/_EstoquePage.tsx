@@ -171,7 +171,7 @@ function FilterSidebar({ filters, onChange, onClear, vehicles, onClose }: {
           { label:"até R$ 180.000", val:180000 },
           { label:"até R$ 300.000", val:300000 },
         ].map(p => (
-          <CheckRow key={p.val} label={p.label} count={vehicles.filter(v=>v.valor_anunciado<=p.val).length}
+          <CheckRow key={p.val} label={p.label} count={vehicles.filter(v=>(v.valor_anunciado ?? 0)<=p.val).length}
             checked={filters.precoMax===p.val} onToggle={()=>onChange({precoMax: filters.precoMax===p.val?999999:p.val})} />
         ))}
       </div>
@@ -180,7 +180,7 @@ function FilterSidebar({ filters, onChange, onClear, vehicles, onClose }: {
 }
 
 // Compare bar (floating)
-function CompareBar({ ids, onRemove, onClear }: { ids: string[]; onRemove(id:string):void; onClear():void }) {
+function CompareBar({ ids, vehicles, onRemove, onClear }: { ids: string[]; vehicles: Vehicle[]; onRemove(id:string):void; onClear():void }) {
   if (ids.length === 0) return null;
   return (
     <div style={{
@@ -195,7 +195,7 @@ function CompareBar({ ids, onRemove, onClear }: { ids: string[]; onRemove(id:str
       </span>
       <div style={{ display:"flex", gap:6 }}>
         {ids.map(id => {
-          const v = ALL_VEHICLES.find(x => x.id === id);
+          const v = vehicles.find(x => x.id === id);
           if (!v) return null;
           return (
             <span key={id} style={{
@@ -228,7 +228,8 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
   const [fav, setFav] = useState(false);
   const isComparing = compareIds.includes(v.id);
   const imgSrc = v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg";
-  const badgeClass = v.status === "reservado" ? "s-v-badge s-v-badge-reservado" : "s-v-badge s-v-badge-disponivel";
+  const isReservado = (v.status as string) === "reservado";
+  const badgeClass = isReservado ? "s-v-badge s-v-badge-reservado" : "s-v-badge s-v-badge-disponivel";
 
   return (
     <div
@@ -238,7 +239,7 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
       <Link href={`/veiculo/${v.id}`} style={{ textDecoration:"none", display:"contents" }}>
         <div className="s-v-img">
           <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover" }} />
-          <span className={badgeClass}>{v.status === "reservado" ? "Reservado" : "Disponível"}</span>
+          <span className={badgeClass}>{isReservado ? "Reservado" : "Disponível"}</span>
           <button
             className={`s-v-fav${fav ? " active" : ""}`}
             onClick={e => { e.preventDefault(); setFav(x => !x); }}
@@ -261,7 +262,7 @@ function VehicleCard({ v, compareIds, onToggleCompare, staggerIndex }: {
           <div className="s-v-bottom">
             <div>
               <p className="s-v-price-label">Preço</p>
-              <p className="s-v-price"><span className="s-v-price-cur">R$</span>{fmtPrice(v.valor_anunciado)}</p>
+              <p className="s-v-price"><span className="s-v-price-cur">R$</span>{fmtPrice(v.valor_anunciado ?? 0)}</p>
             </div>
             <span className="s-btn s-btn-primary s-btn-sm" style={{ pointerEvents:"none" }}>Ver <ChevronRight size={13} strokeWidth={2.5} /></span>
           </div>
@@ -297,8 +298,8 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
       <Link href={"/veiculo/" + v.id} style={{ display:"contents", textDecoration:"none" }}>
         <div style={{ position:"relative", overflow:"hidden" }}>
           <Image src={imgSrc} alt={v.marca + " " + v.modelo} fill style={{ objectFit:"cover" }} />
-          <span className={"s-v-badge " + (v.status === "reservado" ? "s-v-badge-reservado" : "s-v-badge-disponivel")} style={{ position:"absolute", top:8, left:8 }}>
-            {v.status === "reservado" ? "Reservado" : "Disponivel"}
+          <span className={"s-v-badge " + ((v.status as string) === "reservado" ? "s-v-badge-reservado" : "s-v-badge-disponivel")} style={{ position:"absolute", top:8, left:8 }}>
+            {(v.status as string) === "reservado" ? "Reservado" : "Disponivel"}
           </span>
         </div>
         <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", justifyContent:"center" }}>
@@ -320,7 +321,7 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
             <p style={{ fontSize:10, color:"var(--s-text-3)", marginBottom:3 }}>a partir de</p>
             <p style={{ fontSize:22, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-1px", lineHeight:1, marginBottom:12 }}>
               <span style={{ fontSize:12, fontWeight:600, color:"var(--s-text-3)", verticalAlign:"super", marginRight:2 }}>R$</span>
-              {fmtPrice(v.valor_anunciado)}
+              {fmtPrice(v.valor_anunciado ?? 0)}
             </p>
             <span className="s-btn s-btn-primary s-btn-sm">Ver oferta <ChevronRight size={13} strokeWidth={2.5} /></span>
           </div>
@@ -348,7 +349,7 @@ function VehicleCardList({ v, compareIds, onToggleCompare }: { v: Vehicle; compa
 export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehicle[] }) {
   // Filtra só disponíveis (redundante mas seguro)
   const vehicles = useMemo(
-    () => initialVehicles.filter(v => v.status === "disponivel" || v.status === "DISPONIVEL"),
+    () => initialVehicles.filter(v => (v.status as string).toLowerCase() === "disponivel"),
     [initialVehicles]
   );
 
@@ -600,7 +601,7 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
       )}
 
       {/* Compare bar */}
-      <CompareBar ids={compareIds} onRemove={id => setCompareIds(p => p.filter(x => x !== id))} onClear={() => setCompareIds([])} />
+      <CompareBar ids={compareIds} vehicles={vehicles} onRemove={id => setCompareIds(p => p.filter(x => x !== id))} onClear={() => setCompareIds([])} />
 
       <style>{`
         #mobile-filter-btn { display: none; }
