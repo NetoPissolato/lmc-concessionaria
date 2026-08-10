@@ -81,13 +81,13 @@ async def update_vehicle(
     return await service.update_vehicle(vehicle_id, body, updated_by=user["sub"])
 
 
-@router.patch("/{vehicle_id}/destaque", response_model=VehicleResponse)
+@router.patch("/{vehicle_id}/destaque")
 async def toggle_destaque(
     vehicle_id: str,
     db: AsyncSession = Depends(get_db),
     _user: dict = Depends(get_current_user_payload),
 ):
-    """Toggle vehicle destaque (featured) flag."""
+    """Toggle vehicle destaque (featured) flag. Returns {id, destaque}."""
     from app.domain.models.vehicle import Vehicle as VehicleModel
     from sqlalchemy import update as sql_update
     # Busca o veículo atual
@@ -103,8 +103,8 @@ async def toggle_destaque(
         .values(destaque=new_destaque)
     )
     await db.commit()
-    await db.refresh(vehicle)
-    return vehicle
+    # Retorna apenas os campos necessários (evita erro de carregamento de relacionamentos)
+    return {"id": vehicle_id, "destaque": new_destaque}
 
 
 @router.delete("/{vehicle_id}", status_code=204)
