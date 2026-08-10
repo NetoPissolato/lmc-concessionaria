@@ -283,8 +283,10 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
 
   const marcasBusca = tab === "moto" ? BRANDS_MOTOS : BRANDS_CARROS;
 
-  // Hero carousel: usa veículos reais (recentes), sem exigir destaque
-  const CAROUSEL = (recentVehicles.length > 0 ? recentVehicles : FEATURED_VEHICLES_FALLBACK).slice(0, 5);
+  // Hero carousel: usa veículos com foto — sem foto, não entra no carousel
+  const CAROUSEL = (recentVehicles.length > 0 ? recentVehicles : FEATURED_VEHICLES_FALLBACK)
+    .filter(v => v.photos?.length > 0)
+    .slice(0, 5);
 
   useEffect(() => {
     const t = setInterval(() => setActiveSlide(i => (i + 1) % CAROUSEL.length), 4000);
@@ -424,20 +426,27 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
 
               {/* Slides — usa foto real do veículo, fallback para imagem hero */}
               {CAROUSEL.length > 0 ? CAROUSEL.map((v, i) => {
-                const heroPhoto = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
-                const heroImg = heroPhoto?.url || (v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg");
+                  const heroPhoto = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
+                const heroImg = heroPhoto?.url || (v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg");
+                const isHeroPlaceholder = !heroPhoto?.url;
                 return (
-                  <div key={v.id} style={{ position:"absolute", inset:0, borderRadius:24, overflow:"hidden", opacity: i === activeSlide ? 1 : 0, transition:"opacity 800ms ease", pointerEvents: i === activeSlide ? "auto" : "none" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={heroImg} alt={`${v.marca} ${v.modelo}`} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center" }} />
-                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg, rgba(14,15,17,0.05) 0%, rgba(14,15,17,0.30) 40%, rgba(14,15,17,0.90) 100%)" }} />
-                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(270deg, transparent 45%, rgba(14,15,17,0.92) 100%)" }} />
+                  <div key={v.id} style={{ position:"absolute", inset:0, borderRadius:24, overflow:"hidden", opacity: i === activeSlide ? 1 : 0, transition:"opacity 800ms ease", pointerEvents: i === activeSlide ? "auto" : "none", background:"#0e0f11", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    {isHeroPlaceholder ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={heroImg} alt={`${v.marca} ${v.modelo}`} style={{ width:"60%", height:"60%", objectFit:"contain", opacity:0.45 }} />
+                    ) : (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={heroImg} alt={`${v.marca} ${v.modelo}`} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center" }} />
+                        <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg, rgba(14,15,17,0.05) 0%, rgba(14,15,17,0.30) 40%, rgba(14,15,17,0.90) 100%)" }} />
+                        <div style={{ position:"absolute", inset:0, background:"linear-gradient(270deg, transparent 45%, rgba(14,15,17,0.92) 100%)" }} />
+                      </>
+                    )}
                   </div>
                 );
               }) : (
                 /* Empty state elegante — estoque vazio */
-                <div style={{ position:"absolute", inset:0, borderRadius:24, overflow:"hidden" }}>
-                  <Image src="/hero-carro.jpeg" alt="LMC Veículos" fill style={{ objectFit:"cover", objectPosition:"center", filter:"brightness(0.35) saturate(0.7)" }} priority />
+                <div style={{ position:"absolute", inset:0, borderRadius:24, overflow:"hidden", background:"#0e0f11", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(244,121,32,0.12) 0%, transparent 60%)" }} />
                   <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, padding:32 }}>
                     <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(244,121,32,0.15)", border:"1.5px solid rgba(244,121,32,0.30)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:8 }}>

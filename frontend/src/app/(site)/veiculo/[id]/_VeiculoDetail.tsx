@@ -32,7 +32,7 @@ function getPhotoSrc(v: PublicVehicle, index = 0): string {
     const photo  = sorted[index] ?? sorted[0];
     return photo.url;
   }
-  return v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg";
+  return v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg";
 }
 
 export default function VeiculoDetail({
@@ -46,7 +46,8 @@ export default function VeiculoDetail({
     ? [...vehicle.photos].sort((a, b) => a.ordem - b.ordem)
     : null;
   const totalPhotos = photos ? photos.length : 1;
-  const fallbackSrc = vehicle.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg";
+  const fallbackSrc = vehicle.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg";
+  const isPlaceholder = !photos;
 
   const [active, setActive] = useState(0);
   const [fav,    setFav]    = useState(false);
@@ -155,17 +156,28 @@ export default function VeiculoDetail({
             {/* ── GALLERY ── */}
             <div className="s-vd-gallery">
               {/* Main photo */}
-              <div className="s-vd-main-photo" style={{ position:"relative", borderRadius:16, overflow:"hidden", aspectRatio:"16/10", background:"#1a1d24" }}>
-                <Image
-                  key={active}
-                  src={currentSrc}
-                  alt={`${vehicle.marca} ${vehicle.modelo} - foto ${active + 1}`}
-                  fill
-                  className="s-gallery-fade-in"
-                  style={{ objectFit:"cover" }}
-                  priority={active === 0}
-                />
-                <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg,transparent 60%,rgba(0,0,0,.28) 100%)" }} />
+              <div className="s-vd-main-photo" style={{ position:"relative", borderRadius:16, overflow:"hidden", aspectRatio:"16/10", background:"#1a1d24", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                {isPlaceholder ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={fallbackSrc}
+                    alt={`${vehicle.marca} ${vehicle.modelo}`}
+                    style={{ width:"55%", height:"55%", objectFit:"contain", opacity:0.45, display:"block" }}
+                  />
+                ) : (
+                  <>
+                    <Image
+                      key={active}
+                      src={currentSrc}
+                      alt={`${vehicle.marca} ${vehicle.modelo} - foto ${active + 1}`}
+                      fill
+                      className="s-gallery-fade-in"
+                      style={{ objectFit:"cover" }}
+                      priority={active === 0}
+                    />
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg,transparent 60%,rgba(0,0,0,.28) 100%)" }} />
+                  </>
+                )}
 
                 {/* status badge */}
                 <div style={{ position:"absolute", top:14, left:14, display:"flex", gap:6 }}>
