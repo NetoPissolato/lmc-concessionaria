@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -204,7 +204,7 @@ export default function LoginPage() {
       overflow: "hidden", fontFamily: "'Inter','Segoe UI',sans-serif", background: "#111",
     }}>
 
-      {/* ══════════════ LEFT ══════════════ */}
+      {/* ============== LEFT ============== */}
       <div className="login-left" style={{
         position: "relative", overflow: "hidden",
         flexDirection: "column", justifyContent: "space-between",
@@ -324,7 +324,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ══════════════ RIGHT ══════════════ */}
+      {/* ============== RIGHT ============== */}
       <motion.div
         initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}

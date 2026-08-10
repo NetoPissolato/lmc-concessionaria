@@ -1,4 +1,4 @@
-/**
+﻿/**
  * exportPDF.ts - Relatórios PDF profissionais para LCM Concessionária.
  * jsPDF + jspdf-autotable  |  orientação landscape A4 (297 × 210 mm)
  * Margem: 14 de cada lado → área útil = 269 mm
@@ -160,9 +160,9 @@ function newPDF() {
 const savePDF = (doc: jsPDF, name: string) =>
   doc.save(`${name}-${today().replace(/\//g, "-")}.pdf`);
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // 1. VENDAS
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 export function exportVendasPDF(data: {
   periodo: Record<string, unknown>;
   resumo:  Record<string, number>;
@@ -270,9 +270,9 @@ export function exportVendasPDF(data: {
   savePDF(doc, "relatorio-vendas");
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // 2. ESTOQUE
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 export function exportEstoquePDF(data: {
   resumo: Record<string, unknown>;
   carros: Record<string, unknown>[];
@@ -351,9 +351,9 @@ export function exportEstoquePDF(data: {
   savePDF(doc, "relatorio-estoque");
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // 3. FINANCEIRO
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 export function exportFinanceiroPDF(data: {
   periodo:       Record<string, unknown>;
   resumo:        Record<string, number>;
@@ -475,9 +475,9 @@ export function exportFinanceiroPDF(data: {
   savePDF(doc, "relatorio-financeiro");
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // 4. CLIENTES
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 export function exportClientesPDF(data: {
   resumo:   Record<string, number>;
   clientes: Record<string, unknown>[];
@@ -559,9 +559,9 @@ export function exportClientesPDF(data: {
   savePDF(doc, "relatorio-clientes");
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // 5. LUCRATIVIDADE
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 export function exportLucratividadePDF(data: {
   periodo:  Record<string, unknown>;
   resumo:   Record<string, unknown>;
@@ -670,9 +670,9 @@ export function exportLucratividadePDF(data: {
   savePDF(doc, "relatorio-lucratividade");
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // 6. COMISSÕES
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 export function exportComissoesPDF(data: {
   periodo:   Record<string, unknown>;
   resumo:    Record<string, number>;

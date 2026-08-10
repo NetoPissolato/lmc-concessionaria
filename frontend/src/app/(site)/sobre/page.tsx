@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight, MapPin, Phone, Mail, Clock, Award, Handshake, Users, ShieldCheck, Star, ArrowRight } from "lucide-react";
@@ -60,9 +60,9 @@ const CONTACT = [
 export default function SobrePage() {
   return (
     <>
-      {/* ═══════════════════════════════════════════
+      {/* ===========================================
           HERO — gradient premium, sem foto
-      ═══════════════════════════════════════════ */}
+      =========================================== */}
       <div style={{
         background:"linear-gradient(135deg, #0e0f11 0%, #13151a 45%, #1a1008 100%)",
         borderBottom:"1px solid rgba(255,255,255,0.07)",
@@ -106,9 +106,9 @@ export default function SobrePage() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════
+      {/* ===========================================
           NUMBERS STRIP
-      ═══════════════════════════════════════════ */}
+      =========================================== */}
       <div style={{ background:"var(--s-dark)", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
         <div className="s-container">
           <div className="s-sobre-numbers">
@@ -132,9 +132,9 @@ export default function SobrePage() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════
+      {/* ===========================================
           MISSION — texto + fundo-login
-      ═══════════════════════════════════════════ */}
+      =========================================== */}
       <section className="s-section" style={{ background:"var(--s-bg)" }}>
         <div className="s-container">
           <div className="s-sobre-mission">
@@ -181,9 +181,9 @@ export default function SobrePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
+      {/* ===========================================
           VALUES
-      ═══════════════════════════════════════════ */}
+      =========================================== */}
       <section style={{ background:"var(--s-dark)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"72px 0" }}>
         <div className="s-container">
           <div style={{ textAlign:"center", marginBottom:52 }}>
@@ -214,9 +214,9 @@ export default function SobrePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
+      {/* ===========================================
           TEAM
-      ═══════════════════════════════════════════ */}
+      =========================================== */}
       <section className="s-section" style={{ background:"var(--s-bg)" }}>
         <div className="s-container">
           <div style={{ textAlign:"center", marginBottom:52 }}>
@@ -258,9 +258,9 @@ export default function SobrePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
+      {/* ===========================================
           LOCATION / CONTACT
-      ═══════════════════════════════════════════ */}
+      =========================================== */}
       <section style={{ background:"var(--s-dark)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"72px 0" }}>
         <div className="s-container">
           <div className="s-sobre-location">
@@ -307,9 +307,9 @@ export default function SobrePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
+      {/* ===========================================
           RESPONSIVE STYLES
-      ═══════════════════════════════════════════ */}
+      =========================================== */}
       <style>{`
         .s-sobre-numbers {
           display: grid;

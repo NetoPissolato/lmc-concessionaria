@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -286,7 +286,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
 
   return (
     <>
-      {/* ══════════════ HERO ══════════════ */}
+      {/* ============== HERO ============== */}
       <section className="s-hero" aria-label="Busca de veículos">
         <div className="s-hero-glow" />
         <div className="s-hero-grid" />
@@ -480,7 +480,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
         </div>
       </section>
 
-      {/* ══════════════ BRANDS ══════════════ */}
+      {/* ============== BRANDS ============== */}
       <section className="s-brands-section" aria-label="Marcas disponíveis">
         <div className="s-container">
           <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
@@ -531,7 +531,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
         </div>
       </section>
 
-      {/* ══════════════ DESTAQUES DA SEMANA ══════════════ */}
+      {/* ============== DESTAQUES DA SEMANA ============== */}
       <section className="s-section" aria-label="Destaques da semana">
         <div className="s-container">
           <div className="s-section-head" style={{ marginBottom:28 }}>
@@ -613,7 +613,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
         </div>
       </section>
 
-      {/* ══════════════ SHOWROOM ══════════════ */}
+      {/* ============== SHOWROOM ============== */}
       {/* Mostra estoque em grid profissional — visível só quando há veículos */}
       {recentVehicles.length > 0 && (
         <section style={{ background:"var(--s-dark-2)", padding:"72px 0 80px", borderTop:"1px solid rgba(255,255,255,0.05)" }} aria-label="Nosso estoque">
@@ -846,7 +846,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
       </section>
 
 
-      {/* ══════════════ COMO FUNCIONA ══════════════ */}
+      {/* ============== COMO FUNCIONA ============== */}
       <section style={{ background:"var(--s-dark)", padding:"72px 0 80px", borderTop:"1px solid rgba(255,255,255,0.05)" }} aria-label="Como funciona">
         <div className="s-container">
           {/* Header */}
@@ -926,7 +926,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
         );
       })()}
 
-      {/* ══════════════ WHY ══════════════ */}
+      {/* ============== WHY ============== */}
       <section className="s-why-section" style={{ background:"var(--s-dark)", position:"relative", overflow:"hidden" }} aria-label="Diferenciais LMC">
         {/* glow decorativo */}
         <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:600, height:300, background:"radial-gradient(ellipse, rgba(244,121,32,0.08) 0%, transparent 70%)", pointerEvents:"none" }} />
@@ -989,10 +989,10 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
         </div>
       </section>
 
-      {/* ══════════════ AVALIE SEU CARRO ══════════════ */}
+      {/* ============== AVALIE SEU CARRO ============== */}
       <AvalieSection />
 
-      {/* ══════════════ CTA ══════════════ */}
+      {/* ============== CTA ============== */}
       <section className="s-cta-section" style={{ background:"var(--s-dark-2)", position:"relative", overflow:"hidden", borderTop:"1px solid rgba(255,255,255,0.06)" }} aria-label="Call to action">
         {/* Glow laranja à esquerda */}
         <div style={{ position:"absolute", top:"50%", left:"-5%", transform:"translateY(-50%)", width:500, height:400, background:"radial-gradient(ellipse, rgba(244,121,32,0.12) 0%, transparent 65%)", pointerEvents:"none" }} />

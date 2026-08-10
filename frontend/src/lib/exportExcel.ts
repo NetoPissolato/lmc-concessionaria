@@ -1,4 +1,4 @@
-/**
+﻿/**
  * exportExcel.ts - Relatórios Excel profissionais LCM Concessionária.
  * xlsx-js-style · Cabeçalho dourado · Zebra · Bordas · Totais
  */
@@ -115,9 +115,9 @@ function save(name: string, wb: ReturnType<typeof XLSXStyle.utils.book_new>) {
   XLSXStyle.writeFile(wb, `${name}-${today().replace(/\//g, "-")}.xlsx`);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 // 1. VENDAS
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 export function exportVendasExcel(data: {
   periodo: Record<string, unknown>;
   resumo:  Record<string, number>;
@@ -218,9 +218,9 @@ export function exportVendasExcel(data: {
   save("relatorio-vendas", WB);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 // 2. ESTOQUE
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 export function exportEstoqueExcel(data: {
   resumo: Record<string, unknown>;
   carros: Record<string, unknown>[];
@@ -316,9 +316,9 @@ export function exportEstoqueExcel(data: {
   save("relatorio-estoque", WB);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 // 3. FINANCEIRO
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 export function exportFinanceiroExcel(data: {
   periodo:        Record<string, unknown>;
   resumo:         Record<string, number>;
@@ -397,9 +397,9 @@ export function exportFinanceiroExcel(data: {
   save("relatorio-financeiro", WB);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 // 4. CLIENTES
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 export function exportClientesExcel(data: {
   resumo:   Record<string, number>;
   clientes: Record<string, unknown>[];
@@ -462,9 +462,9 @@ export function exportClientesExcel(data: {
   save("relatorio-clientes", WB);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 // 5. LUCRATIVIDADE
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 export function exportLucratividadeExcel(data: {
   periodo:  Record<string, unknown>;
   resumo:   Record<string, unknown>;
@@ -545,9 +545,9 @@ export function exportLucratividadeExcel(data: {
   save("relatorio-lucratividade", WB);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 // 6. COMISSÕES
-// ════════════════════════════════════════════════════════════════════════════
+// ============================================================================
 export function exportComissoesExcel(data: {
   periodo:   Record<string, unknown>;
   resumo:    Record<string, number>;
