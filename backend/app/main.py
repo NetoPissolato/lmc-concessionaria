@@ -21,7 +21,7 @@ from app.core.config import settings
 from app.core.database import engine
 from app.core.redis import get_redis, close_redis
 from app.domain.models import *  # Import all models so Alembic can discover them
-from app.presentation.api.v1 import auth, vehicles, customers_sales, financial, users, reports, ws
+from app.presentation.api.v1 import auth, vehicles, customers_sales, financial, users, reports, ws, public
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -141,6 +141,7 @@ app.include_router(financial.router, prefix=PREFIX)
 app.include_router(users.router, prefix=PREFIX)
 app.include_router(reports.router, prefix=PREFIX)
 app.include_router(ws.router)  # WebSocket — sem prefix, rota fica em /ws
+app.include_router(public.router, prefix=PREFIX)  # Rotas públicas — sem JWT
 
 # Static files for uploaded avatars — served at /uploads/avatars/<filename>
 _upload_path = Path(settings.UPLOAD_DIR)

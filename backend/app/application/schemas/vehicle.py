@@ -29,6 +29,7 @@ class VehicleCreate(BaseModel):
     valor_anunciado: Optional[Decimal] = None
     valor_minimo: Optional[Decimal] = None
     observacoes: Optional[str] = None
+    destaque: bool = False
 
     @field_validator("placa")
     @classmethod
@@ -86,6 +87,7 @@ class VehicleUpdate(BaseModel):
     valor_minimo: Optional[Decimal] = None
     status: Optional[VehicleStatus] = None
     observacoes: Optional[str] = None
+    destaque: Optional[bool] = None
 
 
 class VehicleResponse(BaseModel):
@@ -116,6 +118,7 @@ class VehicleResponse(BaseModel):
     valor_vendido: Optional[Decimal]
     status: VehicleStatus
     observacoes: Optional[str]
+    destaque: bool = False
     created_at: datetime
     updated_at: datetime
     # Computed fields
@@ -145,6 +148,7 @@ class VehicleListResponse(BaseModel):
     valor_multas: Decimal = Decimal("0")
     valor_anunciado: Optional[Decimal]
     status: VehicleStatus
+    destaque: bool = False
     data_compra: date                           # used for sort
     created_at: datetime
     # Computed from model properties (populated when expenses are eager-loaded)

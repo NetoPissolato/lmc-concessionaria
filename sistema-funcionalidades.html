@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LMC Concessionária — Sistema de Gestão</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0c12;
+      --surface:   #111420;
+      --card:      #161b2e;
+      --border:    rgba(255,255,255,0.07);
+      --accent:    #4f7fff;
+      --accent2:   #7c3aed;
+      --gold:      #f59e0b;
+      --green:     #10b981;
+      --red:       #ef4444;
+      --teal:      #06b6d4;
+      --pink:      #ec4899;
+      --orange:    #f97316;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: 80px 24px 64px;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,127,255,.25) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 80% 60%,  rgba(124,58,237,.18) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(79,127,255,.12);
+      border: 1px solid rgba(79,127,255,.3);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: .04em;
+      margin-bottom: 24px;
+    }
+    .badge span { font-size: 16px; }
+    h1 {
+      font-size: clamp(32px, 6vw, 64px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      background: linear-gradient(135deg, #fff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 540px;
+      margin: 0 auto 48px;
+      line-height: 1.6;
+    }
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 64px;
+    }
+    .stat-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 22px;
+      text-align: center;
+    }
+    .stat-pill strong {
+      display: block;
+      font-size: 26px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-pill span { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(22px, 4vw, 36px);
+      font-weight: 800;
+      margin-bottom: 48px;
+    }
+
+    /* ── GRID ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+      cursor: default;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--card-accent, linear-gradient(90deg, var(--accent), var(--accent2)));
+      border-radius: 20px 20px 0 0;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,.14);
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+    .card-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 18px;
+      background: var(--icon-bg, rgba(79,127,255,.12));
+    }
+    .card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .card .desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .features li::before {
+      content: '✓';
+      flex-shrink: 0;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--check-bg, rgba(79,127,255,.15));
+      color: var(--check-color, var(--accent));
+      font-size: 10px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+
+    /* color variants */
+    .c-blue  { --card-accent: linear-gradient(90deg,#4f7fff,#818cf8); --icon-bg: rgba(79,127,255,.12); --check-bg: rgba(79,127,255,.12); --check-color:#4f7fff; }
+    .c-violet{ --card-accent: linear-gradient(90deg,#7c3aed,#a855f7); --icon-bg: rgba(124,58,237,.12); --check-bg: rgba(124,58,237,.12); --check-color:#a855f7; }
+    .c-green { --card-accent: linear-gradient(90deg,#059669,#10b981); --icon-bg: rgba(16,185,129,.12); --check-bg: rgba(16,185,129,.12); --check-color:#10b981; }
+    .c-teal  { --card-accent: linear-gradient(90deg,#0891b2,#06b6d4); --icon-bg: rgba(6,182,212,.12);  --check-bg: rgba(6,182,212,.12);  --check-color:#06b6d4; }
+    .c-gold  { --card-accent: linear-gradient(90deg,#d97706,#f59e0b); --icon-bg: rgba(245,158,11,.12); --check-bg: rgba(245,158,11,.12); --check-color:#f59e0b; }
+    .c-orange{ --card-accent: linear-gradient(90deg,#ea580c,#f97316); --icon-bg: rgba(249,115,22,.12); --check-bg: rgba(249,115,22,.12); --check-color:#f97316; }
+    .c-pink  { --card-accent: linear-gradient(90deg,#db2777,#ec4899); --icon-bg: rgba(236,72,153,.12); --check-bg: rgba(236,72,153,.12); --check-color:#ec4899; }
+    .c-red   { --card-accent: linear-gradient(90deg,#dc2626,#ef4444); --icon-bg: rgba(239,68,68,.12);  --check-bg: rgba(239,68,68,.12);  --check-color:#ef4444; }
+
+    /* ── REPORTS SECTION ── */
+    .reports-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .reports-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .report-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: transform .25s, border-color .25s;
+    }
+    .report-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,.12);
+    }
+    .report-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .report-card h4 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .report-card p  { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+    /* ── ACCESS TABLE ── */
+    .access-section {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .access-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .access-table th {
+      padding: 16px 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface);
+      text-align: left;
+    }
+    .access-table th:not(:first-child) { text-align: center; }
+    .access-table td {
+      padding: 14px 20px;
+      font-size: 13.5px;
+      border-top: 1px solid var(--border);
+      color: #cbd5e1;
+    }
+    .access-table td:not(:first-child) { text-align: center; }
+    .ok  { color: var(--green); font-size: 18px; }
+    .no  { color: var(--muted); font-size: 18px; opacity: .4; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer strong { color: var(--accent); }
+
+    /* ── DIVIDER ── */
+    .divider { max-width: 1100px; margin: 0 auto 64px; padding: 0 24px; }
+    .divider hr { border: none; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="badge"><span>🚗</span> Sistema Exclusivo LMC Concessionária</div>
+  <h1>Tudo que você precisa<br/>para gerir sua <em>concessionária</em></h1>
+  <p class="hero-sub">Painel completo de gestão com vendas, estoque, financeiro, clientes e relatórios — em tempo real, do jeito que você precisa.</p>
+  <div class="stats-row">
+    <div class="stat-pill"><strong>8</strong><span>Módulos</span></div>
+    <div class="stat-pill"><strong>6</strong><span>Tipos de Relatório</span></div>
+    <div class="stat-pill"><strong>2</strong><span>Níveis de Acesso</span></div>
+    <div class="stat-pill"><strong>PDF + Excel</strong><span>Exportação</span></div>
+    <div class="stat-pill"><strong>Tempo Real</strong><span>Dados ao vivo</span></div>
+  </div>
+</section>
+
+<!-- ══ MODULES ══ -->
+<div class="section-label">módulos do sistema</div>
+<h2 class="section-title">O que está incluso</h2>
+
+<div class="grid">
+
+  <!-- Dashboard -->
+  <div class="card c-blue">
+    <div class="card-icon">📊</div>
+    <h3>Dashboard</h3>
+    <p class="desc">Visão geral do negócio em tempo real. Saiba tudo que está acontecendo na concessionária num único olhar.</p>
+    <ul class="features">
+      <li>Total de vendas e receita do mês</li>
+      <li>Ticket médio e comissões pagas</li>
+      <li>Veículos disponíveis no estoque</li>
+      <li>Gráficos de evolução mensal</li>
+      <li>Atualização automática em tempo real</li>
+    </ul>
+  </div>
+
+  <!-- Veículos -->
+  <div class="card c-violet">
+    <div class="card-icon">🚙</div>
+    <h3>Gestão de Veículos</h3>
+    <p class="desc">Cadastro completo do estoque de carros e motos, com fotos, despesas e controle de status.</p>
+    <ul class="features">
+      <li>Carros e motos em módulos separados</li>
+      <li>Galeria de fotos por veículo</li>
+      <li>Valor de compra, anunciado e mínimo</li>
+      <li>Despesas vinculadas ao veículo</li>
+      <li>Status: disponível, reservado, em preparação, vendido</li>
+    </ul>
+  </div>
+
+  <!-- Vendas -->
+  <div class="card c-green">
+    <div class="card-icon">🛒</div>
+    <h3>Controle de Vendas</h3>
+    <p class="desc">Registro de vendas de carros e motos com todas as formas de pagamento e gestão de status automática.</p>
+    <ul class="features">
+      <li>À vista, financiado, entrada + financiamento ou misto</li>
+      <li>Banco financiador e número de parcelas</li>
+      <li>Comissão automática por vendedor</li>
+      <li>Status: pendente → concluída → cancelada</li>
+      <li>Ao concluir: veículo marcado e financeiro lançado automaticamente</li>
+    </ul>
+  </div>
+
+  <!-- Clientes -->
+  <div class="card c-teal">
+    <div class="card-icon">👥</div>
+    <h3>Gestão de Clientes</h3>
+    <p class="desc">Cadastro completo com histórico de compras e dados de contato de cada cliente.</p>
+    <ul class="features">
+      <li>CPF / CNPJ com validação de duplicado</li>
+      <li>Endereço, telefone e e-mail</li>
+      <li>Histórico completo de compras</li>
+      <li>Busca por nome, CPF, telefone ou e-mail</li>
+      <li>Total gasto e veículos adquiridos</li>
+    </ul>
+  </div>
+
+  <!-- Financeiro -->
+  <div class="card c-gold">
+    <div class="card-icon">💰</div>
+    <h3>Módulo Financeiro</h3>
+    <p class="desc">Controle total de entradas e saídas da concessionária com lançamentos automáticos.</p>
+    <ul class="features">
+      <li>Lançamentos de entrada e saída</li>
+      <li>Categorização por tipo de despesa</li>
+      <li>Resumo mensal: entradas, saídas e lucro líquido</li>
+      <li>Lançamentos gerados automaticamente nas vendas</li>
+      <li>Reversão automática em cancelamentos</li>
+    </ul>
+  </div>
+
+  <!-- Relatórios -->
+  <div class="card c-orange">
+    <div class="card-icon">📈</div>
+    <h3>Central de Relatórios</h3>
+    <p class="desc">6 tipos de relatórios completos com filtro por período, exportáveis em PDF e Excel.</p>
+    <ul class="features">
+      <li>Relatório de Vendas completo</li>
+      <li>Relatório de Estoque com margens</li>
+      <li>Relatório Financeiro por categoria</li>
+      <li>Relatório de Clientes com ranking</li>
+      <li>Lucratividade e Comissões por vendedor</li>
+    </ul>
+  </div>
+
+  <!-- Usuários -->
+  <div class="card c-pink">
+    <div class="card-icon">🔑</div>
+    <h3>Gestão de Usuários</h3>
+    <p class="desc">Cadastre sua equipe com níveis de acesso diferenciados. Administrador tem controle total; vendedor acessa apenas o necessário.</p>
+    <ul class="features">
+      <li>Dois perfis: Administrador e Vendedor</li>
+      <li>Foto de perfil por usuário</li>
+      <li>Ativação e desativação de contas</li>
+      <li>Troca de senha pelo admin ou pelo próprio</li>
+      <li>Busca e filtro por nome e status</li>
+    </ul>
+  </div>
+
+  <!-- Segurança -->
+  <div class="card c-red">
+    <div class="card-icon">🔒</div>
+    <h3>Segurança & Confiabilidade</h3>
+    <p class="desc">Sistema robusto com autenticação segura, auditoria de ações e dados protegidos.</p>
+    <ul class="features">
+      <li>Login seguro com token JWT</li>
+      <li>Senhas criptografadas no banco de dados</li>
+      <li>Registro de quem criou ou alterou cada dado</li>
+      <li>Dados nunca apagados permanentemente</li>
+      <li>Atualização em tempo real via WebSocket</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ══ DIVIDER ══ -->
+<div class="divider"><hr/></div>
+
+<!-- ══ REPORTS ══ -->
+<div class="reports-section">
+  <div class="section-label">relatórios disponíveis</div>
+  <h2 class="section-title">6 Relatórios Completos — PDF & Excel</h2>
+  <div class="reports-grid">
+
+    <div class="report-card">
+      <div class="report-icon" style="background:rgba(79,127,255,.12)">📋</div>
+      <div>
+        <h4>Relatório de Vendas</h4>
+        <p>Todas as vendas do período com dados de veículo, cliente, vendedor, pagamento e valores.</p>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-icon" style="background:rgba(124,58,237,.12)">🗂️</div>
+      <div>
+        <h4>Relatório de Estoque</h4>
+        <p>Estoque completo com custo real de cada veículo, margem de lucro e dias em estoque.</p>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-icon" style="background:rgba(245,158,11,.12)">💵</div>
+      <div>
+        <h4>Relatório Financeiro</h4>
+        <p>Visão mensal de entradas, saídas e lucro líquido, breakdown por categoria.</p>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-icon" style="background:rgba(6,182,212,.12)">👤</div>
+      <div>
+        <h4>Relatório de Clientes</h4>
+        <p>Base completa de clientes com total gasto, ticket médio e histórico de compras.</p>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-icon" style="background:rgba(16,185,129,.12)">💹</div>
+      <div>
+        <h4>Lucratividade por Veículo</h4>
+        <p>Lucro bruto e margem (%) de cada veículo vendido, ranqueado do mais lucrativo.</p>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-icon" style="background:rgba(236,72,153,.12)">🏆</div>
+      <div>
+        <h4>Comissões por Vendedor</h4>
+        <p>Ranking de vendedores com receita total, comissões pagas e ticket médio por venda.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ DIVIDER ══ -->
+<div class="divider"><hr/></div>
+
+<!-- ══ ACCESS TABLE ══ -->
+<div class="access-section">
+  <div class="section-label">permissões</div>
+  <h2 class="section-title">Níveis de Acesso</h2>
+  <table class="access-table">
+    <thead>
+      <tr>
+        <th>Funcionalidade</th>
+        <th>Vendedor</th>
+        <th>Administrador</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Dashboard</td>                     <td><span class="ok">✓</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Ver e cadastrar veículos</td>       <td><span class="ok">✓</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Registrar vendas</td>               <td><span class="ok">✓</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Cadastrar clientes</td>             <td><span class="ok">✓</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Ver financeiro</td>                 <td><span class="ok">✓</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Ver relatórios</td>                 <td><span class="ok">✓</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Resumo financeiro mensal</td>       <td><span class="no">✗</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Deletar clientes</td>               <td><span class="no">✗</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Gerenciar usuários da equipe</td>   <td><span class="no">✗</span></td><td><span class="ok">✓</span></td></tr>
+      <tr><td>Trocar senha de qualquer usuário</td><td><span class="no">✗</span></td><td><span class="ok">✓</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  Desenvolvido exclusivamente para <strong>LMC Concessionária</strong> · Sistema proprietário · Todos os direitos reservados
+</footer>
+
+</body>
+</html>

@@ -105,6 +105,7 @@ class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
 
     # Meta
     observacoes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    destaque: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="false")
     created_by: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id"), nullable=True)
 
     # Relationships

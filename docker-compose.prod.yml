@@ -51,7 +51,7 @@ services:
       REDIS_URL: redis://:${REDIS_PASSWORD:-R3d1s_LmC_2024!}@redis:6379/0
       API_HOST: 0.0.0.0
       API_PORT: "8000"
-      ALLOWED_ORIGINS: https://lcm.spacerstorepaineladmin.com
+      ALLOWED_ORIGINS: https://lcm.spacerstorepaineladmin.com,https://site.spacerstorepaineladmin.com
     volumes:
       - upload_data:/app/uploads
     depends_on:
@@ -87,6 +87,29 @@ services:
     networks:
       - internal
 
+  # ─── Frontend Site Público (Next.js) ─────────────────────────────────────────
+  frontend_site:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # URL pública da API — acessível pelo browser dos visitantes
+        NEXT_PUBLIC_API_URL: https://lcm.spacerstorepaineladmin.com
+        # URL interna Docker — usada pelo Next.js Server Components (SSR/ISR)
+        BACKEND_INTERNAL_URL: http://backend:8000
+        PORT: "3001"
+    container_name: lmc_frontend_site
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: https://lcm.spacerstorepaineladmin.com
+      BACKEND_INTERNAL_URL: http://backend:8000
+      PORT: "3001"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal
+
   # ─── Nginx Reverse Proxy ─────────────────────────────────────────────────────
   nginx:
     build:
@@ -103,6 +126,7 @@ services:
       - ./certbot/www:/var/www/certbot:ro
     depends_on:
       - frontend
+      - frontend_site
       - backend
     networks:
       - internal

@@ -1,0 +1,823 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Search, ArrowRight, ShieldCheck, FileCheck, CreditCard, Handshake, ChevronRight, Car } from "lucide-react";
+import type { PublicVehicle, PublicStats } from "@/lib/publicApi";
+import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
+
+// Brand fallback logo
+const BRAND_COLORS: Record<string,string> = {
+  BMW:"#1C69D4", Toyota:"#EB0A1E", Honda:"#CC0000", Chevrolet:"#D4A017",
+  Volkswagen:"#003DA5", Hyundai:"#002C5F", Ford:"#003476", Jeep:"#1A1A1A",
+  Mitsubishi:"#CC0000", Yamaha:"#E60012", Kawasaki:"#3D9B1B", Suzuki:"#1A4699",
+  Nissan:"#C3002F", Fiat:"#9B1C1F", Renault:"#FFCD00",
+};
+function BrandLogoFallback({ marca, size = 44 }: { marca: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  const key = marca.toLowerCase().replace(/\s+/g, "");
+  if (failed) {
+    const color = BRAND_COLORS[marca] ?? "#555";
+    return (
+      <div style={{ width:size, height:size, borderRadius:8, background:color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:size*0.35, fontWeight:900, color:"#fff", letterSpacing:-0.5 }}>
+        {marca.slice(0,2).toUpperCase()}
+      </div>
+    );
+  }
+  return <Image src={`/logos/${key}.png`} alt={marca} width={size} height={size} style={{ objectFit:"contain", width:size, height:size }} onError={() => setFailed(true)} />;
+}
+
+// ─── Brand SVG logos ──────────────────────────────────────────────────
+const BrandLogos: Record<string, React.FC<{ size?: number }>> = {
+  BMW: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="48" stroke="#1C69D4" strokeWidth="4"/><circle cx="50" cy="50" r="36" fill="none" stroke="#1C69D4" strokeWidth="1.5"/><path d="M50 14 A36 36 0 0 1 86 50 L50 50 Z" fill="#1C69D4"/><path d="M50 86 A36 36 0 0 1 14 50 L50 50 Z" fill="#1C69D4"/><path d="M50 14 A36 36 0 0 0 14 50 L50 50 Z" fill="white"/><path d="M50 86 A36 36 0 0 0 86 50 L50 50 Z" fill="white"/></svg>
+  ),
+  Toyota: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="50" rx="22" ry="32" stroke="#EB0A1E" strokeWidth="5" fill="none"/><ellipse cx="50" cy="50" rx="42" ry="20" stroke="#EB0A1E" strokeWidth="5" fill="none"/><line x1="50" y1="18" x2="50" y2="82" stroke="white" strokeWidth="3"/></svg>
+  ),
+  Honda: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><rect x="8" y="20" width="84" height="60" rx="6" fill="#CC0000"/><text x="50" y="63" textAnchor="middle" fontSize="46" fontWeight="900" fontFamily="Arial" fill="white">H</text></svg>
+  ),
+  Chevrolet: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><path d="M10 40 H40 V30 H60 V40 H90 V60 H60 V70 H40 V60 H10 Z" fill="#D4A017" stroke="#B8860B" strokeWidth="2"/></svg>
+  ),
+  Volkswagen: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="46" fill="#003DA5"/><circle cx="50" cy="50" r="36" fill="none" stroke="white" strokeWidth="2"/><text x="50" y="64" textAnchor="middle" fontSize="38" fontWeight="900" fontFamily="Arial" fill="white">VW</text></svg>
+  ),
+  Hyundai: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="50" rx="46" ry="32" fill="#002C5F"/><text x="50" y="62" textAnchor="middle" fontSize="52" fontWeight="900" fontFamily="Georgia,serif" fill="white" fontStyle="italic">H</text></svg>
+  ),
+  Ford: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="50" rx="46" ry="30" fill="#003476"/><text x="50" y="62" textAnchor="middle" fontSize="28" fontWeight="700" fontFamily="Arial" fill="white" fontStyle="italic">Ford</text></svg>
+  ),
+  Jeep: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><rect x="5" y="25" width="90" height="50" rx="8" fill="#1A1A1A"/><text x="50" y="61" textAnchor="middle" fontSize="26" fontWeight="900" fontFamily="Arial" fill="white" letterSpacing="3">JEEP</text></svg>
+  ),
+  Mitsubishi: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><polygon points="50,5 65,30 80,55 50,55 20,55 35,30" fill="#CC0000"/><polygon points="50,55 65,55 80,80 50,95 20,80 35,55" fill="#CC0000" opacity="0.6"/></svg>
+  ),
+};
+
+// Mock de fallback — usado quando banco estiver vazio
+const FEATURED_VEHICLES_FALLBACK: PublicVehicle[] = [];
+
+
+const BRANDS_CARROS = ["Fiat","Renault","Volkswagen","Chevrolet","Toyota","Hyundai","Honda","BMW","Jeep","Ford","Mitsubishi","Nissan"];
+const BRANDS_MOTOS  = ["Honda","Yamaha","Kawasaki","Suzuki"];
+
+const WHY_ITEMS = [
+  { icon: ShieldCheck, title:"Vistoria de 100 pontos",   text:"Todos os veículos são inspecionados rigorosamente antes de entrar no estoque." },
+  { icon: FileCheck,   title:"Documentação garantida",   text:"Toda documentação regularizada e sem pendências antes da entrega." },
+  { icon: CreditCard,  title:"Financiamento facilitado", text:"Parceiros dos principais bancos para as melhores condições de crédito." },
+  { icon: Handshake,   title:"Aceito seu carro",         text:"Avaliação gratuita e aceitamos seu veículo como parte do pagamento." },
+];
+
+function fmtPrice(v: number) { return new Intl.NumberFormat("pt-BR").format(v); }
+function fmtKm(v: number)    { return new Intl.NumberFormat("pt-BR").format(v) + " km"; }
+
+// ─── Vehicle Card ─────────────────────────────────────────────────────
+function VehicleCard({ v }: { v: PublicVehicle }) {
+  const [fav, setFav] = useState(false);
+  const mainPhoto = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
+  const imgSrc = mainPhoto?.url
+    ? mainPhoto.url
+    : (v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg");
+  const isPlaceholder = !mainPhoto;
+  const badgeClass =
+    v.destaque ? "s-v-badge s-v-badge-destaque" : "s-v-badge s-v-badge-disponivel";
+  const badgeLabel = v.destaque ? "Destaque" : "Disponível";
+
+  return (
+    <Link href={`/veiculo/${v.id}`} className="s-v-card" style={{ textDecoration:"none" }}>
+      <div className="s-v-img">
+        {isPlaceholder ? (
+          <Image src={imgSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"contain", padding:20, filter:"opacity(0.55)" }} />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imgSrc} alt={`${v.marca} ${v.modelo}`} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+        )}
+        <span className={badgeClass}>{badgeLabel}</span>
+        <button
+          className={`s-v-fav${fav ? " active" : ""}`}
+          onClick={e => { e.preventDefault(); setFav(x => !x); }}
+          aria-label={fav ? "Remover dos favoritos" : "Favoritar"}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? "currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
+      </div>
+      <div className="s-v-info">
+        <p className="s-v-make">{v.marca}</p>
+        <p className="s-v-name">{v.modelo}</p>
+        <p className="s-v-version">{v.versao}</p>
+        <div className="s-v-specs">
+          <span className="s-v-spec">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            {v.ano}
+          </span>
+          <span className="s-v-spec">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            {fmtKm(v.quilometragem)}
+          </span>
+          <span className="s-v-spec">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M4.93 4.93l14.14 14.14"/></svg>
+            {v.cambio}
+          </span>
+        </div>
+        <div className="s-v-divider" />
+        <div className="s-v-bottom">
+          <div>
+            <p className="s-v-price-label">Preço</p>
+            <p className="s-v-price"><span className="s-v-price-cur">R$</span>{fmtPrice(v.valor_anunciado)}</p>
+          </div>
+          <span className="s-btn s-btn-primary s-btn-sm" style={{ pointerEvents:"none" }}>
+            Ver <ChevronRight size={13} strokeWidth={2.5} />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// ─── AvalieSection component ─────────────────────────────────────
+ const WPP_AVALIE = "5511999999999";
+function AvalieSection() {
+  const [form, setForm] = useState({ marca:"", modelo:"", ano:"", km:"" });
+  const update = (k: string, v: string) => setForm(p => ({ ...p, [k]:v }));
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const msg = `Olá! Gostaria de avaliar meu veículo:\n\nMarca: ${form.marca}\nModelo: ${form.modelo}\nAno: ${form.ano}\nQuilometragem: ${form.km} km`;
+    window.open(`https://wa.me/${WPP_AVALIE}?text=${encodeURIComponent(msg)}`, "_blank");
+  };
+  return (
+    <section style={{ background:"var(--s-bg)", padding:"80px 0", borderTop:"1px solid var(--s-border)" }} aria-label="Avalie seu veículo">
+      <div className="s-container">
+        <div className="s-avalie-grid">
+          {/* Texto */}
+          <div>
+            <span style={{ display:"inline-block", background:"var(--s-orange-muted)", color:"var(--s-orange)", fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, padding:"5px 14px", borderRadius:999, marginBottom:20 }}>Avaliação gratuita</span>
+            <h2 style={{ fontSize:"clamp(24px,3.5vw,38px)", fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-0.8px", lineHeight:1.2, marginBottom:16 }}>
+              Quanto vale o seu<br /><em style={{ color:"var(--s-orange)", fontStyle:"normal" }}>veículo?</em>
+            </h2>
+            <p style={{ fontSize:15, color:"var(--s-text-2)", lineHeight:1.75, marginBottom:28, maxWidth:400 }}>
+              Preencha os dados ao lado e receba uma avaliação gratuita direto no WhatsApp em minutos. Sem compromisso.
+            </p>
+            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+              {[{icon:"01", text:"Preencha os dados do veículo"},{icon:"02", text:"Receba a avaliação via WhatsApp"},{icon:"03", text:"Negocie diretamente conosco"}].map(s => (
+                <div key={s.icon} style={{ display:"flex", alignItems:"center", gap:14 }}>
+                  <div style={{ width:36, height:36, borderRadius:10, background:"var(--s-orange-muted)", border:"1px solid rgba(244,121,32,0.20)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:900, color:"var(--s-orange)", flexShrink:0 }}>{s.icon}</div>
+                  <span style={{ fontSize:14, color:"var(--s-text-2)", fontWeight:500 }}>{s.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Formulário */}
+          <div>
+            <form onSubmit={handleSubmit} style={{ background:"var(--s-white)", border:"1px solid var(--s-border)", borderRadius:20, padding:"36px 32px", boxShadow:"0 4px 32px rgba(0,0,0,0.07)" }}>
+              <p style={{ fontSize:17, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-0.4px", marginBottom:24 }}>Dados do seu veículo</p>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+                <div>
+                  <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"var(--s-text-3)", marginBottom:6 }}>Marca *</label>
+                  <select className="s-select-light" required value={form.marca} onChange={e => update("marca",e.target.value)} style={{ width:"100%" }}>
+                    <option value="">Selecione</option>
+                    {["Fiat","Chevrolet","Volkswagen","Toyota","Hyundai","Honda","Renault","Jeep","Ford","BMW","Nissan","Mitsubishi","Yamaha","Honda Moto"].map(m => <option key={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"var(--s-text-3)", marginBottom:6 }}>Modelo *</label>
+                  <input className="s-input-light" required placeholder="Ex: HB20, Onix..." value={form.modelo} onChange={e => update("modelo",e.target.value)} style={{ width:"100%" }} />
+                </div>
+                <div>
+                  <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"var(--s-text-3)", marginBottom:6 }}>Ano *</label>
+                  <select className="s-select-light" required value={form.ano} onChange={e => update("ano",e.target.value)} style={{ width:"100%" }}>
+                    <option value="">Selecione</option>
+                    {Array.from({length:15},(_,i)=>2024-i).map(y=><option key={y}>{y}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"var(--s-text-3)", marginBottom:6 }}>Quilometragem *</label>
+                  <input className="s-input-light" required placeholder="Ex: 45.000" value={form.km} onChange={e => update("km",e.target.value)} style={{ width:"100%" }} />
+                </div>
+              </div>
+              <button type="submit" className="s-btn s-btn-wpp s-btn-lg s-btn-full" style={{ gap:10, marginTop:8 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                Avaliar pelo WhatsApp
+              </button>
+              <p style={{ fontSize:11, color:"var(--s-text-3)", textAlign:"center", marginTop:12 }}>100% gratuito • Sem compromisso • Resposta em até 1h</p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────
+interface HomeSectionsProps {
+  featuredVehicles?: PublicVehicle[];
+  stats?: PublicStats;
+}
+
+export default function HomeSections({ featuredVehicles = [], stats }: HomeSectionsProps) {
+  const [tab, setTab]               = useState<"carro" | "moto">("carro");
+  const [marca, setMarca]           = useState("");
+  const [modelo, setModelo]         = useState("");
+  const [preco, setPreco]           = useState("");
+  const [filter, setFilter]         = useState("todos");
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const marcasBusca = tab === "moto" ? BRANDS_MOTOS : BRANDS_CARROS;
+
+  const CAROUSEL = (featuredVehicles.length > 0 ? featuredVehicles : FEATURED_VEHICLES_FALLBACK).slice(0, 5);
+
+  useEffect(() => {
+    const t = setInterval(() => setActiveSlide(i => (i + 1) % CAROUSEL.length), 4000);
+    return () => clearInterval(t);
+  }, [CAROUSEL.length]);
+
+  const featured = filter === "todos"
+    ? FEATURED_VEHICLES
+    : FEATURED_VEHICLES.filter(v => v.tipo === filter);
+
+  const STATS = [
+    { num:"47", suffix:"+", label:"Veículos" },
+    { num:"12", suffix:"+", label:"Marcas"   },
+    { num:"98", suffix:"%", label:"Satisfação"},
+  ];
+
+  return (
+    <>
+      {/* ══════════════ HERO ══════════════ */}
+      <section className="s-hero" aria-label="Busca de veículos">
+        <div className="s-hero-glow" />
+        <div className="s-hero-grid" />
+
+        <div className="s-container" style={{ position:"relative", zIndex:1 }}>
+          <div className="s-hero-layout" style={{ gap:48, alignItems:"center", paddingTop:72, paddingBottom:80 }}>
+
+            {/* ── COLUNA ESQUERDA ── */}
+            <div>
+              <h1 className="s-hero-title" style={{ fontSize:"clamp(30px,3.5vw,50px)", animation:"s-fadeInUp 0.65s 0ms both" }}>
+                Encontre o veículo<br />
+                <em>perfeito</em> para você
+              </h1>
+              <p className="s-hero-sub" style={{ marginBottom:28, hyphens:"none", wordBreak:"keep-all", animation:"s-fadeInUp 0.65s 120ms both" }}>
+                Carros e motos selecionados, revisados e com procedência garantida.
+              </p>
+
+              {/* Seletor Carro / Moto */}
+              <div className="s-hero-tabs" style={{ marginBottom:20, animation:"s-fadeInUp 0.65s 240ms both" }}>
+                {(["carro","moto"] as const).map(tipo => (
+                  <button
+                    key={tipo}
+                    onClick={() => { setTab(tipo); setMarca(""); setModelo(""); }}
+                    style={{
+                      flex:1, position:"relative", height:110, borderRadius:14, overflow:"hidden",
+                      border: tab === tipo ? "2.5px solid var(--s-orange)" : "2px solid rgba(255,255,255,0.08)",
+                      cursor:"pointer", transition:"border-color 220ms, box-shadow 220ms", padding:0,
+                      boxShadow: tab === tipo ? "0 0 0 3px rgba(244,121,32,0.15)" : "none",
+                    }}
+                  >
+                    <Image
+                      src={tipo === "carro" ? "/hero-carro.jpeg" : "/hero-moto.png"}
+                      alt={tipo === "carro" ? "Carros" : "Motos"}
+                      fill
+                      style={{ objectFit:"cover", objectPosition:"center", filter: tab === tipo ? "brightness(0.75)" : "brightness(0.3) grayscale(0.5)", transition:"filter 300ms" }}
+                    />
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, rgba(14,15,17,0.85) 0%, rgba(14,15,17,0.4) 55%, transparent 100%)" }} />
+                    {tab === tipo && <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, rgba(244,121,32,0.20) 0%, transparent 60%)", pointerEvents:"none" }} />}
+                    <div style={{ position:"absolute", left:16, top:"50%", transform:"translateY(-50%)" }}>
+                      <p style={{ fontSize:20, fontWeight:900, letterSpacing:"-0.5px", color: tab === tipo ? "var(--s-orange)" : "rgba(255,255,255,0.60)", marginBottom:2, transition:"color 220ms" }}>
+                        {tipo === "carro" ? "Carros" : "Motos"}
+                      </p>
+                      <p style={{ fontSize:11, color:"rgba(255,255,255,0.40)", fontWeight:500 }}>
+                        {tipo === "carro" ? "47" : "12"} disponíveis
+                      </p>
+                    </div>
+                    {tab === tipo && (
+                      <div style={{ position:"absolute", top:10, right:10, width:20, height:20, borderRadius:"50%", background:"var(--s-orange)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 8px rgba(244,121,32,0.5)" }}>
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2 6 5 9 10 3"/></svg>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search form — campos independentes */}
+              <div className="s-hero-search-row" style={{ marginBottom:28, animation:"s-fadeInUp 0.65s 360ms both" }}>
+                <div style={{ flex:1 }}>
+                  <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"rgba(255,255,255,0.35)", marginBottom:6 }}>Marca</label>
+                  <select className="s-select" value={marca} onChange={e => setMarca(e.target.value)} aria-label="Selecionar marca" style={{ width:"100%" }}>
+                    <option value="">Todas as marcas</option>
+                    {marcasBusca.map(b => <option key={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex:1 }}>
+                  <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"rgba(255,255,255,0.35)", marginBottom:6 }}>Modelo</label>
+                  <select className="s-select" value={modelo} onChange={e => setModelo(e.target.value)} aria-label="Selecionar modelo" style={{ width:"100%" }}>
+                    <option value="">Todos os modelos</option>
+                    <option>Corolla</option><option>Civic</option><option>HB20</option><option>320i</option>
+                  </select>
+                </div>
+                <div style={{ flex:1 }}>
+                  <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"rgba(255,255,255,0.35)", marginBottom:6 }}>Preço até</label>
+                  <select className="s-select" value={preco} onChange={e => setPreco(e.target.value)} aria-label="Faixa de preço" style={{ width:"100%" }}>
+                    <option value="">Qualquer preço</option>
+                    <option value="40000">R$ 40.000</option>
+                    <option value="80000">R$ 80.000</option>
+                    <option value="120000">R$ 120.000</option>
+                    <option value="200000">R$ 200.000</option>
+                  </select>
+                </div>
+                <Link
+                  href={`/estoque?tipo=${tab}${marca ? `&marca=${marca}` : ""}${preco ? `&preco=${preco}` : ""}`}
+                  className="s-btn s-btn-primary s-btn-md"
+                  style={{ gap:6, flexShrink:0, height:44 }}
+                >
+                  <Search size={15} strokeWidth={2.5} />
+                  Buscar
+                </Link>
+              </div>
+
+
+              {/* Stats com separadores */}
+              <div style={{ display:"flex", alignItems:"center", animation:"s-fadeInUp 0.65s 480ms both" }}>
+                {[
+                  { num: String(stats?.total_veiculos ?? 0), suffix:"+", label:"Veículos",  countTarget: String(stats?.total_veiculos ?? 0) },
+                  { num: String(stats?.total_marcas ?? 0),   suffix:"+", label:"Marcas",    countTarget: String(stats?.total_marcas ?? 0) },
+                  { num: String(stats?.satisfacao ?? 98),    suffix:"%", label:"Satisfação", countTarget: String(stats?.satisfacao ?? 98) },
+                ].map((s, i) => (
+                  <div key={s.label} style={{ display:"flex", alignItems:"center" }}>
+                    {i > 0 && <div style={{ width:1, height:28, background:"rgba(255,255,255,0.10)", margin:"0 20px" }} />}
+                    <div>
+                      <p style={{ fontSize:26, fontWeight:900, color:"#fff", lineHeight:1, letterSpacing:"-1px" }}>
+                        <span data-count-target={s.countTarget + s.suffix}>{s.num}</span><span style={{ color:"var(--s-orange)", fontSize:17 }}>{s.suffix}</span>
+                      </p>
+                      <p style={{ fontSize:10, color:"rgba(255,255,255,0.35)", fontWeight:500, marginTop:3, letterSpacing:0.3 }}>{s.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+
+            {/* ── COLUNA DIREITA — Carousel ── */}
+            <div className="s-hero-right" style={{ position:"relative", height:520 }}>
+
+              {/* Slides */}
+              {CAROUSEL.map((v, i) => {
+                const img = v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg";
+                return (
+                  <div key={v.id} style={{ position:"absolute", inset:0, borderRadius:24, overflow:"hidden", opacity: i === activeSlide ? 1 : 0, transition:"opacity 800ms ease", pointerEvents: i === activeSlide ? "auto" : "none" }}>
+                    <Image src={img} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover", objectPosition:"center" }} priority={i === 0} />
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg, rgba(14,15,17,0.05) 0%, rgba(14,15,17,0.30) 40%, rgba(14,15,17,0.90) 100%)" }} />
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(270deg, transparent 45%, rgba(14,15,17,0.92) 100%)" }} />
+                  </div>
+                );
+              })}
+
+              {/* Pill — Recém adicionados */}
+              <div style={{ position:"absolute", top:18, left:18, zIndex:10, background:"rgba(14,15,17,0.55)", backdropFilter:"blur(12px)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:999, padding:"6px 14px", display:"flex", alignItems:"center", gap:8 }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--s-orange)" }} />
+                <p style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.70)", letterSpacing:0.3 }}>Recém adicionados</p>
+              </div>
+
+              {/* Dots */}
+              <div style={{ position:"absolute", top:22, right:18, zIndex:10, display:"flex", gap:5, alignItems:"center" }}>
+                {CAROUSEL.map((_, i) => (
+                  <button key={i} onClick={() => setActiveSlide(i)} style={{ width: i === activeSlide ? 18 : 6, height:6, borderRadius:999, background: i === activeSlide ? "var(--s-orange)" : "rgba(255,255,255,0.25)", border:"none", cursor:"pointer", padding:0, transition:"all 350ms ease" }} aria-label={`Slide ${i+1}`} />
+                ))}
+              </div>
+
+              {/* Info overlay dentro da foto */}
+              {CAROUSEL.map((v, i) => (
+                <div key={v.id} style={{ position:"absolute", bottom:0, left:0, right:0, zIndex:10, padding:"28px 24px 22px", opacity: i === activeSlide ? 1 : 0, transform: i === activeSlide ? "translateY(0)" : "translateY(8px)", transition:"opacity 500ms ease, transform 500ms ease", pointerEvents: i === activeSlide ? "auto" : "none" }}>
+                  <p style={{ fontSize:9, fontWeight:800, letterSpacing:2, textTransform:"uppercase", color:"var(--s-orange)", marginBottom:6 }}>
+                    {v.destaque ? "Destaque" : "Novo no estoque"}
+                  </p>
+                  <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:12 }}>
+                    <div>
+                      <p style={{ fontSize:20, fontWeight:900, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.2, marginBottom:5 }}>
+                        {v.marca} {v.modelo}
+                      </p>
+                      <p style={{ fontSize:12, color:"rgba(255,255,255,0.45)" }}>
+                        {v.ano} · {new Intl.NumberFormat("pt-BR").format(v.quilometragem)} km · {v.cambio}
+                      </p>
+                    </div>
+                    <div style={{ textAlign:"right", flexShrink:0 }}>
+                      <p style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:4 }}>a partir de</p>
+                      <p style={{ fontSize:20, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px", lineHeight:1, marginBottom:10 }}>
+                        R$ {new Intl.NumberFormat("pt-BR").format(v.valor_anunciado)}
+                      </p>
+                      <Link href={`/veiculo/${v.id}`} className="s-btn s-btn-primary s-btn-sm" style={{ fontSize:11 }}>
+                        Ver oferta
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════ BRANDS ══════════════ */}
+      <section className="s-brands-section" aria-label="Marcas disponíveis">
+        <div className="s-container">
+          <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
+            <div>
+              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:2.5, color:"rgba(255,255,255,0.22)", marginBottom:6 }}>Estoque por marca</p>
+              <h2 style={{ fontSize:"clamp(20px,3vw,26px)", fontWeight:900, color:"#fff", letterSpacing:"-0.5px", lineHeight:1 }}>
+                Encontre pela <em style={{ color:"var(--s-orange)", fontStyle:"normal" }}>sua marca</em>
+              </h2>
+            </div>
+            <Link href={`/estoque?tipo=${tab}`} className="s-see-all" style={{ color:"rgba(255,255,255,0.35)", fontSize:13 }}>
+              Ver estoque <ArrowRight size={14} strokeWidth={2.5} />
+            </Link>
+          </div>
+
+          <div style={{ display:"flex", flexWrap:"wrap", gap:12, justifyContent:"center" }}>
+            {(tab === "carro" ? [
+              { key:"fiat",       label:"Fiat"       },
+              { key:"renault",    label:"Renault"    },
+              { key:"nissan",     label:"Nissan"     },
+              { key:"bmw",        label:"BMW"        },
+              { key:"toyota",     label:"Toyota"     },
+              { key:"honda",      label:"Honda"      },
+              { key:"chevrolet",  label:"Chevrolet"  },
+              { key:"volkswagen", label:"Volkswagen" },
+              { key:"hyundai",    label:"Hyundai"    },
+              { key:"ford",       label:"Ford"       },
+              { key:"jeep",       label:"Jeep"       },
+              { key:"mitsubishi", label:"Mitsubishi" },
+            ] : [
+              { key:"honda",    label:"Honda"    },
+              { key:"yamaha",   label:"Yamaha"   },
+              { key:"kawasaki", label:"Kawasaki" },
+              { key:"suzuki",   label:"Suzuki"   },
+            ]).map((b, i) => (
+              <Link
+                key={b.key}
+                href={`/estoque?tipo=${tab === "carro" ? "carro" : "moto"}&marca=${b.label}`}
+                className="s-brand-item"
+                style={{ transitionDelay:`${i * 40}ms` }}
+              >
+                <div className="s-brand-circle">
+                  <BrandLogoFallback marca={b.label} size={36} />
+                </div>
+                <span className="s-brand-label">{b.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════ FEATURED ══════════════ */}
+      <section className="s-section" aria-label="Destaques da semana">
+        <div className="s-container">
+          <div className="s-section-head" style={{ marginBottom:28 }}>
+            <div>
+              <h2 className="s-section-title">Destaques da <em>semana</em></h2>
+              <p className="s-section-sub">Selecionados especialmente para você</p>
+            </div>
+            <Link href="/estoque" className="s-see-all">
+              Ver todos <ArrowRight size={15} strokeWidth={2.5} />
+            </Link>
+          </div>
+
+          {/* Carousel */}
+          <div className="s-carousel-wrap" style={{ margin:"0 -8px", padding:"0 8px" }}>
+            {/* Botão Prev */}
+            <button
+              className="s-carousel-btn s-carousel-btn-prev"
+              onClick={() => {
+                const el = document.getElementById("featured-track");
+                if (el) el.scrollBy({ left: -300, behavior:"smooth" });
+              }}
+              aria-label="Anterior"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+
+            <div id="featured-track" className="s-carousel-track">
+              {FEATURED_VEHICLES.map(v => <VehicleCard key={v.id} v={v} />)}
+            </div>
+
+            {/* Botão Next */}
+            <button
+              className="s-carousel-btn s-carousel-btn-next"
+              onClick={() => {
+                const el = document.getElementById("featured-track");
+                if (el) el.scrollBy({ left: 300, behavior:"smooth" });
+              }}
+              aria-label="Próximo"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          <div style={{ textAlign:"center", marginTop:36 }}>
+            <Link href="/estoque" className="s-btn s-btn-outline s-btn-md">
+              Ver estoque completo <ArrowRight size={15} strokeWidth={2.5} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ══════════════ WHY ══════════════ */}
+      <section className="s-why-section" style={{ background:"var(--s-dark)", position:"relative", overflow:"hidden" }} aria-label="Diferenciais LMC">
+        {/* glow decorativo */}
+        <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:600, height:300, background:"radial-gradient(ellipse, rgba(244,121,32,0.08) 0%, transparent 70%)", pointerEvents:"none" }} />
+
+        <div className="s-container" style={{ position:"relative", zIndex:1 }}>
+          {/* Header */}
+          <div className="s-why-section-head" style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:52, flexWrap:"wrap", gap:16 }}>
+            <div>
+              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:2, color:"var(--s-orange)", marginBottom:10 }}>Nossos diferenciais</p>
+              <h2 style={{ fontSize:"clamp(22px, 4.5vw, 34px)", fontWeight:900, color:"#fff", letterSpacing:"-0.8px", lineHeight:1.15 }}>
+                Por que escolher<br />a <em style={{ color:"var(--s-orange)", fontStyle:"normal" }}>LMC Veículos</em>?
+              </h2>
+            </div>
+            <p className="s-why-desc" style={{ fontSize:15, color:"rgba(255,255,255,0.35)", maxWidth:320, lineHeight:1.65 }}>
+              Cada detalhe foi pensado para garantir a melhor experiência na compra do seu veículo.
+            </p>
+          </div>
+
+          {/* Cards */}
+          <div className="s-why-grid">
+            {WHY_ITEMS.map((item, i) => (
+              <div
+                key={item.title}
+                className="s-why-card"
+                style={{
+                  background:"rgba(255,255,255,0.03)",
+                  border:"1px solid rgba(255,255,255,0.07)",
+                  borderRadius:20,
+                  padding:"28px 24px",
+                  position:"relative",
+                  overflow:"hidden",
+                  transition:"border-color 220ms, background 220ms, transform 220ms",
+                  cursor:"default",
+                  transitionDelay:`${i * 80}ms`,
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(244,121,32,0.35)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(244,121,32,0.04)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                }}
+              >
+                {/* Número decorativo */}
+                <span style={{ position:"absolute", top:-8, right:16, fontSize:72, fontWeight:900, color:"rgba(255,255,255,0.04)", lineHeight:1, userSelect:"none" }}>
+                  {String(i+1).padStart(2,"0")}
+                </span>
+                {/* Ícone */}
+                <div style={{ width:48, height:48, borderRadius:14, background:"rgba(244,121,32,0.12)", border:"1px solid rgba(244,121,32,0.20)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20, color:"var(--s-orange)" }}>
+                  <item.icon size={22} strokeWidth={1.8} />
+                </div>
+                <p style={{ fontSize:15, fontWeight:800, color:"#fff", marginBottom:8, letterSpacing:"-0.2px" }}>{item.title}</p>
+                <p style={{ fontSize:13, color:"rgba(255,255,255,0.40)", lineHeight:1.65 }}>{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════ AVALIE SEU CARRO ══════════════ */}
+      <AvalieSection />
+
+      {/* ══════════════ CTA ══════════════ */}
+      <section className="s-cta-section" style={{ background:"var(--s-dark-2)", position:"relative", overflow:"hidden", borderTop:"1px solid rgba(255,255,255,0.06)" }} aria-label="Call to action">
+        {/* Glow laranja à esquerda */}
+        <div style={{ position:"absolute", top:"50%", left:"-5%", transform:"translateY(-50%)", width:500, height:400, background:"radial-gradient(ellipse, rgba(244,121,32,0.12) 0%, transparent 65%)", pointerEvents:"none" }} />
+
+        <div className="s-container" style={{ position:"relative", zIndex:1 }}>
+          <div className="s-cta-grid">
+
+            {/* Esquerda — texto + botões */}
+            <div>
+              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:2, color:"var(--s-orange)", marginBottom:12 }}>Fale com a gente</p>
+              <h2 style={{ fontSize:"clamp(28px,3vw,44px)", fontWeight:900, color:"#fff", letterSpacing:"-1px", lineHeight:1.15, marginBottom:16 }}>
+                Pronto para o seu<br /><em style={{ color:"var(--s-orange)", fontStyle:"normal" }}>próximo veículo</em>?
+              </h2>
+              <p style={{ color:"rgba(255,255,255,0.38)", fontSize:15, marginBottom:36, maxWidth:420, lineHeight:1.7 }}>
+                Nossa equipe está pronta para te ajudar a encontrar o veículo perfeito com as melhores condições de pagamento.
+              </p>
+              <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
+                <Link href="/estoque" className="s-btn s-btn-primary s-btn-lg">
+                  Ver estoque completo <ArrowRight size={17} strokeWidth={2.5} />
+                </Link>
+                <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="s-btn s-btn-wpp s-btn-lg">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                  Falar no WhatsApp
+                </a>
+              </div>
+            </div>
+
+            {/* Direita — stats verticais */}
+            <div className="s-cta-stats">
+              {[
+                { num:"47",  suffix:"+",  label:"Veículos disponíveis",  sub:"no estoque agora"     },
+                { num:"500", suffix:"+",  label:"Clientes satisfeitos",  sub:"em 10 anos"           },
+                { num:"10",  suffix:" anos", label:"De experiência",     sub:"no mercado"           },
+              ].map((s, i) => (
+                <div key={s.label}>
+                  {i > 0 && <div style={{ height:1, background:"rgba(255,255,255,0.06)", margin:"24px 0" }} />}
+                  <p style={{ fontSize:42, fontWeight:900, color:"#fff", letterSpacing:"-2px", lineHeight:1 }}>
+                    {s.num}<span style={{ color:"var(--s-orange)", fontSize:24 }}>{s.suffix}</span>
+                  </p>
+                  <p style={{ fontSize:14, fontWeight:700, color:"rgba(255,255,255,0.70)", marginTop:5 }}>{s.label}</p>
+                  <p style={{ fontSize:11, color:"rgba(255,255,255,0.25)", marginTop:2 }}>{s.sub}</p>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <style>{`
+        /* ── Hero layout ── */
+        .s-hero-layout {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+        .s-hero-tabs { display: flex; gap: 12px; }
+        .s-hero-search-row { display: flex; gap: 8px; }
+
+        @media (max-width: 860px) {
+          .s-hero-layout {
+            grid-template-columns: 1fr;
+            padding-top: 48px !important;
+            padding-bottom: 48px !important;
+          }
+          .s-hero-right { display: none; }
+          .s-hero-tabs button { height: 80px !important; }
+        }
+        @media (max-width: 560px) {
+          .s-hero-layout {
+            padding-top: 36px !important;
+            padding-bottom: 36px !important;
+          }
+          .s-hero-search-row {
+            flex-direction: column;
+            gap: 12px;
+          }
+          .s-hero-search-row > div { flex: unset !important; width: 100%; }
+          .s-hero-search-row > a { width: 100%; justify-content: center; height: 48px !important; }
+          .s-hero-tabs { gap: 8px; }
+          .s-hero-tabs button { height: 70px !important; }
+        }
+
+        /* ── WHY section ── */
+        .s-why-section { padding: clamp(40px, 8vw, 80px) 0; }
+        .s-cta-section { padding: clamp(40px, 8vw, 80px) 0; }
+
+        @media (max-width: 768px) {
+          .s-why-desc { display: none; }
+        }
+
+        /* ── WHY grid ── */
+        .s-why-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+        }
+        @media (max-width: 900px) {
+          .s-why-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+          .s-why-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── CTA grid ── */
+        .s-cta-grid {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 64px;
+          align-items: center;
+        }
+        .s-cta-stats {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+          border-left: 1px solid rgba(255,255,255,0.07);
+          padding-left: 64px;
+        }
+        @media (max-width: 860px) {
+          .s-cta-grid {
+            grid-template-columns: 1fr;
+            gap: 40px;
+          }
+          .s-cta-stats {
+            border-left: none;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding-left: 0;
+            padding-top: 36px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+          }
+        }
+        @media (max-width: 560px) {
+          .s-cta-stats { grid-template-columns: 1fr; }
+        }
+
+        /* ── Section padding reduction on mobile ── */
+        @media (max-width: 768px) {
+          .s-section { padding: 48px 0; }
+          .s-section-dark { padding: 48px 0; }
+        }
+        @media (max-width: 480px) {
+          .s-section { padding: 36px 0; }
+          .s-section-dark { padding: 36px 0; }
+        }
+
+        /* ── Carousel buttons hide on mobile touch ── */
+        @media (max-width: 640px) {
+          .s-carousel-btn { display: none; }
+          .s-carousel-track .s-v-card { flex: 0 0 260px; }
+        }
+
+        /* ── Brands section ── */
+        @media (max-width: 560px) {
+          .s-brands-section .s-container > div:first-child {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 24px;
+          }
+          .s-brands-section h2 { font-size: 22px !important; }
+        }
+
+        /* ── Section heads ── */
+        @media (max-width: 560px) {
+          .s-section-head { flex-direction: column; align-items: flex-start; margin-bottom: 20px; }
+          .s-section-title { font-size: 22px; }
+        }
+
+        /* ── WHY section heading ── */
+        @media (max-width: 768px) {
+          .s-why-section-head { flex-direction: column !important; gap: 12px !important; margin-bottom: 32px !important; }
+        }
+
+        /* ── Brands marquee ── */
+        @keyframes s-marquee {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        .s-brands-marquee {
+          display: flex;
+          gap: 12px;
+          animation: s-marquee 28s linear infinite;
+          width: max-content;
+          padding: 16px 12px;
+        }
+        .s-brands-marquee:hover { animation-play-state: paused; }
+        .s-brand-item {
+          flex-shrink: 0;
+          cursor: pointer;
+        }
+
+        /* ── Avalie grid ── */
+        .s-avalie-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 64px;
+          align-items: center;
+        }
+        @media (max-width: 860px) {
+          .s-avalie-grid { grid-template-columns: 1fr; gap: 36px; }
+        }
+        .s-input-light {
+          height: 44px;
+          padding: 0 14px;
+          border: 1.5px solid var(--s-border);
+          border-radius: 10px;
+          font-size: 14px;
+          color: var(--s-text-1);
+          background: var(--s-bg);
+          font-family: inherit;
+          outline: none;
+          width: 100%;
+        }
+        .s-input-light:focus { border-color: var(--s-orange); box-shadow: 0 0 0 3px rgba(244,121,32,0.10); }
+
+        /* ── CTA section ── */
+        @media (max-width: 768px) {
+          .s-cta-grid h2 { font-size: clamp(24px, 5vw, 36px) !important; }
+        }
+      `}</style>
+
+    </>
+  );
+}
+
