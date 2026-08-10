@@ -84,21 +84,21 @@ function SiteHeader() {
             )}
             {/* Redes sociais no topbar */}
             <div style={{ display:"flex", alignItems:"center", gap:6, marginLeft:8, paddingLeft:12, borderLeft:"1px solid rgba(255,255,255,0.12)" }}>
-              <a href="#" target="_blank" rel="noopener" aria-label="Instagram" style={{ opacity:0.65, display:"flex", transition:"opacity 150ms" }}
-                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="1"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="0.65"}>
-                <img src="/logos/instagram.svg" alt="Instagram" width={14} height={14} style={{ filter:"invert(1)" }} />
+              <a href="#" target="_blank" rel="noopener" aria-label="Instagram" style={{ opacity:0.80, display:"flex", transition:"opacity 150ms" }}
+                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="1"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="0.80"}>
+                <img src="/logos/instagram.svg" alt="Instagram" width={14} height={14} />
               </a>
-              <a href="#" target="_blank" rel="noopener" aria-label="Facebook" style={{ opacity:0.65, display:"flex", transition:"opacity 150ms" }}
-                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="1"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="0.65"}>
-                <img src="/logos/facebook.svg" alt="Facebook" width={14} height={14} style={{ filter:"invert(1)" }} />
+              <a href="#" target="_blank" rel="noopener" aria-label="Facebook" style={{ opacity:0.80, display:"flex", transition:"opacity 150ms" }}
+                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="1"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="0.80"}>
+                <img src="/logos/facebook.svg" alt="Facebook" width={14} height={14} />
               </a>
-              <a href="#" target="_blank" rel="noopener" aria-label="YouTube" style={{ opacity:0.65, display:"flex", transition:"opacity 150ms" }}
-                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="1"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="0.65"}>
-                <img src="/logos/youtube.svg" alt="YouTube" width={16} height={14} style={{ filter:"invert(1)" }} />
+              <a href="#" target="_blank" rel="noopener" aria-label="YouTube" style={{ opacity:0.80, display:"flex", transition:"opacity 150ms" }}
+                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="1"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="0.80"}>
+                <img src="/logos/youtube.svg" alt="YouTube" width={16} height={14} />
               </a>
-              <a href={WPP_LINK} target="_blank" rel="noopener" aria-label="WhatsApp" style={{ opacity:0.65, display:"flex", transition:"opacity 150ms" }}
-                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="1"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="0.65"}>
-                <img src="/logos/whatsapp.svg" alt="WhatsApp" width={14} height={14} style={{ filter:"invert(1)" }} />
+              <a href={WPP_LINK} target="_blank" rel="noopener" aria-label="WhatsApp" style={{ opacity:0.80, display:"flex", transition:"opacity 150ms" }}
+                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="1"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="0.80"}>
+                <img src="/logos/whatsapp.svg" alt="WhatsApp" width={14} height={14} />
               </a>
             </div>
           </div>
@@ -205,16 +205,16 @@ function SiteFooter() {
             </p>
             <div className="s-footer-socials">
               <a href="#" className="s-social-btn" aria-label="Facebook" target="_blank" rel="noopener">
-                <img src="/logos/facebook.svg" alt="Facebook" width={16} height={16} style={{ filter:"invert(1)", opacity:0.85 }} />
+                <img src="/logos/facebook.svg" alt="Facebook" width={18} height={18} />
               </a>
               <a href="#" className="s-social-btn" aria-label="Instagram" target="_blank" rel="noopener">
-                <img src="/logos/instagram.svg" alt="Instagram" width={16} height={16} style={{ filter:"invert(1)", opacity:0.85 }} />
+                <img src="/logos/instagram.svg" alt="Instagram" width={18} height={18} />
               </a>
               <a href="#" className="s-social-btn" aria-label="YouTube" target="_blank" rel="noopener">
-                <img src="/logos/youtube.svg" alt="YouTube" width={18} height={16} style={{ filter:"invert(1)", opacity:0.85 }} />
+                <img src="/logos/youtube.svg" alt="YouTube" width={20} height={18} />
               </a>
               <a href={WPP_LINK} className="s-social-btn" aria-label="WhatsApp" target="_blank" rel="noopener">
-                <img src="/logos/whatsapp.svg" alt="WhatsApp" width={16} height={16} style={{ filter:"invert(1)", opacity:0.85 }} />
+                <img src="/logos/whatsapp.svg" alt="WhatsApp" width={18} height={18} />
               </a>
             </div>
           </div>
@@ -317,7 +317,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <main id="main-content" className="s-page-enter" suppressHydrationWarning>{children}</main>
       <SiteFooter />
 
-      {/* Floating WhatsApp with tooltip */}
+      {/* Floating WhatsApp com tooltip */}
       <div className="s-wpp-wrap">
         <span className="s-wpp-tooltip">Atendimento imediato</span>
         <a
@@ -327,7 +327,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           rel="noopener noreferrer"
           aria-label="Falar no WhatsApp"
         >
-          <MessageCircle size={26} strokeWidth={2} />
+          <img src="/logos/whatsapp.svg" alt="WhatsApp" width={30} height={30} />
         </a>
       </div>
 
