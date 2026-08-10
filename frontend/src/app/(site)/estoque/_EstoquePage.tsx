@@ -291,33 +291,41 @@ function VehicleCardList({ v }: { v: Vehicle }) {
   const isPlaceholder = !mainPhoto?.url;
   return (
     <Link href={"/veiculo/" + v.id} className="s-v-card-list"
-      style={{ textDecoration:"none", display:"grid", gridTemplateColumns:"220px 1fr auto",
-        background:"var(--s-card)", border:"1px solid var(--s-border)", borderRadius:14,
-        overflow:"hidden", transition:"all 220ms", position:"relative" }}>
-      <div style={{ position:"relative", overflow:"hidden", display:"flex", alignItems:"center",
-        justifyContent:"center", background: isPlaceholder ? "transparent" : undefined }}>
+      style={{ textDecoration:"none", background:"var(--s-card)",
+        border:"1px solid var(--s-border)", borderRadius:14,
+        overflow:"hidden", transition:"all 220ms" }}>
+      {/* Image column */}
+      <div className="s-card-list-img">
         {isPlaceholder ? (
           <img src={imgSrc} alt={v.marca + " " + v.modelo} style={{ width:"65%", height:"65%", objectFit:"contain", opacity:0.55 }} />
         ) : (
           <Image src={imgSrc} alt={v.marca + " " + v.modelo} fill style={{ objectFit:"cover" }} />
         )}
-        <span className={"s-v-badge " + ((v.status as string) === "reservado" ? "s-v-badge-reservado" : "s-v-badge-disponivel")}>
+        <span className={"s-v-badge " + ((v.status as string) === "reservado" ? "s-v-badge-reservado" : "s-v-badge-disponivel")}
+          style={{ position:"absolute", top:8, left:8 }}>
           {(v.status as string) === "reservado" ? "Reservado" : "Dispon\u00edvel"}
         </span>
       </div>
-      <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", justifyContent:"center" }}>
+      {/* Info column */}
+      <div style={{ padding:"14px 18px", display:"flex", flexDirection:"column", justifyContent:"center" }}>
         <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:1, color:"var(--s-text-3)", marginBottom:2 }}>{v.marca}</p>
-        <p style={{ fontSize:17, fontWeight:800, color:"var(--s-text-1)", letterSpacing:"-0.3px", marginBottom:2 }}>{v.modelo}</p>
-        <p style={{ fontSize:12, color:"var(--s-text-3)", marginBottom:12 }}>{v.versao}</p>
-        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+        <p style={{ fontSize:16, fontWeight:800, color:"var(--s-text-1)", letterSpacing:"-0.3px", marginBottom:1 }}>{v.modelo}</p>
+        <p style={{ fontSize:11, color:"var(--s-text-3)", marginBottom:10 }}>{v.versao}</p>
+        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
           <span className="s-v-spec"><Calendar size={11} strokeWidth={2} />{v.ano}</span>
           <span className="s-v-spec"><Gauge size={11} strokeWidth={2} />{fmtKm(v.quilometragem)} km</span>
           <span className="s-v-spec"><ArrowUpDown size={11} strokeWidth={2} />{CAMBIO_LABELS[v.cambio] ?? v.cambio}</span>
           <span className="s-v-spec"><Fuel size={11} strokeWidth={2} />{FUEL_LABELS[v.combustivel] ?? v.combustivel}</span>
         </div>
+        <p style={{ fontSize:18, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-0.7px", marginTop:10 }}>
+          <span style={{ fontSize:11, fontWeight:600, color:"var(--s-text-3)", verticalAlign:"super", marginRight:2 }}>R$</span>
+          {fmtPrice(v.valor_anunciado ?? 0)}
+        </p>
       </div>
-      <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", alignItems:"flex-end",
-        justifyContent:"space-between", borderLeft:"1px solid var(--s-border)", minWidth:160 }}>
+      {/* Price panel — hidden tablet/mobile via CSS class */}
+      <div className="s-card-list-price" style={{ padding:"14px 18px", display:"flex", flexDirection:"column",
+        alignItems:"flex-end", justifyContent:"space-between",
+        borderLeft:"1px solid var(--s-border)", minWidth:150 }}>
         <button className={"s-v-fav" + (fav ? " active" : "")}
           style={{ position:"static", width:32, height:32 }}
           onClick={e => { e.preventDefault(); setFav(x => !x); }}
@@ -326,8 +334,8 @@ function VehicleCardList({ v }: { v: Vehicle }) {
         </button>
         <div style={{ textAlign:"right" }}>
           <p style={{ fontSize:10, color:"var(--s-text-3)", marginBottom:3 }}>a partir de</p>
-          <p style={{ fontSize:22, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-1px", lineHeight:1, marginBottom:8 }}>
-            <span style={{ fontSize:12, fontWeight:600, color:"var(--s-text-3)", verticalAlign:"super", marginRight:2 }}>R$</span>
+          <p style={{ fontSize:20, fontWeight:900, color:"var(--s-text-1)", letterSpacing:"-1px", lineHeight:1, marginBottom:8 }}>
+            <span style={{ fontSize:11, fontWeight:600, color:"var(--s-text-3)", verticalAlign:"super", marginRight:2 }}>R$</span>
             {fmtPrice(v.valor_anunciado ?? 0)}
           </p>
           <span className="s-btn s-btn-primary s-btn-sm">Ver oferta <ChevronRight size={13} strokeWidth={2.5} /></span>
@@ -598,9 +606,33 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
           .s-grid-3 { grid-template-columns: 1fr !important; }
         }
         .s-v-card { position: relative; }
+        .s-v-card-list {
+          position: relative;
+          display: grid !important;
+          grid-template-columns: 200px 1fr auto !important;
+        }
+        .s-v-card-list .s-card-list-img {
+          position: relative; overflow: hidden;
+          display: flex; align-items: center; justify-content: center;
+          min-height: 140px;
+        }
+        /* Tablet: reduz coluna da imagem */
+        @media (max-width: 780px) {
+          .s-v-card-list { grid-template-columns: 140px 1fr !important; }
+          .s-card-list-price { display: none !important; }
+        }
+        /* Mobile: stack vertical */
+        @media (max-width: 500px) {
+          .s-v-card-list {
+            grid-template-columns: 1fr !important;
+            grid-template-rows: 160px auto !important;
+          }
+          .s-v-card-list .s-card-list-img { min-height: 160px; height: 160px; }
+          .s-card-list-price { display: none !important; }
+        }
         .s-v-card-list:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
-        .s-v-card-list { position: relative; }
       `}</style>
+
     </>
   );
 }
