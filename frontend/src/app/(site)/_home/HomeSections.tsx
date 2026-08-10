@@ -28,7 +28,6 @@ function BrandLogoFallback({ marca, size = 44 }: { marca: string; size?: number 
   return <Image src={`/logos/${key}.png`} alt={marca} width={size} height={size} style={{ objectFit:"contain", width:size, height:size }} onError={() => setFailed(true)} />;
 }
 
-// ─── Brand SVG logos ──────────────────────────────────────────────────
 const BrandLogos: Record<string, React.FC<{ size?: number }>> = {
   BMW: ({ size = 40 }) => (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="48" stroke="#1C69D4" strokeWidth="4"/><circle cx="50" cy="50" r="36" fill="none" stroke="#1C69D4" strokeWidth="1.5"/><path d="M50 14 A36 36 0 0 1 86 50 L50 50 Z" fill="#1C69D4"/><path d="M50 86 A36 36 0 0 1 14 50 L50 50 Z" fill="#1C69D4"/><path d="M50 14 A36 36 0 0 0 14 50 L50 50 Z" fill="white"/><path d="M50 86 A36 36 0 0 0 86 50 L50 50 Z" fill="white"/></svg>
@@ -57,7 +56,56 @@ const BrandLogos: Record<string, React.FC<{ size?: number }>> = {
   Mitsubishi: ({ size = 40 }) => (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><polygon points="50,5 65,30 80,55 50,55 20,55 35,30" fill="#CC0000"/><polygon points="50,55 65,55 80,80 50,95 20,80 35,55" fill="#CC0000" opacity="0.6"/></svg>
   ),
+  Fiat: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><rect x="5" y="5" width="90" height="90" rx="18" fill="#9B1C1F"/><text x="50" y="66" textAnchor="middle" fontSize="30" fontWeight="900" fontFamily="Arial" fill="white" letterSpacing="2">FIAT</text></svg>
+  ),
+  Renault: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><rect x="5" y="5" width="90" height="90" rx="18" fill="#EFDF00"/><polygon points="50,15 70,35 60,50 80,65 50,85 20,65 40,50 30,35" fill="#000" opacity="0.85"/></svg>
+  ),
+  Nissan: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><rect x="5" y="5" width="90" height="90" rx="18" fill="#C3002F"/><text x="50" y="60" textAnchor="middle" fontSize="18" fontWeight="900" fontFamily="Arial" fill="white" letterSpacing="1">NISSAN</text><line x1="15" y1="68" x2="85" y2="68" stroke="white" strokeWidth="3"/></svg>
+  ),
+  Yamaha: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><rect x="5" y="5" width="90" height="90" rx="18" fill="#1A1A1A"/><text x="50" y="62" textAnchor="middle" fontSize="14" fontWeight="900" fontFamily="Arial" fill="#E60012" letterSpacing="1">YAMAHA</text></svg>
+  ),
+  Kawasaki: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><rect x="5" y="5" width="90" height="90" rx="18" fill="#3D9B1B"/><text x="50" y="58" textAnchor="middle" fontSize="11" fontWeight="900" fontFamily="Arial" fill="white" letterSpacing="0.5">KAWASAKI</text></svg>
+  ),
+  Suzuki: ({ size = 40 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"><rect x="5" y="5" width="90" height="90" rx="18" fill="#1A4699"/><text x="50" y="62" textAnchor="middle" fontSize="15" fontWeight="900" fontFamily="Arial" fill="white" letterSpacing="1">SUZUKI</text></svg>
+  ),
 };
+
+// BrandLogoFallback: usa PNG real da pasta /logos/, SVG inline como fallback
+function BrandLogoFallback({ marca, size = 44 }: { marca: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  const key = marca.toLowerCase().replace(/\s+/g, "");
+
+  if (!failed) {
+    // Tenta carregar o PNG real
+    return (
+      <Image
+        src={`/logos/${key}.png`}
+        alt={marca}
+        width={size}
+        height={size}
+        style={{ objectFit:"contain", width:size, height:size }}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  // Fallback: SVG inline se tiver, senão iniciais coloridas
+  const Logo = BrandLogos[marca];
+  if (Logo) return <Logo size={size} />;
+  const color = BRAND_COLORS[marca] ?? "#555";
+  return (
+    <div style={{ width:size, height:size, borderRadius:10, background:color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:size*0.3, fontWeight:900, color:"#fff", letterSpacing:-0.5 }}>
+      {marca.slice(0,2).toUpperCase()}
+    </div>
+  );
+}
+
 
 // Mock de fallback — usado quando banco estiver vazio
 const FEATURED_VEHICLES_FALLBACK: PublicVehicle[] = [];
@@ -368,8 +416,8 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
             {/* ── COLUNA DIREITA — Carousel ── */}
             <div className="s-hero-right" style={{ position:"relative", height:520 }}>
 
-              {/* Slides */}
-              {CAROUSEL.map((v, i) => {
+              {/* Slides — só mostra quando tem veículos em destaque */}
+              {CAROUSEL.length > 0 ? CAROUSEL.map((v, i) => {
                 const img = v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg";
                 return (
                   <div key={v.id} style={{ position:"absolute", inset:0, borderRadius:24, overflow:"hidden", opacity: i === activeSlide ? 1 : 0, transition:"opacity 800ms ease", pointerEvents: i === activeSlide ? "auto" : "none" }}>
@@ -378,7 +426,24 @@ export default function HomeSections({ featuredVehicles = [], stats }: HomeSecti
                     <div style={{ position:"absolute", inset:0, background:"linear-gradient(270deg, transparent 45%, rgba(14,15,17,0.92) 100%)" }} />
                   </div>
                 );
-              })}
+              }) : (
+                /* Empty state elegante — estoque vazio */
+                <div style={{ position:"absolute", inset:0, borderRadius:24, overflow:"hidden" }}>
+                  <Image src="/hero-carro.jpeg" alt="LMC Veículos" fill style={{ objectFit:"cover", objectPosition:"center", filter:"brightness(0.35) saturate(0.7)" }} priority />
+                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(244,121,32,0.12) 0%, transparent 60%)" }} />
+                  <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, padding:32 }}>
+                    <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(244,121,32,0.15)", border:"1.5px solid rgba(244,121,32,0.30)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:8 }}>
+                      <Car size={28} color="var(--s-orange)" strokeWidth={1.5} />
+                    </div>
+                    <p style={{ fontSize:11, fontWeight:700, letterSpacing:3, textTransform:"uppercase", color:"rgba(244,121,32,0.80)" }}>Novidades chegando</p>
+                    <p style={{ fontSize:22, fontWeight:900, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.3, textAlign:"center", maxWidth:260 }}>Novos veículos em breve no estoque</p>
+                    <p style={{ fontSize:13, color:"rgba(255,255,255,0.40)", textAlign:"center", lineHeight:1.6, maxWidth:220 }}>Cadastre-se para receber alertas das primeiras ofertas</p>
+                    <Link href="/contato" className="s-btn s-btn-primary s-btn-md" style={{ marginTop:8, fontSize:13 }}>
+                      Entrar em contato
+                    </Link>
+                  </div>
+                </div>
+              )}
 
               {/* Pill — Recém adicionados */}
               <div style={{ position:"absolute", top:18, left:18, zIndex:10, background:"rgba(14,15,17,0.55)", backdropFilter:"blur(12px)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:999, padding:"6px 14px", display:"flex", alignItems:"center", gap:8 }}>
