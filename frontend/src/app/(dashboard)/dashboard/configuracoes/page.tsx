@@ -2,548 +2,217 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 
-// �"?�"?�"? SVG Icons �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
-const IconPhone = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.28h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.91.35 1.85.58 2.81.71a2 2 0 0 1 1.72 2.02z"/>
-  </svg>
-);
-const IconMail = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-  </svg>
-);
-const IconWhatsApp = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
-  </svg>
-);
-const IconInstagram = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-  </svg>
-);
-const IconFacebook = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-  </svg>
-);
-const IconYouTube = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" stroke="none"/>
-  </svg>
-);
-const IconBuilding = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>
-  </svg>
-);
-const IconGlobe = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/>
-  </svg>
-);
-const IconSettings = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
-  </svg>
-);
-const IconCheck = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
-const IconMapPin = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
-  </svg>
-);
-const IconBarChart = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>
-  </svg>
-);
-const IconImage = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-  </svg>
-);
-const IconPower = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" x2="12" y1="2" y2="12"/>
-  </svg>
-);
+function IconPhone() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.44 2 2 0 0 1 3.56 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6 6l.88-.88a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16.92z"/></svg>); }
+function IconBuilding() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>); }
+function IconGlobe() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>); }
+function IconCog() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>); }
+function IconSave() { return (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>); }
+function IconMail() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>); }
+function IconPin() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>); }
+function IconClock() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>); }
+function IconIG() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>); }
+function IconFB() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>); }
+function IconYT() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.95C5.12 20 12 20 12 20s6.88 0 8.59-.47a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" stroke="none"/></svg>); }
+function IconWA() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>); }
 
-// �"?�"?�"? API �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 const API = (process.env.NEXT_PUBLIC_API_URL ?? "") + "/settings";
 
-async function fetchSettings(token: string) {
-  const res = await fetch(API, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error("Falha ao carregar configurações");
+async function loadSettings(token: string) {
+  const res = await fetch(API, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error("Falha ao carregar");
+  return res.json();
+}
+async function saveSettings(token: string, data: object) {
+  const res = await fetch(API, { method: "PUT", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(data) });
+  if (!res.ok) throw new Error("Falha ao salvar");
   return res.json();
 }
 
-async function saveSettings(token: string, data: Settings) {
-  const res = await fetch(API, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Falha ao salvar configurações");
-  return res.json();
-}
-
-// �"?�"?�"? Types �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
-interface Settings {
+interface FormState {
   whatsapp: string; telefone: string; email_contato: string;
   instagram: string; facebook: string; youtube: string;
-  nome_loja: string; slogan: string;
-  endereco: string; cidade: string; estado: string; cep: string; cnpj: string; horario: string;
-  hero_titulo: string; hero_subtitulo: string;
+  nome_loja: string; slogan: string; cnpj: string;
+  endereco: string; cidade: string; estado: string; cep: string; horario: string;
+  hero_titulo: string; hero_subtitulo: string; descricao_site: string;
   stat_clientes: number; stat_anos: number; stat_satisfacao: number;
-  max_fotos_veiculo: number; modo_manutencao: boolean;
-  updated_at: string | null;
+  modo_manutencao: boolean;
+}
+const EMPTY: FormState = {
+  whatsapp:"",telefone:"",email_contato:"",instagram:"",facebook:"",youtube:"",
+  nome_loja:"",slogan:"",cnpj:"",endereco:"",cidade:"",estado:"",cep:"",horario:"",
+  hero_titulo:"",hero_subtitulo:"",descricao_site:"",stat_clientes:0,stat_anos:0,stat_satisfacao:98,modo_manutencao:false,
+};
+
+const inp: React.CSSProperties = { width:"100%",padding:"10px 14px",background:"var(--surface-3)",border:"1px solid var(--border)",borderRadius:10,color:"var(--text-primary)",fontSize:13,outline:"none" };
+const lbl: React.CSSProperties = { display:"block",fontSize:11,fontWeight:600,textTransform:"uppercase" as const,letterSpacing:1,color:"var(--text-muted)",marginBottom:7 };
+
+function Inp({ val, set, ph, type="text" }: { val:string|number; set:(v:string)=>void; ph?:string; type?:string }) {
+  return <input type={type} value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={inp} />;
+}
+function NumInp({ val, set, ph }: { val:number; set:(v:number)=>void; ph?:string }) {
+  return <input type="number" value={val} onChange={e=>set(Number(e.target.value))} placeholder={ph} style={inp} />;
 }
 
-// �"?�"?�"? Componentes �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
-function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
+function Card({ title, icon, desc, children }: { title:string; icon:React.ReactNode; desc?:string; children:React.ReactNode }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 6 }}>
-        {icon && <span style={{ color: "var(--brand)", opacity: 0.7 }}>{icon}</span>}
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-function Input({ value, onChange, placeholder, type = "text", prefix }: {
-  value: string | number; onChange: (v: string) => void; placeholder?: string; type?: string; prefix?: string;
-}) {
-  return (
-    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-      {prefix && (
-        <span style={{
-          position: "absolute", left: 12, fontSize: 13, color: "var(--text-muted)",
-          fontFamily: "monospace", userSelect: "none", pointerEvents: "none"
-        }}>{prefix}</span>
-      )}
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          width: "100%",
-          height: 42,
-          paddingLeft: prefix ? 48 : 12,
-          paddingRight: 12,
-          background: "var(--surface)",
-          border: "1.5px solid var(--border)",
-          borderRadius: 10,
-          fontSize: 14,
-          color: "var(--text-primary)",
-          fontFamily: "inherit",
-          outline: "none",
-          transition: "border-color 150ms",
-        }}
-        onFocus={e => { e.target.style.borderColor = "var(--brand)"; }}
-        onBlur={e => { e.target.style.borderColor = "var(--border)"; }}
-      />
-    </div>
-  );
-}
-
-function NumberInput({ value, onChange, min = 0, max = 9999, suffix }: {
-  value: number; onChange: (v: number) => void; min?: number; max?: number; suffix?: string;
-}) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <input
-        type="number"
-        value={value}
-        min={min}
-        max={max}
-        onChange={e => onChange(Number(e.target.value))}
-        style={{
-          width: 100,
-          height: 42,
-          padding: "0 12px",
-          background: "var(--surface)",
-          border: "1.5px solid var(--border)",
-          borderRadius: 10,
-          fontSize: 15,
-          fontWeight: 700,
-          color: "var(--text-primary)",
-          fontFamily: "inherit",
-          outline: "none",
-          textAlign: "center",
-        }}
-        onFocus={e => { e.target.style.borderColor = "var(--brand)"; }}
-        onBlur={e => { e.target.style.borderColor = "var(--border)"; }}
-      />
-      {suffix && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{suffix}</span>}
-    </div>
-  );
-}
-
-function Toggle({ checked, onChange, label, description }: {
-  checked: boolean; onChange: (v: boolean) => void; label: string; description?: string;
-}) {
-  return (
-    <div style={{
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "16px 20px", borderRadius: 12,
-      background: checked ? "rgba(var(--primary-rgb), 0.06)" : "var(--surface)",
-      border: `1.5px solid ${checked ? "var(--brand)" : "var(--border)"}`,
-      cursor: "pointer", transition: "all 200ms",
-    }} onClick={() => onChange(!checked)}>
-      <div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{label}</p>
-        {description && <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{description}</p>}
-      </div>
-      <div style={{
-        width: 44, height: 24, borderRadius: 999,
-        background: checked ? "var(--brand)" : "var(--border)",
-        position: "relative", transition: "background 200ms", flexShrink: 0,
-      }}>
-        <div style={{
-          position: "absolute", top: 3, left: checked ? 23 : 3,
-          width: 18, height: 18, borderRadius: "50%", background: "#fff",
-          transition: "left 200ms", boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-        }} />
-      </div>
-    </div>
-  );
-}
-
-// �"?�"?�"? Section Wrapper �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
-function Section({ title, icon, children, description }: { title: string; icon: React.ReactNode; children: React.ReactNode; description?: string }) {
-  return (
-    <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px", marginBottom: 16 }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 24 }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-          background: "linear-gradient(135deg, rgba(244,121,32,0.18) 0%, rgba(244,121,32,0.06) 100%)",
-          border: "1px solid rgba(244,121,32,0.18)",
-          display: "flex", alignItems: "center", justifyContent: "center", color: "var(--brand)"
-        }}>
+    <div style={{ background:"var(--surface-2)",border:"1px solid var(--border)",borderRadius:16,overflow:"hidden",marginBottom:20 }}>
+      <div style={{ padding:"18px 22px 14px",borderBottom:"1px solid var(--border)",display:"flex",alignItems:"center",gap:14 }}>
+        <div style={{ width:40,height:40,borderRadius:12,flexShrink:0,background:"linear-gradient(135deg,#F5A623,#e8920e)",display:"flex",alignItems:"center",justifyContent:"center",color:"#000",boxShadow:"0 4px 14px rgba(245,166,35,0.30)" }}>
           {icon}
         </div>
         <div>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: description ? 3 : 0 }}>{title}</h3>
-          {description && <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>{description}</p>}
+          <p style={{ fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:2 }}>{title}</p>
+          {desc && <p style={{ fontSize:12,color:"var(--text-secondary)" }}>{desc}</p>}
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
-        {children}
-      </div>
+      <div style={{ padding:22 }}>{children}</div>
     </div>
   );
 }
 
-// �"?�"?�"? TABS �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 const TABS = [
-  { id: "contato",  label: "Contato & Redes",   icon: <IconPhone /> },
-  { id: "loja",     label: "Dados da Loja",      icon: <IconBuilding /> },
-  { id: "site",     label: "Site Público",       icon: <IconGlobe /> },
-  { id: "sistema",  label: "Sistema",            icon: <IconSettings /> },
+  { id:"contato", label:"Contato & Redes", icon:<IconPhone /> },
+  { id:"loja",    label:"Dados da Loja",   icon:<IconBuilding /> },
+  { id:"site",    label:"Site Publico",    icon:<IconGlobe /> },
+  { id:"sistema", label:"Sistema",         icon:<IconCog /> },
 ];
 
-// �"?�"?�"? Main Component �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 export default function ConfiguracoesPage() {
-  const [tab, setTab] = useState("contato");
-  const [form, setForm] = useState<Settings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [form,setForm] = useState<FormState>(EMPTY);
+  const [tab,setTab]   = useState("contato");
+  const [loading,setLoading] = useState(true);
+  const [saving,setSaving]   = useState(false);
+  const [saved,setSaved]     = useState(false);
+  const [error,setError]     = useState<string|null>(null);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "";
 
-  useEffect(() => {
-    fetchSettings(token)
-      .then(setForm)
-      .catch(() => setError("Não foi possível carregar as configurações."))
-      .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    try { setLoading(true); setError(null); const d = await loadSettings(token); setForm({...EMPTY,...d}); }
+    catch { setError("Nao foi possivel carregar as configuracoes."); }
+    finally { setLoading(false); }
   }, [token]);
 
-  const set = useCallback((key: keyof Settings, value: unknown) => {
-    setForm(prev => prev ? { ...prev, [key]: value } : prev);
-    setSaved(false);
-  }, []);
+  useEffect(()=>{ load(); },[load]);
+
+  const set = (k: keyof FormState, v: string|number|boolean) => setForm(p=>({...p,[k]:v}));
 
   const handleSave = async () => {
-    if (!form) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const updated = await saveSettings(token, form);
-      setForm(updated);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch {
-      setError("Erro ao salvar. Tente novamente.");
-    } finally {
-      setSaving(false);
-    }
+    try { setSaving(true); setError(null); await saveSettings(token,form); setSaved(true); setTimeout(()=>setSaved(false),3000); }
+    catch { setError("Erro ao salvar. Verifique e tente novamente."); }
+    finally { setSaving(false); }
   };
 
   if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-muted)", gap: 12, flexDirection: "column" }}>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" strokeWidth="2.5" style={{ animation: "spin 0.8s linear infinite" }}>
-        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-      </svg>
-      <span style={{ fontSize: 14 }}>Carregando configurações...</span>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); }}`}</style>
-    </div>
-  );
-
-  if (!form) return (
-    <div style={{ margin: 32, padding: "20px 24px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontSize: 14, display: "flex", alignItems: "center", gap: 10 }}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      {error ?? "Erro ao carregar configurações."}
+    <div style={{ display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:300,gap:14 }}>
+      <div style={{ width:32,height:32,borderRadius:"50%",border:"3px solid var(--brand-light)",borderTop:"3px solid var(--brand)",animation:"spin 0.8s linear infinite" }} />
+      <span style={{ fontSize:13,color:"var(--text-secondary)" }}>Carregando...</span>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
   return (
-    <div style={{ padding: "28px 32px", maxWidth: 1000, margin: "0 auto" }}>
+    <div style={{ maxWidth:840,margin:"0 auto",paddingBottom:40 }}>
 
-      {/* �"?�"? Header �"?�"? */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}>
+      {/* Header */}
+      <div style={{ display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:28,gap:16,flexWrap:"wrap" }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px", marginBottom: 4 }}>Configurações</h1>
-          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
-            {form.updated_at
-              ? `�sltima alteração: ${new Date(form.updated_at).toLocaleString("pt-BR")}`
-              : "Configure as informações da sua loja"}
-          </p>
+          <h1 style={{ fontSize:22,fontWeight:800,color:"var(--text-primary)",letterSpacing:"-0.4px",marginBottom:4 }}>Configuracoes</h1>
+          <p style={{ fontSize:13,color:"var(--text-secondary)" }}>Configure as informacoes da sua loja</p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            display: "flex", alignItems: "center", gap: 8,
-            height: 42, padding: "0 22px", borderRadius: 12,
-            background: saved
-              ? "linear-gradient(135deg, #22c55e, #16a34a)"
-              : "linear-gradient(135deg, var(--brand), #e07520)",
-            color: "#fff", border: "none", cursor: saving ? "not-allowed" : "pointer",
-            fontSize: 14, fontWeight: 700, fontFamily: "inherit",
-            boxShadow: saved ? "0 4px 16px rgba(34,197,94,0.3)" : "0 4px 16px rgba(244,121,32,0.3)",
-            transition: "all 200ms", opacity: saving ? 0.75 : 1,
-          }}
-        >
-          {saved ? <IconCheck /> : saving ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 0.8s linear infinite" }}>
-              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-            </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
-            </svg>
-          )}
-          {saved ? "Salvo com sucesso!" : saving ? "Salvando..." : "Salvar alterações"}
+        <button onClick={handleSave} disabled={saving} style={{ display:"flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:10,border:"none",background:saved?"linear-gradient(135deg,#22c55e,#16a34a)":"linear-gradient(135deg,#F5A623,#e8920e)",color:saved?"#fff":"#000",fontSize:13,fontWeight:700,cursor:saving?"not-allowed":"pointer",opacity:saving?0.7:1,transition:"all 200ms",boxShadow:saved?"0 4px 16px rgba(34,197,94,0.35)":"0 4px 16px rgba(245,166,35,0.30)" }}>
+          <IconSave />
+          {saving?"Salvando...":saved?"Salvo!":"Salvar alteracoes"}
         </button>
       </div>
 
-      {error && (
-        <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontSize: 13, display: "flex", alignItems: "center", gap: 10 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          {error}
-        </div>
-      )}
+      {error && <div style={{ padding:"12px 16px",background:"var(--error-light)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:10,marginBottom:20,fontSize:13,color:"#ef4444" }}>{error}</div>}
 
-      {/* �"?�"? Tab Nav �?" Pill Style �"?�"? */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 24, background: "var(--surface)", padding: 5, borderRadius: 14, width: "fit-content", border: "1px solid var(--border)" }}>
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            style={{
-              display: "flex", alignItems: "center", gap: 7,
-              padding: "8px 16px", borderRadius: 10,
-              background: tab === t.id ? "var(--surface-2)" : "transparent",
-              border: tab === t.id ? "1px solid var(--border)" : "1px solid transparent",
-              boxShadow: tab === t.id ? "0 2px 8px rgba(0,0,0,0.15)" : "none",
-              color: tab === t.id ? "var(--brand)" : "var(--text-muted)",
-              cursor: "pointer", fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
-              fontFamily: "inherit", transition: "all 150ms", whiteSpace: "nowrap",
-            }}
-          >
-            <span style={{ opacity: tab === t.id ? 1 : 0.6 }}>{t.icon}</span>
-            {t.label}
+      {/* Tabs */}
+      <div style={{ display:"flex",gap:6,marginBottom:28,background:"var(--surface-2)",border:"1px solid var(--border)",borderRadius:14,padding:6,flexWrap:"wrap" }}>
+        {TABS.map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,border:"none",cursor:"pointer",background:tab===t.id?"var(--surface-4)":"transparent",color:tab===t.id?"var(--text-primary)":"var(--text-secondary)",fontSize:13,fontWeight:tab===t.id?600:400,transition:"all 150ms",boxShadow:tab===t.id?"var(--shadow-sm)":"none" }}>
+            <span style={{ color:tab===t.id?"var(--brand)":"var(--text-muted)" }}>{t.icon}</span>{t.label}
           </button>
         ))}
       </div>
 
-      {/* �"?�"? TAB: Contato & Redes �"?�"? */}
-      {tab === "contato" && (
-        <>
-          <Section title="Contato" icon={<IconPhone />} description="Número de WhatsApp, telefone e e-mail que aparecem no site">
-            <Field label="WhatsApp" icon={<IconWhatsApp />}>
-              <Input value={form.whatsapp} onChange={v => set("whatsapp", v)} placeholder="5511999999999" prefix="+" />
-            </Field>
-            <Field label="Telefone fixo" icon={<IconPhone />}>
-              <Input value={form.telefone} onChange={v => set("telefone", v)} placeholder="(11) 3456-7890" />
-            </Field>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="E-mail de contato" icon={<IconMail />}>
-                <Input value={form.email_contato} onChange={v => set("email_contato", v)} placeholder="contato@lmcveiculos.com.br" type="email" />
-              </Field>
+      {/* CONTATO */}
+      {tab==="contato" && <>
+        <Card title="Contato" icon={<IconPhone />} desc="WhatsApp, telefone e e-mail exibidos no site">
+          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16 }}>
+            <div><label style={lbl}><IconWA /> WhatsApp</label><Inp val={form.whatsapp} set={v=>set("whatsapp",v)} ph="5511999999999" /></div>
+            <div><label style={lbl}><IconPhone /> Telefone fixo</label><Inp val={form.telefone} set={v=>set("telefone",v)} ph="(11) 3456-7890" /></div>
+          </div>
+          <div><label style={lbl}><IconMail /> E-mail de contato</label><Inp val={form.email_contato} set={v=>set("email_contato",v)} ph="contato@lmcveiculos.com.br" type="email" /></div>
+        </Card>
+        <Card title="Redes Sociais" icon={<IconIG />} desc="Links exibidos no rodape e pagina de contato">
+          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:16 }}>
+            <div><label style={lbl}><IconIG /> Instagram</label><Inp val={form.instagram} set={v=>set("instagram",v)} ph="https://instagram.com/sua" /></div>
+            <div><label style={lbl}><IconFB /> Facebook</label><Inp val={form.facebook} set={v=>set("facebook",v)} ph="https://facebook.com/sua" /></div>
+            <div><label style={lbl}><IconYT /> YouTube</label><Inp val={form.youtube} set={v=>set("youtube",v)} ph="https://youtube.com/@sua" /></div>
+          </div>
+        </Card>
+      </>}
+
+      {/* LOJA */}
+      {tab==="loja" && <>
+        <Card title="Identidade da Loja" icon={<IconBuilding />} desc="Nome, slogan e CNPJ">
+          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16 }}>
+            <div><label style={lbl}>Nome da loja</label><Inp val={form.nome_loja} set={v=>set("nome_loja",v)} ph="LMC Veiculos" /></div>
+            <div><label style={lbl}>CNPJ</label><Inp val={form.cnpj} set={v=>set("cnpj",v)} ph="00.000.000/0001-00" /></div>
+          </div>
+          <div><label style={lbl}>Slogan</label><Inp val={form.slogan} set={v=>set("slogan",v)} ph="Seu proximo veiculo esta aqui" /></div>
+        </Card>
+        <Card title="Endereco" icon={<IconPin />} desc="Endereco fisico exibido no site">
+          <div style={{ marginBottom:16 }}><label style={lbl}><IconPin /> Endereco completo</label><Inp val={form.endereco} set={v=>set("endereco",v)} ph="Rua das Flores, 123 - Bairro" /></div>
+          <div style={{ display:"grid",gridTemplateColumns:"1fr 80px 120px 120px",gap:16 }}>
+            <div><label style={lbl}>Cidade</label><Inp val={form.cidade} set={v=>set("cidade",v)} ph="Sao Paulo" /></div>
+            <div><label style={lbl}>UF</label><Inp val={form.estado} set={v=>set("estado",v)} ph="SP" /></div>
+            <div><label style={lbl}>CEP</label><Inp val={form.cep} set={v=>set("cep",v)} ph="00000-000" /></div>
+            <div><label style={lbl}><IconClock /> Horario</label><Inp val={form.horario} set={v=>set("horario",v)} ph="Seg-Sex: 8h-18h" /></div>
+          </div>
+        </Card>
+      </>}
+
+      {/* SITE */}
+      {tab==="site" && <>
+        <Card title="Hero do Site" icon={<IconGlobe />} desc="Titulo e subtitulo da secao principal do site publico">
+          <div style={{ display:"flex",flexDirection:"column",gap:16 }}>
+            <div><label style={lbl}>Titulo principal</label><Inp val={form.hero_titulo} set={v=>set("hero_titulo",v)} ph="Encontre o veiculo perfeito" /></div>
+            <div><label style={lbl}>Subtitulo</label><Inp val={form.hero_subtitulo} set={v=>set("hero_subtitulo",v)} ph="Carros e motos selecionados com qualidade" /></div>
+            <div><label style={lbl}>Descricao SEO</label><Inp val={form.descricao_site} set={v=>set("descricao_site",v)} ph="Concessionaria com os melhores veiculos..." /></div>
+          </div>
+        </Card>
+        <Card title="Estatisticas" icon={<IconCog />} desc="Numeros exibidos na pagina inicial">
+          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:16 }}>
+            <div><label style={lbl}>Clientes atendidos</label><NumInp val={form.stat_clientes} set={v=>set("stat_clientes",v)} ph="500" /></div>
+            <div><label style={lbl}>Anos de mercado</label><NumInp val={form.stat_anos} set={v=>set("stat_anos",v)} ph="10" /></div>
+            <div><label style={lbl}>Satisfacao (%)</label><NumInp val={form.stat_satisfacao} set={v=>set("stat_satisfacao",v)} ph="98" /></div>
+          </div>
+        </Card>
+      </>}
+
+      {/* SISTEMA */}
+      {tab==="sistema" && (
+        <Card title="Modo Manutencao" icon={<IconCog />} desc="Quando ativo, o site publico exibe uma pagina de aviso">
+          <div style={{ display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16 }}>
+            <div>
+              <p style={{ fontSize:14,fontWeight:600,color:"var(--text-primary)",marginBottom:3 }}>Modo manutencao</p>
+              <p style={{ fontSize:12,color:"var(--text-secondary)" }}>Ativa a pagina de manutencao no site. O dashboard continua funcionando.</p>
             </div>
-          </Section>
-
-          <Section title="Redes Sociais" icon={<IconInstagram />} description="Links das redes sociais exibidos no rodapé e página de contato">
-            <Field label="Instagram" icon={<IconInstagram />}>
-              <Input value={form.instagram} onChange={v => set("instagram", v)} placeholder="https://instagram.com/suaempresa" />
-            </Field>
-            <Field label="Facebook" icon={<IconFacebook />}>
-              <Input value={form.facebook} onChange={v => set("facebook", v)} placeholder="https://facebook.com/suaempresa" />
-            </Field>
-            <Field label="YouTube" icon={<IconYouTube />}>
-              <Input value={form.youtube} onChange={v => set("youtube", v)} placeholder="https://youtube.com/@suaempresa" />
-            </Field>
-          </Section>
-
-          {form.whatsapp && (
-            <div style={{ padding: "14px 18px", borderRadius: 12, background: "rgba(37,211,102,0.06)", border: "1px solid rgba(37,211,102,0.20)", display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ color: "#25d366", flexShrink: 0 }}><IconWhatsApp /></span>
-              <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-                Link gerado:{" "}
-                <a href={`https://wa.me/${form.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
-                  style={{ color: "#25d366", fontWeight: 700, textDecoration: "none" }}>
-                  wa.me/{form.whatsapp.replace(/\D/g, "")}
-                </a>
-              </span>
+            <button type="button" onClick={()=>set("modo_manutencao",!form.modo_manutencao)} style={{ flexShrink:0,width:44,height:24,borderRadius:12,border:"none",cursor:"pointer",background:form.modo_manutencao?"var(--brand)":"var(--surface-4)",position:"relative",transition:"background 200ms" }}>
+              <span style={{ position:"absolute",top:3,left:form.modo_manutencao?23:3,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 200ms",boxShadow:"0 1px 4px rgba(0,0,0,0.4)" }} />
+            </button>
+          </div>
+          {form.modo_manutencao && (
+            <div style={{ marginTop:16,padding:"12px 16px",background:"var(--warning-light)",border:"1px solid rgba(245,158,11,0.25)",borderRadius:10,fontSize:13,color:"#f59e0b" }}>
+              O site publico esta em modo manutencao. Visitantes veem uma pagina de aviso.
             </div>
           )}
-        </>
+        </Card>
       )}
 
-      {/* �"?�"? TAB: Dados da Loja �"?�"? */}
-      {tab === "loja" && (
-        <>
-          <Section title="Identidade" icon={<IconBuilding />} description="Nome e identidade da concessionária">
-            <Field label="Nome da loja">
-              <Input value={form.nome_loja} onChange={v => set("nome_loja", v)} placeholder="LMC Veículos" />
-            </Field>
-            <Field label="Slogan">
-              <Input value={form.slogan} onChange={v => set("slogan", v)} placeholder="Seu próximo veículo está aqui" />
-            </Field>
-            <Field label="CNPJ">
-              <Input value={form.cnpj} onChange={v => set("cnpj", v)} placeholder="00.000.000/0001-00" />
-            </Field>
-            <Field label="Horário de funcionamento">
-              <Input value={form.horario} onChange={v => set("horario", v)} placeholder="Seg�?"Sex: 8h�?"18h | Sáb: 8h�?"13h" />
-            </Field>
-          </Section>
-
-          <Section title="Endereço" icon={<IconMapPin />} description="Localização física da loja">
-            <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="Endereço completo">
-                <Input value={form.endereco} onChange={v => set("endereco", v)} placeholder="Rua Exemplo, 123" />
-              </Field>
-            </div>
-            <Field label="Cidade">
-              <Input value={form.cidade} onChange={v => set("cidade", v)} placeholder="São Paulo" />
-            </Field>
-            <Field label="Estado (UF)">
-              <Input value={form.estado} onChange={v => set("estado", v)} placeholder="SP" />
-            </Field>
-            <Field label="CEP">
-              <Input value={form.cep} onChange={v => set("cep", v)} placeholder="00000-000" />
-            </Field>
-          </Section>
-        </>
-      )}
-
-      {/* �"?�"? TAB: Site Público �"?�"? */}
-      {tab === "site" && (
-        <>
-          <Section title="Texto do Hero" icon={<IconImage />} description="Título e subtítulo exibidos na página inicial do site">
-            <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="Título principal">
-                <Input value={form.hero_titulo} onChange={v => set("hero_titulo", v)} placeholder="Encontre seu próximo veículo" />
-              </Field>
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <Field label="Subtítulo">
-                <Input value={form.hero_subtitulo} onChange={v => set("hero_subtitulo", v)} placeholder="Carros e motos selecionados com qualidade" />
-              </Field>
-            </div>
-          </Section>
-
-          <Section title="Estatísticas" icon={<IconBarChart />} description="Números exibidos no hero do site. Se zerados, a seção fica oculta.">
-            <Field label="Clientes satisfeitos">
-              <NumberInput value={form.stat_clientes} onChange={v => set("stat_clientes", v)} suffix="clientes" />
-            </Field>
-            <Field label="Anos de experiência">
-              <NumberInput value={form.stat_anos} onChange={v => set("stat_anos", v)} suffix="anos" />
-            </Field>
-            <Field label="Taxa de satisfação">
-              <NumberInput value={form.stat_satisfacao} onChange={v => set("stat_satisfacao", v)} min={0} max={100} suffix="%" />
-            </Field>
-          </Section>
-        </>
-      )}
-
-      {/* �"?�"? TAB: Sistema �"?�"? */}
-      {tab === "sistema" && (
-        <>
-          <Section title="Fotos de Veículos" icon={<IconImage />} description="Limite de fotos por veículo no cadastro">
-            <Field label="Máximo de fotos por veículo">
-              <NumberInput value={form.max_fotos_veiculo} onChange={v => set("max_fotos_veiculo", v)} min={1} max={50} suffix="fotos" />
-            </Field>
-          </Section>
-
-          <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 20 }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                background: form.modo_manutencao
-                  ? "linear-gradient(135deg, rgba(239,68,68,0.18) 0%, rgba(239,68,68,0.06) 100%)"
-                  : "linear-gradient(135deg, rgba(244,121,32,0.18) 0%, rgba(244,121,32,0.06) 100%)",
-                border: `1px solid ${form.modo_manutencao ? "rgba(239,68,68,0.25)" : "rgba(244,121,32,0.18)"}`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: form.modo_manutencao ? "#ef4444" : "var(--brand)"
-              }}>
-                <IconPower />
-              </div>
-              <div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>Modo Manutenção</h3>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>O site público exibirá uma página de aviso. O painel continua funcionando.</p>
-              </div>
-            </div>
-
-            <Toggle
-              checked={form.modo_manutencao}
-              onChange={v => set("modo_manutencao", v)}
-              label="Ativar modo manutenção"
-              description="Quando ativado, visitantes verão uma página 'Em breve' ao acessar o site."
-            />
-
-            {form.modo_manutencao && (
-              <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.20)", fontSize: 13, color: "#ef4444", fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Site público em modo manutenção ativo
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        :root { --primary-rgb: 244, 121, 32; }
-      `}</style>
     </div>
   );
 }
