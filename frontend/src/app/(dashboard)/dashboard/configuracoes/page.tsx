@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 
-// ─── SVG Icons ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const IconPhone = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.28h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.91.35 1.85.58 2.81.71a2 2 0 0 1 1.72 2.02z"/>
@@ -74,7 +74,7 @@ const IconPower = () => (
   </svg>
 );
 
-// ─── API ──────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const API = (process.env.NEXT_PUBLIC_API_URL ?? "") + "/settings";
 
 async function fetchSettings(token: string) {
@@ -82,7 +82,7 @@ async function fetchSettings(token: string) {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Falha ao carregar configurações");
+  if (!res.ok) throw new Error("Falha ao carregar configuraÃ§Ãµes");
   return res.json();
 }
 
@@ -95,11 +95,11 @@ async function saveSettings(token: string, data: Settings) {
     },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Falha ao salvar configurações");
+  if (!res.ok) throw new Error("Falha ao salvar configuraÃ§Ãµes");
   return res.json();
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface Settings {
   whatsapp: string; telefone: string; email_contato: string;
   instagram: string; facebook: string; youtube: string;
@@ -111,7 +111,7 @@ interface Settings {
   updated_at: string | null;
 }
 
-// ─── Componentes ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Componentes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -224,32 +224,40 @@ function Toggle({ checked, onChange, label, description }: {
   );
 }
 
-// ─── Section Wrapper ─────────────────────────────────────────────────────────
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+// â”€â”€â”€ Section Wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function Section({ title, icon, children, description }: { title: string; icon: React.ReactNode; children: React.ReactNode; description?: string }) {
   return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid var(--border)" }}>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(var(--primary-rgb), 0.10)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+    <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 24 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+          background: "linear-gradient(135deg, rgba(244,121,32,0.18) 0%, rgba(244,121,32,0.06) 100%)",
+          border: "1px solid rgba(244,121,32,0.18)",
+          display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)"
+        }}>
           {icon}
         </div>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-1)" }}>{title}</h3>
+        <div>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-1)", marginBottom: description ? 3 : 0 }}>{title}</h3>
+          {description && <p style={{ fontSize: 12, color: "var(--text-3)", lineHeight: 1.5 }}>{description}</p>}
+        </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
         {children}
       </div>
     </div>
   );
 }
 
-// ─── TABS ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TABS = [
   { id: "contato",  label: "Contato & Redes",   icon: <IconPhone /> },
   { id: "loja",     label: "Dados da Loja",      icon: <IconBuilding /> },
-  { id: "site",     label: "Site Público",       icon: <IconGlobe /> },
+  { id: "site",     label: "Site PÃºblico",       icon: <IconGlobe /> },
   { id: "sistema",  label: "Sistema",            icon: <IconSettings /> },
 ];
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ConfiguracoesPage() {
   const [tab, setTab] = useState("contato");
   const [form, setForm] = useState<Settings | null>(null);
@@ -263,7 +271,7 @@ export default function ConfiguracoesPage() {
   useEffect(() => {
     fetchSettings(token)
       .then(setForm)
-      .catch(() => setError("Não foi possível carregar as configurações."))
+      .catch(() => setError("NÃ£o foi possÃ­vel carregar as configuraÃ§Ãµes."))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -289,29 +297,33 @@ export default function ConfiguracoesPage() {
   };
 
   if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", gap: 12 }}>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", gap: 12, flexDirection: "column" }}>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" style={{ animation: "spin 0.8s linear infinite" }}>
         <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
       </svg>
-      Carregando configurações...
+      <span style={{ fontSize: 14 }}>Carregando configuraÃ§Ãµes...</span>
       <style>{`@keyframes spin { to { transform: rotate(360deg); }}`}</style>
     </div>
   );
 
   if (!form) return (
-    <div style={{ padding: 32, color: "var(--danger, #ef4444)" }}>{error ?? "Erro ao carregar."}</div>
+    <div style={{ margin: 32, padding: "20px 24px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontSize: 14, display: "flex", alignItems: "center", gap: 10 }}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {error ?? "Erro ao carregar configuraÃ§Ãµes."}
+    </div>
   );
 
   return (
-    <div style={{ padding: "24px 32px", maxWidth: 980, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
+    <div style={{ padding: "28px 32px", maxWidth: 1000, margin: "0 auto" }}>
+
+      {/* â”€â”€ Header â”€â”€ */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-1)", letterSpacing: "-0.4px" }}>Configurações</h1>
-          <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 4 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-1)", letterSpacing: "-0.5px", marginBottom: 4 }}>ConfiguraÃ§Ãµes</h1>
+          <p style={{ fontSize: 13, color: "var(--text-3)" }}>
             {form.updated_at
-              ? `Última alteração: ${new Date(form.updated_at).toLocaleString("pt-BR")}`
-              : "Preencha as informações da loja"}
+              ? `Ãšltima alteraÃ§Ã£o: ${new Date(form.updated_at).toLocaleString("pt-BR")}`
+              : "Configure as informaÃ§Ãµes da sua loja"}
           </p>
         </div>
         <button
@@ -319,15 +331,18 @@ export default function ConfiguracoesPage() {
           disabled={saving}
           style={{
             display: "flex", alignItems: "center", gap: 8,
-            height: 40, padding: "0 20px", borderRadius: 10,
-            background: saved ? "#22c55e" : "var(--primary)",
+            height: 42, padding: "0 22px", borderRadius: 12,
+            background: saved
+              ? "linear-gradient(135deg, #22c55e, #16a34a)"
+              : "linear-gradient(135deg, var(--primary), #e07520)",
             color: "#fff", border: "none", cursor: saving ? "not-allowed" : "pointer",
             fontSize: 14, fontWeight: 700, fontFamily: "inherit",
-            transition: "background 200ms", opacity: saving ? 0.7 : 1,
+            boxShadow: saved ? "0 4px 16px rgba(34,197,94,0.3)" : "0 4px 16px rgba(244,121,32,0.3)",
+            transition: "all 200ms", opacity: saving ? 0.75 : 1,
           }}
         >
           {saved ? <IconCheck /> : saving ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 0.8s linear infinite" }}>
               <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
             </svg>
           ) : (
@@ -335,186 +350,198 @@ export default function ConfiguracoesPage() {
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
             </svg>
           )}
-          {saved ? "Salvo!" : saving ? "Salvando..." : "Salvar alterações"}
+          {saved ? "Salvo com sucesso!" : saving ? "Salvando..." : "Salvar alteraÃ§Ãµes"}
         </button>
       </div>
 
       {error && (
-        <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontSize: 13 }}>
+        <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontSize: 13, display: "flex", alignItems: "center", gap: 10 }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           {error}
         </div>
       )}
 
-      {/* Tab Nav */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 28, borderBottom: "1px solid var(--border)", paddingBottom: 0 }}>
+      {/* â”€â”€ Tab Nav â€” Pill Style â”€â”€ */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 24, background: "var(--surface)", padding: 5, borderRadius: 14, width: "fit-content", border: "1px solid var(--border)" }}>
         {TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "10px 16px", borderRadius: "10px 10px 0 0",
+              display: "flex", alignItems: "center", gap: 7,
+              padding: "8px 16px", borderRadius: 10,
               background: tab === t.id ? "var(--card)" : "transparent",
-              border: "none",
-              borderBottom: tab === t.id ? "2px solid var(--primary)" : "2px solid transparent",
+              border: tab === t.id ? "1px solid var(--border)" : "1px solid transparent",
+              boxShadow: tab === t.id ? "0 2px 8px rgba(0,0,0,0.15)" : "none",
               color: tab === t.id ? "var(--primary)" : "var(--text-3)",
-              cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "inherit",
-              transition: "all 150ms",
+              cursor: "pointer", fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
+              fontFamily: "inherit", transition: "all 150ms", whiteSpace: "nowrap",
             }}
           >
-            {t.icon}
-            <span style={{ whiteSpace: "nowrap" }}>{t.label}</span>
+            <span style={{ opacity: tab === t.id ? 1 : 0.6 }}>{t.icon}</span>
+            {t.label}
           </button>
         ))}
       </div>
 
-      {/* Content */}
-      <div style={{ background: "var(--card)", borderRadius: 16, padding: "28px 24px", border: "1px solid var(--border)" }}>
-
-        {/* ── TAB: Contato & Redes ── */}
-        {tab === "contato" && (
-          <>
-            <Section title="Contato" icon={<IconPhone />}>
-              <Field label="WhatsApp" icon={<IconWhatsApp />}>
-                <Input value={form.whatsapp} onChange={v => set("whatsapp", v)} placeholder="5511999999999" prefix="+" />
-              </Field>
-              <Field label="Telefone fixo" icon={<IconPhone />}>
-                <Input value={form.telefone} onChange={v => set("telefone", v)} placeholder="(11) 3456-7890" />
-              </Field>
+      {/* â”€â”€ TAB: Contato & Redes â”€â”€ */}
+      {tab === "contato" && (
+        <>
+          <Section title="Contato" icon={<IconPhone />} description="NÃºmero de WhatsApp, telefone e e-mail que aparecem no site">
+            <Field label="WhatsApp" icon={<IconWhatsApp />}>
+              <Input value={form.whatsapp} onChange={v => set("whatsapp", v)} placeholder="5511999999999" prefix="+" />
+            </Field>
+            <Field label="Telefone fixo" icon={<IconPhone />}>
+              <Input value={form.telefone} onChange={v => set("telefone", v)} placeholder="(11) 3456-7890" />
+            </Field>
+            <div style={{ gridColumn: "1 / -1" }}>
               <Field label="E-mail de contato" icon={<IconMail />}>
                 <Input value={form.email_contato} onChange={v => set("email_contato", v)} placeholder="contato@lmcveiculos.com.br" type="email" />
               </Field>
-            </Section>
+            </div>
+          </Section>
 
-            <Section title="Redes Sociais" icon={<IconInstagram />}>
-              <Field label="Instagram" icon={<IconInstagram />}>
-                <Input value={form.instagram} onChange={v => set("instagram", v)} placeholder="https://instagram.com/suaempresa" />
-              </Field>
-              <Field label="Facebook" icon={<IconFacebook />}>
-                <Input value={form.facebook} onChange={v => set("facebook", v)} placeholder="https://facebook.com/suaempresa" />
-              </Field>
-              <Field label="YouTube" icon={<IconYouTube />}>
-                <Input value={form.youtube} onChange={v => set("youtube", v)} placeholder="https://youtube.com/@suaempresa" />
-              </Field>
-            </Section>
+          <Section title="Redes Sociais" icon={<IconInstagram />} description="Links das redes sociais exibidos no rodapÃ© e pÃ¡gina de contato">
+            <Field label="Instagram" icon={<IconInstagram />}>
+              <Input value={form.instagram} onChange={v => set("instagram", v)} placeholder="https://instagram.com/suaempresa" />
+            </Field>
+            <Field label="Facebook" icon={<IconFacebook />}>
+              <Input value={form.facebook} onChange={v => set("facebook", v)} placeholder="https://facebook.com/suaempresa" />
+            </Field>
+            <Field label="YouTube" icon={<IconYouTube />}>
+              <Input value={form.youtube} onChange={v => set("youtube", v)} placeholder="https://youtube.com/@suaempresa" />
+            </Field>
+          </Section>
 
-            {form.whatsapp && (
-              <div style={{ marginTop: 8, padding: "14px 16px", borderRadius: 12, background: "rgba(37,211,102,0.06)", border: "1px solid rgba(37,211,102,0.20)", display: "flex", alignItems: "center", gap: 10 }}>
-                <IconWhatsApp />
-                <div style={{ fontSize: 13, color: "var(--text-2)" }}>
-                  Preview do link:{" "}
-                  <a href={`https://wa.me/${form.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
-                    style={{ color: "#25d366", fontWeight: 600, textDecoration: "none" }}>
-                    wa.me/{form.whatsapp.replace(/\D/g, "")}
-                  </a>
-                </div>
+          {form.whatsapp && (
+            <div style={{ padding: "14px 18px", borderRadius: 12, background: "rgba(37,211,102,0.06)", border: "1px solid rgba(37,211,102,0.20)", display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ color: "#25d366", flexShrink: 0 }}><IconWhatsApp /></span>
+              <span style={{ fontSize: 13, color: "var(--text-2)" }}>
+                Link gerado:{" "}
+                <a href={`https://wa.me/${form.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
+                  style={{ color: "#25d366", fontWeight: 700, textDecoration: "none" }}>
+                  wa.me/{form.whatsapp.replace(/\D/g, "")}
+                </a>
+              </span>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* â”€â”€ TAB: Dados da Loja â”€â”€ */}
+      {tab === "loja" && (
+        <>
+          <Section title="Identidade" icon={<IconBuilding />} description="Nome e identidade da concessionÃ¡ria">
+            <Field label="Nome da loja">
+              <Input value={form.nome_loja} onChange={v => set("nome_loja", v)} placeholder="LMC VeÃ­culos" />
+            </Field>
+            <Field label="Slogan">
+              <Input value={form.slogan} onChange={v => set("slogan", v)} placeholder="Seu prÃ³ximo veÃ­culo estÃ¡ aqui" />
+            </Field>
+            <Field label="CNPJ">
+              <Input value={form.cnpj} onChange={v => set("cnpj", v)} placeholder="00.000.000/0001-00" />
+            </Field>
+            <Field label="HorÃ¡rio de funcionamento">
+              <Input value={form.horario} onChange={v => set("horario", v)} placeholder="Segâ€“Sex: 8hâ€“18h | SÃ¡b: 8hâ€“13h" />
+            </Field>
+          </Section>
+
+          <Section title="EndereÃ§o" icon={<IconMapPin />} description="LocalizaÃ§Ã£o fÃ­sica da loja">
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Field label="EndereÃ§o completo">
+                <Input value={form.endereco} onChange={v => set("endereco", v)} placeholder="Rua Exemplo, 123" />
+              </Field>
+            </div>
+            <Field label="Cidade">
+              <Input value={form.cidade} onChange={v => set("cidade", v)} placeholder="SÃ£o Paulo" />
+            </Field>
+            <Field label="Estado (UF)">
+              <Input value={form.estado} onChange={v => set("estado", v)} placeholder="SP" />
+            </Field>
+            <Field label="CEP">
+              <Input value={form.cep} onChange={v => set("cep", v)} placeholder="00000-000" />
+            </Field>
+          </Section>
+        </>
+      )}
+
+      {/* â”€â”€ TAB: Site PÃºblico â”€â”€ */}
+      {tab === "site" && (
+        <>
+          <Section title="Texto do Hero" icon={<IconImage />} description="TÃ­tulo e subtÃ­tulo exibidos na pÃ¡gina inicial do site">
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Field label="TÃ­tulo principal">
+                <Input value={form.hero_titulo} onChange={v => set("hero_titulo", v)} placeholder="Encontre seu prÃ³ximo veÃ­culo" />
+              </Field>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Field label="SubtÃ­tulo">
+                <Input value={form.hero_subtitulo} onChange={v => set("hero_subtitulo", v)} placeholder="Carros e motos selecionados com qualidade" />
+              </Field>
+            </div>
+          </Section>
+
+          <Section title="EstatÃ­sticas" icon={<IconBarChart />} description="NÃºmeros exibidos no hero do site. Se zerados, a seÃ§Ã£o fica oculta.">
+            <Field label="Clientes satisfeitos">
+              <NumberInput value={form.stat_clientes} onChange={v => set("stat_clientes", v)} suffix="clientes" />
+            </Field>
+            <Field label="Anos de experiÃªncia">
+              <NumberInput value={form.stat_anos} onChange={v => set("stat_anos", v)} suffix="anos" />
+            </Field>
+            <Field label="Taxa de satisfaÃ§Ã£o">
+              <NumberInput value={form.stat_satisfacao} onChange={v => set("stat_satisfacao", v)} min={0} max={100} suffix="%" />
+            </Field>
+          </Section>
+        </>
+      )}
+
+      {/* â”€â”€ TAB: Sistema â”€â”€ */}
+      {tab === "sistema" && (
+        <>
+          <Section title="Fotos de VeÃ­culos" icon={<IconImage />} description="Limite de fotos por veÃ­culo no cadastro">
+            <Field label="MÃ¡ximo de fotos por veÃ­culo">
+              <NumberInput value={form.max_fotos_veiculo} onChange={v => set("max_fotos_veiculo", v)} min={1} max={50} suffix="fotos" />
+            </Field>
+          </Section>
+
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 20 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: form.modo_manutencao
+                  ? "linear-gradient(135deg, rgba(239,68,68,0.18) 0%, rgba(239,68,68,0.06) 100%)"
+                  : "linear-gradient(135deg, rgba(244,121,32,0.18) 0%, rgba(244,121,32,0.06) 100%)",
+                border: `1px solid ${form.modo_manutencao ? "rgba(239,68,68,0.25)" : "rgba(244,121,32,0.18)"}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: form.modo_manutencao ? "#ef4444" : "var(--primary)"
+              }}>
+                <IconPower />
+              </div>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-1)", marginBottom: 3 }}>Modo ManutenÃ§Ã£o</h3>
+                <p style={{ fontSize: 12, color: "var(--text-3)", lineHeight: 1.5 }}>O site pÃºblico exibirÃ¡ uma pÃ¡gina de aviso. O painel continua funcionando.</p>
+              </div>
+            </div>
+
+            <Toggle
+              checked={form.modo_manutencao}
+              onChange={v => set("modo_manutencao", v)}
+              label="Ativar modo manutenÃ§Ã£o"
+              description="Quando ativado, visitantes verÃ£o uma pÃ¡gina 'Em breve' ao acessar o site."
+            />
+
+            {form.modo_manutencao && (
+              <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.20)", fontSize: 13, color: "#ef4444", fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Site pÃºblico em modo manutenÃ§Ã£o ativo
               </div>
             )}
-          </>
-        )}
-
-        {/* ── TAB: Dados da Loja ── */}
-        {tab === "loja" && (
-          <>
-            <Section title="Identidade" icon={<IconBuilding />}>
-              <Field label="Nome da loja">
-                <Input value={form.nome_loja} onChange={v => set("nome_loja", v)} placeholder="LMC Veículos" />
-              </Field>
-              <Field label="Slogan">
-                <Input value={form.slogan} onChange={v => set("slogan", v)} placeholder="Seu próximo veículo está aqui" />
-              </Field>
-              <Field label="CNPJ">
-                <Input value={form.cnpj} onChange={v => set("cnpj", v)} placeholder="00.000.000/0001-00" />
-              </Field>
-              <Field label="Horário de funcionamento">
-                <Input value={form.horario} onChange={v => set("horario", v)} placeholder="Seg–Sex: 8h–18h | Sáb: 8h–13h" />
-              </Field>
-            </Section>
-
-            <Section title="Endereço" icon={<IconMapPin />}>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <Field label="Endereço completo">
-                  <Input value={form.endereco} onChange={v => set("endereco", v)} placeholder="Rua Exemplo, 123" />
-                </Field>
-              </div>
-              <Field label="Cidade">
-                <Input value={form.cidade} onChange={v => set("cidade", v)} placeholder="São Paulo" />
-              </Field>
-              <Field label="Estado">
-                <Input value={form.estado} onChange={v => set("estado", v)} placeholder="SP" />
-              </Field>
-              <Field label="CEP">
-                <Input value={form.cep} onChange={v => set("cep", v)} placeholder="00000-000" />
-              </Field>
-            </Section>
-          </>
-        )}
-
-        {/* ── TAB: Site Público ── */}
-        {tab === "site" && (
-          <>
-            <Section title="Texto do Hero" icon={<IconImage />}>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <Field label="Título principal">
-                  <Input value={form.hero_titulo} onChange={v => set("hero_titulo", v)} placeholder="Encontre seu próximo veículo" />
-                </Field>
-              </div>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <Field label="Subtítulo">
-                  <Input value={form.hero_subtitulo} onChange={v => set("hero_subtitulo", v)} placeholder="Carros e motos selecionados com qualidade" />
-                </Field>
-              </div>
-            </Section>
-
-            <Section title="Estatísticas da Homepage" icon={<IconBarChart />}>
-              <Field label="Clientes satisfeitos">
-                <NumberInput value={form.stat_clientes} onChange={v => set("stat_clientes", v)} suffix="clientes" />
-              </Field>
-              <Field label="Anos de experiência">
-                <NumberInput value={form.stat_anos} onChange={v => set("stat_anos", v)} suffix="anos" />
-              </Field>
-              <Field label="Satisfação (%)">
-                <NumberInput value={form.stat_satisfacao} onChange={v => set("stat_satisfacao", v)} min={0} max={100} suffix="%" />
-              </Field>
-            </Section>
-
-            <div style={{ marginTop: 4, padding: "12px 16px", borderRadius: 10, background: "rgba(var(--primary-rgb), 0.06)", border: "1px solid rgba(var(--primary-rgb), 0.15)", fontSize: 13, color: "var(--text-3)" }}>
-              As estatísticas aparecem no site público. Se a loja ainda não abriu, deixe os valores em <strong>0</strong> — a seção não aparecerá para os visitantes.
-            </div>
-          </>
-        )}
-
-        {/* ── TAB: Sistema ── */}
-        {tab === "sistema" && (
-          <>
-            <Section title="Fotos de Veículos" icon={<IconImage />}>
-              <Field label="Máximo de fotos por veículo">
-                <NumberInput value={form.max_fotos_veiculo} onChange={v => set("max_fotos_veiculo", v)} min={1} max={50} suffix="fotos" />
-              </Field>
-            </Section>
-
-            <div style={{ borderTop: "1px solid var(--border)", paddingTop: 24, marginTop: 8 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-1)", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ color: "var(--primary)" }}><IconPower /></span>
-                Modo Manutenção
-              </h3>
-              <Toggle
-                checked={form.modo_manutencao}
-                onChange={v => set("modo_manutencao", v)}
-                label="Ativar modo manutenção"
-                description="Quando ativado, o site público exibe uma página 'Em breve' para os visitantes. O painel continua funcionando normalmente."
-              />
-              {form.modo_manutencao && (
-                <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.20)", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
-                  Site público em modo manutenção — visitantes verão uma página de aviso.
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
 
       <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
         :root { --primary-rgb: 244, 121, 32; }
       `}</style>
     </div>
