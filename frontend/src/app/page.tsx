@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 
-// Em produção: / vai ser servido pelo domínio do site público (subdomínio)
-// Em desenvolvimento local: redireciona para /home (dentro do grupo (site))
+// Fallback — o middleware.ts já cuida da raiz "/" por domínio.
+// Este redirect só executa se o middleware não estiver rodando (ex: build local sem domínio configurado).
 export default function RootPage() {
   redirect("/home");
 }
-
