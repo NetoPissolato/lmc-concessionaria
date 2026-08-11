@@ -243,53 +243,123 @@ export default async function SobrePage() {
       </section>
 
       {/* ===========================================
-          TEAM
+          TEAM — premium dark cards
       =========================================== */}
       {team.length > 0 && (
-      <section className="s-section" style={{ background:"var(--s-bg)" }}>
-        <div className="s-container">
-          <div style={{ textAlign:"center", marginBottom:52 }}>
-            <span style={{ display:"inline-block", background:"var(--s-orange-muted)", color:"var(--s-orange)", fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, padding:"5px 14px", borderRadius:999, marginBottom:14 }}>
+      <section style={{ background:"var(--s-dark)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"80px 0", position:"relative", overflow:"hidden" }}>
+        {/* Decorative glow */}
+        <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:700, height:400, borderRadius:"50%",
+          background:"radial-gradient(ellipse, rgba(244,121,32,0.07) 0%, transparent 70%)", pointerEvents:"none" }} />
+
+        <div className="s-container" style={{ position:"relative", zIndex:1 }}>
+          {/* Header */}
+          <div style={{ textAlign:"center", marginBottom:56 }}>
+            <span style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(244,121,32,0.10)", border:"1px solid rgba(244,121,32,0.22)", color:"var(--s-orange)", fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:1.8, padding:"6px 16px", borderRadius:999, marginBottom:18 }}>
+              <span style={{ width:5, height:5, borderRadius:"50%", background:"var(--s-orange)", display:"inline-block" }} />
               Nossa equipe
             </span>
-            <h2 style={{ fontSize:"clamp(22px,3vw,34px)", fontWeight:900, letterSpacing:"-1px", color:"var(--s-text-1)", lineHeight:1.2 }}>
-              Pessoas que fazem a diferenca
+            <h2 style={{ fontSize:"clamp(24px,3.5vw,38px)", fontWeight:900, letterSpacing:"-1.5px", color:"#fff", lineHeight:1.1, marginBottom:12 }}>
+              Pessoas que fazem<br/>
+              <span style={{ backgroundImage:"linear-gradient(90deg,#f47920,#ffb347)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                a diferença
+              </span>
             </h2>
+            <p style={{ fontSize:15, color:"rgba(255,255,255,0.40)", maxWidth:400, margin:"0 auto" }}>
+              Conheça o time por trás de cada negociação.
+            </p>
           </div>
-          <div className="s-grid-4" style={{ gap:20 }}>
+
+          {/* Cards grid */}
+          <div className="s-team-grid">
             {team.map((t, i) => {
-              const colors = ["#f47920","#3b82f6","#22c55e","#a855f7"];
-              const c = colors[i % colors.length];
-              const initials = t.nome.split(" ").slice(0, 2).map(p => p[0]).join("").toUpperCase();
+              const palette = [
+                { accent:"#f47920", glow:"rgba(244,121,32,0.18)", soft:"rgba(244,121,32,0.10)" },
+                { accent:"#3b82f6", glow:"rgba(59,130,246,0.18)", soft:"rgba(59,130,246,0.10)" },
+                { accent:"#22c55e", glow:"rgba(34,197,94,0.18)",  soft:"rgba(34,197,94,0.10)"  },
+                { accent:"#a855f7", glow:"rgba(168,85,247,0.18)", soft:"rgba(168,85,247,0.10)" },
+                { accent:"#f43f5e", glow:"rgba(244,63,94,0.18)",  soft:"rgba(244,63,94,0.10)"  },
+              ];
+              const { accent, glow, soft } = palette[i % palette.length];
+              const initials = t.nome.split(" ").slice(0, 2).map((p: string) => p[0]).join("").toUpperCase();
               const tenure = calcTenure(t.data_contratacao);
               return (
-                <div key={t.id} style={{
-                  background:"var(--s-white)", border:"1px solid var(--s-border)",
-                  borderRadius:16, padding:"28px 22px", textAlign:"center",
-                  boxShadow:"0 2px 16px rgba(0,0,0,0.05)",
-                }}>
+                <div key={t.id} className="s-team-card">
+                  {/* Top accent line */}
+                  <div style={{ position:"absolute", top:0, left:0, right:0, height:3,
+                    background:`linear-gradient(90deg, transparent, ${accent}, transparent)`,
+                    borderRadius:"16px 16px 0 0" }} />
+
+                  {/* Glow spot behind avatar */}
+                  <div style={{ position:"absolute", top:24, left:"50%", transform:"translateX(-50%)",
+                    width:100, height:100, borderRadius:"50%", background:glow, filter:"blur(20px)", pointerEvents:"none" }} />
+
                   {/* Avatar */}
-                  <div style={{
-                    width:72, height:72, borderRadius:"50%",
-                    background: t.foto ? "transparent" : `linear-gradient(135deg,${c}33,${c}11)`,
-                    border:`2.5px solid ${c}44`,
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    margin:"0 auto 16px", fontSize:22, fontWeight:900, color:c,
-                    overflow:"hidden",
-                  }}>
-                    {t.foto
-                      ? <img src={t.foto} alt={t.nome} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
-                      : initials
-                    }
+                  <div style={{ position:"relative", zIndex:1, marginBottom:18 }}>
+                    <div style={{
+                      width:80, height:80, borderRadius:"50%", margin:"0 auto",
+                      background: t.foto ? "#1a1d24" : `linear-gradient(135deg,${accent}22,${accent}08)`,
+                      border:`2px solid ${accent}55`,
+                      boxShadow:`0 0 0 4px ${soft}, 0 8px 24px rgba(0,0,0,0.4)`,
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:24, fontWeight:900, color:accent,
+                      overflow:"hidden", transition:"box-shadow 250ms",
+                    }}>
+                      {t.foto
+                        ? <img src={t.foto} alt={t.nome} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                        : initials
+                      }
+                    </div>
                   </div>
-                  <p style={{ fontSize:15, fontWeight:800, color:"var(--s-text-1)", marginBottom:4 }}>{t.nome}</p>
-                  <p style={{ fontSize:12.5, color:c, fontWeight:700, marginBottom:6 }}>{t.cargo}</p>
-                  {tenure && <p style={{ fontSize:11.5, color:"var(--s-text-3)" }}>{tenure}</p>}
+
+                  {/* Info */}
+                  <div style={{ position:"relative", zIndex:1, textAlign:"center" }}>
+                    <p style={{ fontSize:15, fontWeight:800, color:"#fff", marginBottom:5, letterSpacing:"-0.3px" }}>{t.nome}</p>
+                    <span style={{ display:"inline-block", padding:"3px 12px", borderRadius:999, fontSize:11.5, fontWeight:700,
+                      background:soft, border:`1px solid ${accent}30`, color:accent, marginBottom:10 }}>
+                      {t.cargo}
+                    </span>
+                    {tenure && (
+                      <p style={{ fontSize:11, color:"rgba(255,255,255,0.28)", display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
+                        <span style={{ width:4, height:4, borderRadius:"50%", background:"rgba(255,255,255,0.20)", display:"inline-block" }} />
+                        {tenure}
+                      </p>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
+
+        <style>{`
+          .s-team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+          }
+          .s-team-card {
+            position: relative;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 16px;
+            padding: 32px 20px 24px;
+            text-align: center;
+            overflow: hidden;
+            transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+            backdrop-filter: blur(8px);
+          }
+          .s-team-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255,255,255,0.16);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+          }
+          @media (max-width: 640px) {
+            .s-team-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+          }
+          @media (max-width: 380px) {
+            .s-team-grid { grid-template-columns: 1fr; }
+          }
+        `}</style>
       </section>
       )}
 
