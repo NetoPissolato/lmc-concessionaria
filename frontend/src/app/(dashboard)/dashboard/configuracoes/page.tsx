@@ -18,7 +18,7 @@ async function saveSettings(token: string, data: object) {
 interface FormState {
   whatsapp: string; telefone: string; email_contato: string;
   instagram: string; facebook: string; youtube: string;
-  nome_loja: string; slogan: string; cnpj: string;
+  nome_loja: string; cnpj: string;
   endereco: string; cidade: string; estado: string; cep: string; horario: string;
   stat_clientes: number; stat_anos: number; stat_satisfacao: number;
   modo_manutencao: boolean;
@@ -26,7 +26,7 @@ interface FormState {
 }
 const EMPTY: FormState = {
   whatsapp:"",telefone:"",email_contato:"",instagram:"",facebook:"",youtube:"",
-  nome_loja:"",slogan:"",cnpj:"",endereco:"",cidade:"",estado:"",cep:"",horario:"",
+  nome_loja:"",cnpj:"",endereco:"",cidade:"",estado:"",cep:"",horario:"",
   stat_clientes:0,stat_anos:0,stat_satisfacao:98,modo_manutencao:false,
   ga_id:"",pixel_id:"",
 };
@@ -210,12 +210,11 @@ export default function ConfiguracoesPage() {
       </>}
 
       {tab==="loja" && <>
-        <Section title="Identidade da Loja" subtitle="Nome, slogan e CNPJ da concessionaria" icon={<IcoBuild />}>
+        <Section title="Identidade da Loja" subtitle="Nome e CNPJ da concessionaria" icon={<IcoBuild />}>
           <Row>
             <Field label="Nome da loja"><Inp val={form.nome_loja} set={v=>set("nome_loja",v)} ph="LMC Veiculos" /></Field>
             <Field label="CNPJ"><Inp val={form.cnpj} set={v=>set("cnpj",v)} ph="00.000.000/0001-00" /></Field>
           </Row>
-          <Field label="Slogan"><Inp val={form.slogan} set={v=>set("slogan",v)} ph="Seu proximo veiculo esta aqui" /></Field>
         </Section>
         <Section title="Endereco e Horario" subtitle="Endereco fisico e horario de atendimento exibidos no site" icon={<IcoMap />}>
           <div style={{ marginBottom:14 }}>

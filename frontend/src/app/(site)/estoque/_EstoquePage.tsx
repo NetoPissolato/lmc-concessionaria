@@ -12,6 +12,7 @@ import {
 import type { PublicVehicle } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
 import AlerteMe from "../_AlerteMe";
+import { vehicleSlug } from "@/components/vehicle/shared";
 
 
 const PAGE_SIZE = 9;
@@ -241,7 +242,7 @@ function VehicleCard({ v, staggerIndex }: {
 
   return (
     <Link
-      href={`/veiculo/${v.id}`}
+      href={`/veiculo/${vehicleSlug(v)}`}
       className="s-v-card"
       style={{ textDecoration:"none", display:"flex", flexDirection:"column" }}
     >
@@ -291,7 +292,7 @@ function VehicleCardList({ v }: { v: Vehicle }) {
     : (v.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg");
   const isPlaceholder = !mainPhoto?.url;
   return (
-    <Link href={"/veiculo/" + v.id} className="s-v-card-list"
+    <Link href={"/veiculo/" + vehicleSlug(v)} className="s-v-card-list"
       style={{ textDecoration:"none", background:"var(--s-card)",
         border:"1px solid var(--s-border)", borderRadius:14,
         overflow:"hidden", transition:"all 220ms" }}>

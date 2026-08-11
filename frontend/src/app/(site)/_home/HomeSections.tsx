@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Search, ArrowRight, ShieldCheck, FileCheck, CreditCard, Handshake, ChevronRight, Car } from "lucide-react";
 import type { PublicVehicle, PublicStats, PublicSettings } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
+import { vehicleSlug } from "@/components/vehicle/shared";
 
 // Cores fallback por marca
 const BRAND_COLORS: Record<string,string> = {
@@ -124,7 +125,7 @@ function VehicleCard({ v }: { v: PublicVehicle }) {
   const badgeLabel = v.destaque ? "Destaque" : "Disponível";
 
   return (
-    <Link href={`/veiculo/${v.id}`} className="s-v-card" style={{ textDecoration:"none" }}>
+    <Link href={`/veiculo/${vehicleSlug(v)}`} className="s-v-card" style={{ textDecoration:"none" }}>
       <div className="s-v-img" style={isPlaceholder ? { background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" } : {}}>
         {isPlaceholder ? (
           // PNG sem fundo — mesmo estilo do painel de gestão
@@ -495,7 +496,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
                       <p style={{ fontSize:20, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px", lineHeight:1, marginBottom:10 }}>
                         R$ {new Intl.NumberFormat("pt-BR").format(v.valor_anunciado ?? 0)}
                       </p>
-                      <Link href={`/veiculo/${v.id}`} className="s-btn s-btn-primary s-btn-sm" style={{ fontSize:11 }}>
+                      <Link href={`/veiculo/${vehicleSlug(v)}`} className="s-btn s-btn-primary s-btn-sm" style={{ fontSize:11 }}>
                         Ver oferta
                       </Link>
                     </div>
@@ -669,7 +670,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
                 return (
                   <Link
                     key={v.id}
-                    href={`/veiculo/${v.id}`}
+                    href={`/veiculo/${vehicleSlug(v)}`}
                     style={{ textDecoration:"none", borderRadius:18, overflow:"hidden", background:"var(--s-dark)", border:"1px solid rgba(255,255,255,0.07)", display:"flex", flexDirection:"column", transition:"all 220ms ease", animation:`s-fadeInUp 0.5s ${i * 80}ms both` }}
                     onMouseEnter={e => {
                       (e.currentTarget as HTMLElement).style.borderColor = "rgba(244,121,32,0.35)";

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { PublicVehicle } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
+import { vehicleSlug } from "@/components/vehicle/shared";
 
 type Vehicle = PublicVehicle;
 
@@ -169,7 +170,7 @@ export default function ComparadorClient({ initialVehicles }: { initialVehicles:
                           <p style={{ fontSize:10, color:"var(--s-text-3)", fontWeight:600 }}>Preco</p>
                           <p style={{ fontSize:18, fontWeight:900, color:"var(--s-orange)", letterSpacing:"-0.5px" }}>{fmtPrice(v.valor_anunciado ?? 0)}</p>
                         </div>
-                        <Link href={"/veiculo/" + v.id}
+                        <Link href={"/veiculo/" + vehicleSlug(v)}
                           style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:700, color:"var(--s-orange)", textDecoration:"none" }}>
                           Ver <ArrowRight size={12} />
                         </Link>
@@ -295,7 +296,7 @@ export default function ComparadorClient({ initialVehicles }: { initialVehicles:
                         const isWinner = scores[i] === maxScore && maxScore > 0;
                         return (
                           <td key={v.id} style={{ padding:"16px 20px", textAlign:"center" }}>
-                            <Link href={"/veiculo/" + v.id}
+                            <Link href={"/veiculo/" + vehicleSlug(v)}
                               className={"s-btn s-btn-sm " + (isWinner ? "s-btn-primary" : "s-btn-outline")}>
                               Ver detalhes <ArrowRight size={13} strokeWidth={2.5} />
                             </Link>

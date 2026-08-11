@@ -3,13 +3,15 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import VeiculoDetail from "./_VeiculoDetail";
 import { getPublicVehicle, getPublicVehicles } from "@/lib/publicApi";
+import { vehicleIdFromSlug, vehicleSlug } from "@/lib/vehicleSlug";
 
 export const dynamic = "force-dynamic";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://site.spacerstorepaineladmin.com";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
+  const { id: slug } = await params;
+  const id = vehicleIdFromSlug(slug);
   const v = await getPublicVehicle(id);
   if (!v) {
     return {
@@ -39,7 +41,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     openGraph: {
       title: `${titulo} - LMC Veiculos`,
       description: descricao,
-      url: `${SITE_URL}/veiculo/${v.id}`,
+      url: `${SITE_URL}/veiculo/${vehicleSlug(v)}`,
       siteName: "LMC Veiculos",
       images: [
         {
@@ -62,7 +64,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function VeiculoPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: slug } = await params;
+  const id = vehicleIdFromSlug(slug);
 
   const [vehicle, allVehicles] = await Promise.all([
     getPublicVehicle(id),

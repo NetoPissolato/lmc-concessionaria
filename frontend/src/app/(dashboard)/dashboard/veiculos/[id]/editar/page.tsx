@@ -303,9 +303,6 @@ export default function EditarVeiculoPage() {
               <Field label="Observações" error={errors.observacoes}>
                 <textarea {...inp("observacoes")} rows={3} style={{ height: "auto", paddingTop: 8, fontSize: "13px" }} placeholder="Anotações sobre o veículo..." />
               </Field>
-              <Field label="Video YouTube (URL)" error={errors.video_url}>
-                <input {...inp("video_url")} placeholder="https://www.youtube.com/watch?v=..." />
-              </Field>
             </div>
           </div>
         </motion.div>

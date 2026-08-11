@@ -73,6 +73,9 @@ export function ColorDot({ cor }: { cor: string }) {
   );
 }
 
+// ─── Vehicle Slug (re-export from lib — works in client and server) ───────────
+export { vehicleSlug, vehicleIdFromSlug } from "@/lib/vehicleSlug";
+
 // ─── Dias em Estoque ──────────────────────────────────────────────────────────
 export function daysInStock(dateStr: string | null | undefined): number | null {
   if (!dateStr) return null;

@@ -611,7 +611,7 @@
 
 .s-v-badge {
   position: absolute;
-  bottom: 10px;
+  top: 10px;
   left: 10px;
   display: inline-flex;
   align-items: center;
@@ -629,7 +629,7 @@
 /* Badge posicionado absolutamente APENAS dentro do card grid (s-v-img) */
 .s-v-img .s-v-badge {
   position: absolute;
-  bottom: 10px;
+  top: 10px;
   left: 10px;
 }
 .s-v-badge-disponivel { background: rgba(22,163,74,0.90);   color: #fff; }

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  User, Phone, Mail, MessageSquare, ChevronDown,
-  Trash2, RefreshCw, Car,
+  User, Phone, Mail, MessageSquare, ChevronDown, ChevronUp,
+  Trash2, RefreshCw, Car, ArrowUpRight, Circle,
 } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
@@ -25,20 +25,34 @@ interface Lead {
   created_at: string;
 }
 
-const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string; bg: string }> = {
-  novo:           { label: "Novo",           color: "#3b82f6", bg: "rgba(59,130,246,0.10)" },
-  em_atendimento: { label: "Em atendimento", color: "#f59e0b", bg: "rgba(245,158,11,0.10)" },
-  proposta:       { label: "Proposta",       color: "#8b5cf6", bg: "rgba(139,92,246,0.10)" },
-  fechado:        { label: "Fechado",        color: "#22c55e", bg: "rgba(34,197,94,0.10)"  },
-  perdido:        { label: "Perdido",        color: "#ef4444", bg: "rgba(239,68,68,0.10)"  },
+const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string; bg: string; border: string }> = {
+  novo:           { label: "Novo",           color: "#60a5fa", bg: "rgba(96,165,250,0.08)",   border: "rgba(96,165,250,0.20)"  },
+  em_atendimento: { label: "Em atendimento", color: "#fbbf24", bg: "rgba(251,191,36,0.08)",   border: "rgba(251,191,36,0.20)"  },
+  proposta:       { label: "Proposta",       color: "#a78bfa", bg: "rgba(167,139,250,0.08)",  border: "rgba(167,139,250,0.20)" },
+  fechado:        { label: "Fechado",        color: "#34d399", bg: "rgba(52,211,153,0.08)",   border: "rgba(52,211,153,0.20)"  },
+  perdido:        { label: "Perdido",        color: "#f87171", bg: "rgba(248,113,113,0.08)",  border: "rgba(248,113,113,0.20)" },
 };
 
 const ALL_STATUSES: LeadStatus[] = ["novo", "em_atendimento", "proposta", "fechado", "perdido"];
 
-function StatusBadge({ status }: { status: LeadStatus }) {
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
+
+function StatusPill({ status }: { status: LeadStatus }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.novo;
   return (
-    <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius:99, background:cfg.bg, color:cfg.color, fontSize:11, fontWeight:700 }}>
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      padding: "3px 9px", borderRadius: 6,
+      background: cfg.bg, color: cfg.color,
+      fontSize: 11, fontWeight: 700, letterSpacing: "0.02em",
+      border: `1px solid ${cfg.border}`,
+    }}>
+      <Circle size={5} fill={cfg.color} color={cfg.color} />
       {cfg.label}
     </span>
   );
@@ -58,42 +72,75 @@ function StatusDropdown({ lead, token, onChange }: { lead: Lead; token: string; 
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status }),
       });
-      if (res.ok) {
-        const updated: Lead = await res.json();
-        onChange(updated);
-      }
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) onChange(await res.json());
+    } finally { setLoading(false); }
   }
 
   return (
-    <div style={{ position:"relative", display:"inline-block" }}>
+    <div style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(o => !o)}
         disabled={loading}
-        style={{ display:"flex", alignItems:"center", gap:5, background:"none", border:"1px solid rgba(255,255,255,0.10)", borderRadius:8, padding:"5px 10px", cursor:"pointer", color:"var(--text-primary)", fontSize:12, fontWeight:600 }}
+        style={{
+          display: "flex", alignItems: "center", gap: 5,
+          background: "var(--surface-2)", border: "1px solid var(--border)",
+          borderRadius: 7, padding: "5px 10px", cursor: "pointer",
+          color: "var(--text-secondary)", fontSize: 12,
+        }}
       >
-        <StatusBadge status={lead.status} />
-        <ChevronDown size={12} />
+        <StatusPill status={lead.status} />
+        <ChevronDown size={11} style={{ opacity: 0.5 }} />
       </button>
       {open && (
-        <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, background:"#1e2028", border:"1px solid rgba(255,255,255,0.10)", borderRadius:10, boxShadow:"0 12px 32px rgba(0,0,0,0.5)", zIndex:100, minWidth:180, overflow:"hidden" }}>
-          {ALL_STATUSES.map(s => (
-            <button key={s} onClick={() => setStatus(s)}
-              style={{ display:"block", width:"100%", padding:"10px 14px", background:"none", border:"none", textAlign:"left", cursor:"pointer", fontSize:13, color: s === lead.status ? STATUS_CONFIG[s].color : "rgba(255,255,255,0.7)", fontWeight: s === lead.status ? 700 : 500, borderBottom:"1px solid rgba(255,255,255,0.05)" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "none")}
-            >
-              {STATUS_CONFIG[s].label}
-            </button>
-          ))}
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 200,
+          background: "var(--surface)", border: "1px solid var(--border)",
+          borderRadius: 10, boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
+          minWidth: 190, overflow: "hidden",
+        }}>
+          {ALL_STATUSES.map(s => {
+            const cfg = STATUS_CONFIG[s];
+            const active = s === lead.status;
+            return (
+              <button key={s} onClick={() => setStatus(s)} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                width: "100%", padding: "10px 14px",
+                background: active ? cfg.bg : "none", border: "none",
+                textAlign: "left", cursor: "pointer",
+                fontSize: 13, color: active ? cfg.color : "var(--text-secondary)",
+                fontWeight: active ? 700 : 400,
+                borderBottom: "1px solid rgba(255,255,255,0.04)",
+              }}>
+                <Circle size={6} fill={cfg.color} color={cfg.color} />
+                {cfg.label}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
 
+// ─── KPI Card ────────────────────────────────────────────────────────────────
+function KpiCard({ label, count, color, active, onClick }: {
+  label: string; count: number; color: string; active: boolean; onClick(): void;
+}) {
+  return (
+    <button onClick={onClick} style={{
+      flex: "1 1 0", minWidth: 0, padding: "14px 16px",
+      borderRadius: 12, cursor: "pointer", textAlign: "left",
+      background: active ? `${color}12` : "var(--surface)",
+      border: `1.5px solid ${active ? color : "var(--border)"}`,
+      transition: "all 140ms",
+    }}>
+      <p style={{ fontSize: 22, fontWeight: 900, color: active ? color : "var(--text-primary)", marginBottom: 2 }}>{count}</p>
+      <p style={{ fontSize: 11, fontWeight: 600, color: active ? color : "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+    </button>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function LeadsPage() {
   const token = getToken();
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -109,18 +156,14 @@ export default function LeadsPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const url = filterStatus
-        ? `${API}/leads?status=${filterStatus}&limit=100`
-        : `${API}/leads?limit=100`;
+      const url = filterStatus ? `${API}/leads?status=${filterStatus}&limit=100` : `${API}/leads?limit=100`;
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         const data = await res.json();
         setLeads(data.items ?? []);
         setCounts(data.counts ?? {});
       }
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, [token, filterStatus]);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
@@ -131,9 +174,7 @@ export default function LeadsPage() {
     try {
       await fetch(`${API}/leads/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
       setLeads(l => l.filter(x => x.id !== id));
-    } finally {
-      setDeletingId(null);
-    }
+    } finally { setDeletingId(null); }
   }
 
   async function saveNotes(lead: Lead) {
@@ -150,150 +191,221 @@ export default function LeadsPage() {
         const updated: Lead = await res.json();
         setLeads(l => l.map(x => x.id === updated.id ? updated : x));
       }
-    } finally {
-      setSavingNotes(s => ({ ...s, [lead.id]: false }));
-    }
+    } finally { setSavingNotes(s => ({ ...s, [lead.id]: false })); }
   }
 
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return (
-    <div style={{ maxWidth:900, margin:"0 auto" }}>
-      {/* Header */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24, gap:12, flexWrap:"wrap" }}>
+    <div style={{ maxWidth: 960, margin: "0 auto" }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 12, flexWrap: "wrap" }}>
         <div>
-          <h1 style={{ fontSize:22, fontWeight:900, color:"var(--text-primary)", marginBottom:4 }}>Leads / CRM</h1>
-          <p style={{ fontSize:13, color:"var(--text-secondary)" }}>{total} lead{total !== 1 ? "s" : ""} no total</p>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
+            Leads <span style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: 18 }}>/ CRM</span>
+          </h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
+            {total} {total === 1 ? "contato recebido" : "contatos recebidos"}
+          </p>
         </div>
         <button
           onClick={fetchLeads}
-          style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", borderRadius:10, border:"1px solid rgba(255,255,255,0.12)", background:"none", color:"var(--text-secondary)", fontSize:13, fontWeight:600, cursor:"pointer" }}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "8px 16px", borderRadius: 9,
+            border: "1px solid var(--border)", background: "var(--surface)",
+            color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}
         >
-          <RefreshCw size={14} />
+          <RefreshCw size={13} />
           Atualizar
         </button>
       </div>
 
-      {/* Status pills */}
-      <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
-        <button
+      {/* ── KPI strip ── */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+        <KpiCard
+          label="Todos" count={total} color="var(--brand)"
+          active={filterStatus === ""}
           onClick={() => setFilterStatus("")}
-          style={{ padding:"6px 14px", borderRadius:99, border:"1.5px solid", fontSize:12, fontWeight:700, cursor:"pointer",
-            borderColor: filterStatus === "" ? "var(--accent)" : "rgba(255,255,255,0.12)",
-            background:  filterStatus === "" ? "rgba(244,121,32,0.10)" : "none",
-            color:       filterStatus === "" ? "var(--accent)" : "var(--text-secondary)" }}
-        >
-          Todos ({total})
-        </button>
-        {ALL_STATUSES.map(s => {
-          const cfg = STATUS_CONFIG[s];
-          const count = counts[s] ?? 0;
-          return (
-            <button key={s} onClick={() => setFilterStatus(s)}
-              style={{ padding:"6px 14px", borderRadius:99, border:"1.5px solid", fontSize:12, fontWeight:700, cursor:"pointer",
-                borderColor: filterStatus === s ? cfg.color : "rgba(255,255,255,0.12)",
-                background:  filterStatus === s ? cfg.bg : "none",
-                color:       filterStatus === s ? cfg.color : "rgba(255,255,255,0.50)" }}
-            >
-              {cfg.label} ({count})
-            </button>
-          );
-        })}
+        />
+        {ALL_STATUSES.map(s => (
+          <KpiCard key={s}
+            label={STATUS_CONFIG[s].label}
+            count={counts[s] ?? 0}
+            color={STATUS_CONFIG[s].color}
+            active={filterStatus === s}
+            onClick={() => setFilterStatus(s)}
+          />
+        ))}
       </div>
 
-      {/* Leads list */}
+      {/* ── Content ── */}
       {loading ? (
-        <div style={{ textAlign:"center", padding:60, color:"var(--text-secondary)" }}>Carregando leads...</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} className="card skeleton" style={{ height: 72, borderRadius: 12 }} />
+          ))}
+        </div>
       ) : leads.length === 0 ? (
-        <div style={{ textAlign:"center", padding:60, color:"var(--text-secondary)" }}>
-          <MessageSquare size={40} style={{ opacity:0.3, margin:"0 auto 12px", display:"block" }} />
-          <p style={{ fontWeight:600 }}>Nenhum lead {filterStatus ? "com este status" : "ainda"}</p>
-          <p style={{ fontSize:12, marginTop:4 }}>Os leads aparecem aqui quando o formulario de contato e preenchido.</p>
+        <div style={{
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          padding: "80px 24px", borderRadius: 16,
+          background: "var(--surface)", border: "1px solid var(--border)",
+        }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--surface-2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+            <MessageSquare size={22} color="var(--text-muted)" strokeWidth={1.5} />
+          </div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
+            {filterStatus ? `Nenhum lead com status "${STATUS_CONFIG[filterStatus as LeadStatus]?.label}"` : "Nenhum lead ainda"}
+          </p>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center", maxWidth: 340 }}>
+            Os contatos preenchidos no site aparecem aqui automaticamente.
+          </p>
         </div>
       ) : (
-        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {leads.map(lead => {
-            const isExpanded = expanded === lead.id;
+            const isOpen = expanded === lead.id;
             const cfg = STATUS_CONFIG[lead.status] ?? STATUS_CONFIG.novo;
-            const dateStr = new Date(lead.created_at).toLocaleDateString("pt-BR", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
-            const wppLink = `https://wa.me/${lead.telefone.replace(/\D/g, "")}?text=${encodeURIComponent("Ola " + lead.nome + ", recebemos seu contato e gostaríamos de dar continuidade.")}`;
+            const wppLink = `https://wa.me/${lead.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Ola ${lead.nome}, recebemos seu contato e gostaríamos de dar continuidade.`)}`;
 
             return (
-              <div key={lead.id} style={{ background:"var(--card-bg, #1a1d24)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:14, overflow:"hidden", borderLeft:`3px solid ${cfg.color}`, transition:"box-shadow 180ms" }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.3)")}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
-                {/* Lead header row */}
-                <div style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 18px", flexWrap:"wrap" }}>
-                  <div style={{ width:38, height:38, borderRadius:"50%", background:cfg.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <User size={17} color={cfg.color} />
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:14, fontWeight:800, color:"var(--text-primary)" }}>{lead.nome}</p>
-                    <p style={{ fontSize:11, color:"rgba(255,255,255,0.40)" }}>{dateStr} &middot; {lead.origem}</p>
-                  </div>
-                  {lead.veiculo_descricao && (
-                    <div style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius:8, background:"rgba(244,121,32,0.07)", border:"1px solid rgba(244,121,32,0.15)" }}>
-                      <Car size={11} color="#f47920" />
-                      <span style={{ fontSize:11, color:"#f47920", fontWeight:600 }}>{lead.veiculo_descricao}</span>
+              <div key={lead.id} style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 13,
+                overflow: "hidden",
+                borderLeft: `3px solid ${cfg.color}`,
+              }}>
+                {/* Main row */}
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto",
+                  gap: 12, alignItems: "center",
+                  padding: "14px 16px",
+                }}>
+                  {/* Left: identity */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 9,
+                      background: cfg.bg, border: `1px solid ${cfg.border}`,
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <User size={16} color={cfg.color} strokeWidth={2} />
                     </div>
-                  )}
-                  <StatusDropdown
-                    lead={lead}
-                    token={token}
-                    onChange={updated => setLeads(l => l.map(x => x.id === updated.id ? updated : x))}
-                  />
-                  <div style={{ display:"flex", gap:6 }}>
-                    <a href={wppLink} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:8, background:"rgba(37,211,102,0.10)", border:"1px solid rgba(37,211,102,0.20)", color:"#25D366", fontSize:12, fontWeight:700, textDecoration:"none" }}>
-                      <Phone size={12} />
-                      WPP
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>{lead.nome}</p>
+                        <StatusPill status={lead.status} />
+                        {lead.veiculo_descricao && (
+                          <span style={{
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                            padding: "2px 8px", borderRadius: 6,
+                            background: "rgba(244,121,32,0.08)", border: "1px solid rgba(244,121,32,0.18)",
+                            fontSize: 11, color: "#f47920", fontWeight: 600,
+                          }}>
+                            <Car size={10} />
+                            {lead.veiculo_descricao}
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                        {fmtDate(lead.created_at)} &middot; via {lead.origem}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: actions */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                    <StatusDropdown
+                      lead={lead} token={token}
+                      onChange={updated => setLeads(l => l.map(x => x.id === updated.id ? updated : x))}
+                    />
+                    <a href={wppLink} target="_blank" rel="noopener noreferrer" style={{
+                      display: "flex", alignItems: "center", gap: 5,
+                      padding: "6px 12px", borderRadius: 8,
+                      background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.20)",
+                      color: "#25D366", fontSize: 12, fontWeight: 700, textDecoration: "none",
+                    }}>
+                      <ArrowUpRight size={12} />
+                      WhatsApp
                     </a>
-                    <button onClick={() => setExpanded(isExpanded ? null : lead.id)}
-                      style={{ padding:"6px 10px", borderRadius:8, border:"1px solid rgba(255,255,255,0.10)", background:"none", cursor:"pointer", color:"rgba(255,255,255,0.50)", display:"flex", alignItems:"center" }}>
-                      <ChevronDown size={14} style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition:"transform 200ms" }} />
+                    <button
+                      onClick={() => setExpanded(isOpen ? null : lead.id)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        background: "var(--surface-2)", border: "1px solid var(--border)",
+                        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      {isOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                     </button>
-                    <button onClick={() => deleteLead(lead.id)} disabled={deletingId === lead.id}
-                      style={{ padding:"6px 10px", borderRadius:8, border:"1px solid rgba(239,68,68,0.15)", background:"rgba(239,68,68,0.06)", cursor:"pointer", color:"#ef4444", display:"flex", alignItems:"center" }}>
+                    <button
+                      onClick={() => deleteLead(lead.id)} disabled={deletingId === lead.id}
+                      style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)",
+                        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                        color: "#ef4444",
+                      }}
+                    >
                       <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
 
-                {/* Expanded row */}
-                {isExpanded && (
-                  <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", padding:"16px 18px", display:"flex", flexDirection:"column", gap:12 }}>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:10 }}>
+                {/* Expanded panel */}
+                {isOpen && (
+                  <div style={{ borderTop: "1px solid var(--border)", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+                    {/* Contact info */}
+                    <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
                       {lead.telefone && (
-                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                          <Phone size={13} color="rgba(255,255,255,0.40)" />
-                          <a href={`tel:${lead.telefone}`} style={{ fontSize:13, color:"var(--text-primary)", fontWeight:600, textDecoration:"none" }}>{lead.telefone}</a>
-                        </div>
+                        <a href={`tel:${lead.telefone}`} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "var(--text-primary)", fontWeight: 600, textDecoration: "none" }}>
+                          <Phone size={13} color="var(--text-muted)" />
+                          {lead.telefone}
+                        </a>
                       )}
                       {lead.email && (
-                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                          <Mail size={13} color="rgba(255,255,255,0.40)" />
-                          <a href={`mailto:${lead.email}`} style={{ fontSize:13, color:"var(--text-primary)", fontWeight:600, textDecoration:"none" }}>{lead.email}</a>
-                        </div>
+                        <a href={`mailto:${lead.email}`} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "var(--text-primary)", fontWeight: 600, textDecoration: "none" }}>
+                          <Mail size={13} color="var(--text-muted)" />
+                          {lead.email}
+                        </a>
                       )}
                     </div>
+
+                    {/* Message */}
                     {lead.mensagem && (
-                      <div style={{ padding:"10px 14px", background:"rgba(255,255,255,0.03)", borderRadius:10, border:"1px solid rgba(255,255,255,0.06)" }}>
-                        <p style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.35)", textTransform:"uppercase", letterSpacing:0.8, marginBottom:5 }}>Mensagem</p>
-                        <p style={{ fontSize:13, color:"rgba(255,255,255,0.70)", lineHeight:1.6 }}>{lead.mensagem}</p>
+                      <div style={{ padding: "12px 14px", background: "var(--surface-2)", borderRadius: 10, border: "1px solid var(--border)" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Mensagem</p>
+                        <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{lead.mensagem}</p>
                       </div>
                     )}
+
+                    {/* Notes */}
                     <div>
-                      <p style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.35)", textTransform:"uppercase", letterSpacing:0.8, marginBottom:6 }}>Observacoes internas</p>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Anotacoes internas</p>
                       <textarea
                         value={notes[lead.id] ?? lead.observacoes ?? ""}
                         onChange={e => setNotes(n => ({ ...n, [lead.id]: e.target.value }))}
-                        placeholder="Anotacoes da equipe..."
+                        placeholder="Adicione observacoes sobre este contato..."
                         rows={3}
-                        style={{ width:"100%", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:10, padding:"10px 12px", color:"var(--text-primary)", fontSize:13, fontFamily:"inherit", resize:"vertical", boxSizing:"border-box" }}
+                        style={{
+                          width: "100%", background: "var(--surface-2)",
+                          border: "1px solid var(--border)", borderRadius: 9,
+                          padding: "10px 12px", color: "var(--text-primary)",
+                          fontSize: 13, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box",
+                        }}
                       />
-                      <button onClick={() => saveNotes(lead)} disabled={savingNotes[lead.id]}
-                        style={{ marginTop:8, padding:"7px 16px", borderRadius:8, background:"var(--accent, #f47920)", border:"none", color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", opacity: savingNotes[lead.id] ? 0.7 : 1 }}>
-                        {savingNotes[lead.id] ? "Salvando..." : "Salvar observacoes"}
+                      <button onClick={() => saveNotes(lead)} disabled={savingNotes[lead.id]} style={{
+                        marginTop: 8, padding: "7px 18px", borderRadius: 8,
+                        background: "var(--brand)", border: "none",
+                        color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                        opacity: savingNotes[lead.id] ? 0.7 : 1,
+                      }}>
+                        {savingNotes[lead.id] ? "Salvando..." : "Salvar anotacoes"}
                       </button>
                     </div>
                   </div>

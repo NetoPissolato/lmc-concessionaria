@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useCountUp } from "./useAnimations";
 import type { PublicSettings, PublicVehicle } from "@/lib/publicApi";
+import { vehicleSlug } from "@/components/vehicle/shared";
 
 const SCHEDULE = [
   { day: "Seg", open: "08:00", close: "18:00", weekday: 1 },
@@ -158,7 +159,7 @@ function SiteHeader({ s }: { s: PublicSettings }) {
                   return (
                     <Link
                       key={v.id}
-                      href={`/veiculo/${v.id}`}
+                      href={`/veiculo/${vehicleSlug(v)}`}
                       onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
                       style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 14px", textDecoration:"none", transition:"background 150ms", borderBottom:"1px solid rgba(255,255,255,0.05)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}

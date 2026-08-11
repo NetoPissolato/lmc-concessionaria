@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Star, CheckCircle, XCircle, Trash2, RefreshCw } from "lucide-react";
+import { Star, CheckCircle, XCircle, Trash2, RefreshCw, MessageSquare } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "");
@@ -16,41 +16,63 @@ interface Review {
   created_at: string;
 }
 
-function StarRow({ nota }: { nota: number }) {
+// ─── Star Row ─────────────────────────────────────────────────────────────────
+function StarRow({ nota, size = 13 }: { nota: number; size?: number }) {
   return (
     <div style={{ display: "flex", gap: 2 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <Star key={i} size={13} fill={i <= nota ? "#f59e0b" : "none"} color={i <= nota ? "#f59e0b" : "rgba(255,255,255,0.20)"} strokeWidth={1.5} />
+        <Star
+          key={i} size={size}
+          fill={i <= nota ? "#f59e0b" : "none"}
+          color={i <= nota ? "#f59e0b" : "rgba(255,255,255,0.15)"}
+          strokeWidth={1.5}
+        />
       ))}
     </div>
   );
 }
 
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+function StatCard({ value, label, color, active, onClick }: {
+  value: string | number; label: string; color: string; active: boolean; onClick(): void;
+}) {
+  return (
+    <button onClick={onClick} style={{
+      flex: "1 1 0", minWidth: 120, padding: "16px 18px",
+      borderRadius: 12, textAlign: "left", cursor: "pointer",
+      background: active ? `${color}10` : "var(--surface)",
+      border: `1.5px solid ${active ? color : "var(--border)"}`,
+      transition: "all 140ms",
+    }}>
+      <p style={{ fontSize: 26, fontWeight: 900, color: active ? color : "var(--text-primary)", letterSpacing: "-1px", marginBottom: 2 }}>{value}</p>
+      <p style={{ fontSize: 11, fontWeight: 600, color: active ? color : "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+    </button>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ReviewsPage() {
   const token = getToken();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<"" | "pendente" | "aprovado">("pendente");
+  const [filter, setFilter] = useState<"" | "pendente" | "aprovado">("");
   const [acting, setActing] = useState<string | null>(null);
 
   const fetchReviews = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const url = filterStatus === "pendente"
-        ? `${API}/reviews?aprovado=false&limit=100`
-        : filterStatus === "aprovado"
-        ? `${API}/reviews?aprovado=true&limit=100`
+      const url =
+        filter === "pendente" ? `${API}/reviews?aprovado=false&limit=100`
+        : filter === "aprovado" ? `${API}/reviews?aprovado=true&limit=100`
         : `${API}/reviews?limit=100`;
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         const data = await res.json();
         setReviews(data.items ?? data);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [token, filterStatus]);
+    } finally { setLoading(false); }
+  }, [token, filter]);
 
   useEffect(() => { fetchReviews(); }, [fetchReviews]);
 
@@ -79,7 +101,7 @@ export default function ReviewsPage() {
   }
 
   async function deleteReview(id: string) {
-    if (!confirm("Remover esta avaliacao?")) return;
+    if (!confirm("Remover esta avaliacao permanentemente?")) return;
     setActing(id);
     try {
       await fetch(`${API}/reviews/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
@@ -87,93 +109,176 @@ export default function ReviewsPage() {
     } finally { setActing(null); }
   }
 
-  const pending  = reviews.filter(r => !r.aprovado).length;
-  const approved = reviews.filter(r => r.aprovado).length;
+  const allReviews = reviews; // stored per-filter
+  const pending  = filter === "" ? reviews.filter(r => !r.aprovado).length : (filter === "pendente" ? reviews.length : 0);
+  const approved = filter === "" ? reviews.filter(r => r.aprovado).length  : (filter === "aprovado"  ? reviews.length : 0);
+  const avgNota  = reviews.length ? (reviews.reduce((s, r) => s + r.nota, 0) / reviews.length).toFixed(1) : "—";
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 12, flexWrap: "wrap" }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: "var(--text-primary)", marginBottom: 4 }}>Avaliacoes</h1>
-          <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-            {pending} pendente{pending !== 1 ? "s" : ""} &middot; {approved} publicada{approved !== 1 ? "s" : ""}
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Avaliacoes</h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
+            Gerencie e publique as avaliacoes dos clientes
           </p>
         </div>
         <button
           onClick={fetchReviews}
-          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "none", color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "8px 16px", borderRadius: 9,
+            border: "1px solid var(--border)", background: "var(--surface)",
+            color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}
         >
-          <RefreshCw size={14} />
+          <RefreshCw size={13} />
           Atualizar
         </button>
       </div>
 
-      {/* Status pills */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {([["", "Todas"], ["pendente", "Pendentes"], ["aprovado", "Aprovadas"]] as const).map(([val, label]) => (
-          <button key={val} onClick={() => setFilterStatus(val)}
-            style={{ padding: "6px 14px", borderRadius: 99, border: "1.5px solid", fontSize: 12, fontWeight: 700, cursor: "pointer",
-              borderColor: filterStatus === val ? "var(--accent)" : "rgba(255,255,255,0.12)",
-              background:  filterStatus === val ? "rgba(244,121,32,0.10)" : "none",
-              color:       filterStatus === val ? "var(--accent)" : "rgba(255,255,255,0.50)" }}>
-            {label}
-          </button>
-        ))}
+      {/* ── Stat strip ── */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+        <StatCard
+          value={reviews.length} label="Total" color="var(--brand)"
+          active={filter === ""} onClick={() => setFilter("")}
+        />
+        <StatCard
+          value={pending} label="Pendentes" color="#f59e0b"
+          active={filter === "pendente"} onClick={() => setFilter("pendente")}
+        />
+        <StatCard
+          value={approved} label="Publicadas" color="#34d399"
+          active={filter === "aprovado"} onClick={() => setFilter("aprovado")}
+        />
+        <div style={{
+          flex: "1 1 0", minWidth: 120, padding: "16px 18px",
+          borderRadius: 12, background: "var(--surface)", border: "1px solid var(--border)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+            <p style={{ fontSize: 26, fontWeight: 900, color: "#f59e0b", letterSpacing: "-1px" }}>{avgNota}</p>
+            <Star size={16} fill="#f59e0b" color="#f59e0b" style={{ marginBottom: 2 }} />
+          </div>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Nota media</p>
+        </div>
       </div>
 
+      {/* ── Content ── */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: 60, color: "var(--text-secondary)" }}>Carregando avaliacoes...</div>
-      ) : reviews.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 60, color: "var(--text-secondary)" }}>
-          <Star size={40} style={{ opacity: 0.3, margin: "0 auto 12px", display: "block" }} />
-          <p style={{ fontWeight: 600 }}>Nenhuma avaliacao {filterStatus ? "com este status" : "ainda"}</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {[1, 2, 3].map(i => <div key={i} className="card skeleton" style={{ height: 96, borderRadius: 13 }} />)}
+        </div>
+      ) : allReviews.length === 0 ? (
+        <div style={{
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          padding: "80px 24px", borderRadius: 16,
+          background: "var(--surface)", border: "1px solid var(--border)",
+        }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--surface-2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+            <MessageSquare size={22} color="var(--text-muted)" strokeWidth={1.5} />
+          </div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
+            {filter ? "Nenhuma avaliacao com este status" : "Nenhuma avaliacao ainda"}
+          </p>
+          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
+            As avaliacoes enviadas pelos clientes apareceram aqui.
+          </p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {reviews.map(review => {
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {allReviews.map(review => {
             const date = new Date(review.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+            const isPending = !review.aprovado;
             return (
               <div key={review.id} style={{
-                background: "var(--card-bg, #1a1d24)",
-                border: `1px solid ${review.aprovado ? "rgba(34,197,94,0.20)" : "rgba(245,158,11,0.15)"}`,
-                borderRadius: 14,
-                padding: "16px 18px",
-                borderLeft: `3px solid ${review.aprovado ? "#22c55e" : "#f59e0b"}`,
+                background: "var(--surface)",
+                border: `1px solid ${isPending ? "rgba(245,158,11,0.20)" : "rgba(52,211,153,0.15)"}`,
+                borderRadius: 13,
+                borderLeft: `3px solid ${isPending ? "#f59e0b" : "#34d399"}`,
+                overflow: "hidden",
               }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+
+                  {/* Avatar */}
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                    background: isPending ? "rgba(245,158,11,0.10)" : "rgba(52,211,153,0.10)",
+                    border: `1px solid ${isPending ? "rgba(245,158,11,0.20)" : "rgba(52,211,153,0.20)"}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 15, fontWeight: 800, color: isPending ? "#f59e0b" : "#34d399",
+                  }}>
+                    {review.nome.charAt(0).toUpperCase()}
+                  </div>
+
+                  {/* Content */}
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                      <p style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>{review.nome}</p>
-                      {review.cidade && <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{review.cidade}</p>}
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, fontSize: 10, fontWeight: 700,
-                        background: review.aprovado ? "rgba(34,197,94,0.10)" : "rgba(245,158,11,0.10)",
-                        color: review.aprovado ? "#22c55e" : "#f59e0b" }}>
-                        {review.aprovado ? "Publicada" : "Pendente"}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>{review.nome}</span>
+                      {review.cidade && (
+                        <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{review.cidade}</span>
+                      )}
+                      <span style={{
+                        padding: "2px 8px", borderRadius: 5, fontSize: 10, fontWeight: 700,
+                        background: isPending ? "rgba(245,158,11,0.10)" : "rgba(52,211,153,0.10)",
+                        color: isPending ? "#f59e0b" : "#34d399",
+                        border: `1px solid ${isPending ? "rgba(245,158,11,0.20)" : "rgba(52,211,153,0.20)"}`,
+                      }}>
+                        {isPending ? "Pendente" : "Publicada"}
                       </span>
                     </div>
                     <StarRow nota={review.nota} />
-                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, marginTop: 8 }}>
+                    <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65, marginTop: 8 }}>
                       &ldquo;{review.texto}&rdquo;
                     </p>
-                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 8 }}>{date}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>{date}</p>
                   </div>
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                    {!review.aprovado && (
-                      <button onClick={() => approve(review.id)} disabled={acting === review.id}
-                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 8, background: "rgba(34,197,94,0.10)", border: "1px solid rgba(34,197,94,0.25)", color: "#22c55e", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                        <CheckCircle size={13} />
-                        Aprovar
+
+                  {/* Actions */}
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center" }}>
+                    {isPending ? (
+                      <button
+                        onClick={() => approve(review.id)}
+                        disabled={acting === review.id}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 5,
+                          padding: "7px 14px", borderRadius: 8,
+                          background: "rgba(52,211,153,0.10)", border: "1px solid rgba(52,211,153,0.25)",
+                          color: "#34d399", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                          opacity: acting === review.id ? 0.6 : 1,
+                        }}
+                      >
+                        <CheckCircle size={13} strokeWidth={2} />
+                        Publicar
                       </button>
-                    )}
-                    {review.aprovado && (
-                      <button onClick={() => reject(review.id)} disabled={acting === review.id}
-                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 8, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.20)", color: "#f59e0b", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                        <XCircle size={13} />
+                    ) : (
+                      <button
+                        onClick={() => reject(review.id)}
+                        disabled={acting === review.id}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 5,
+                          padding: "7px 14px", borderRadius: 8,
+                          background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.20)",
+                          color: "#f59e0b", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                          opacity: acting === review.id ? 0.6 : 1,
+                        }}
+                      >
+                        <XCircle size={13} strokeWidth={2} />
                         Despublicar
                       </button>
                     )}
-                    <button onClick={() => deleteReview(review.id)} disabled={acting === review.id}
-                      style={{ padding: "7px 10px", borderRadius: 8, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#ef4444", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                    <button
+                      onClick={() => deleteReview(review.id)}
+                      disabled={acting === review.id}
+                      style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)",
+                        color: "#ef4444", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        opacity: acting === review.id ? 0.5 : 1,
+                      }}
+                    >
                       <Trash2 size={13} />
                     </button>
                   </div>

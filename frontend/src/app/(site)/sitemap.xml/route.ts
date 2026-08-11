@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPublicVehicles } from "@/lib/publicApi";
+import { vehicleSlug } from "@/lib/vehicleSlug";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export async function GET() {
   let vehicleUrls: string[] = [];
   try {
     const vehicles = await getPublicVehicles({ limit: 200 });
-    vehicleUrls = vehicles.map((v) => `${baseUrl}/veiculo/${v.id}`);
+    vehicleUrls = vehicles.map((v) => `${baseUrl}/veiculo/${vehicleSlug(v)}`);
   } catch {
     // silently fail — sitemap still works without vehicle pages
   }

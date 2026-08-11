@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { PublicVehicle } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
+import { vehicleSlug } from "@/components/vehicle/shared";
 
 function fmtPrice(v: number) { return new Intl.NumberFormat("pt-BR").format(v); }
 function fmtKm(v: number)    { return new Intl.NumberFormat("pt-BR").format(v) + " km"; }
@@ -273,7 +274,7 @@ export default function VeiculoDetail({
 
                 {/* status badge */}
                 <div style={{ position:"absolute", top:14, left:14, display:"flex", gap:6 }}>
-                  <span className="s-v-badge s-v-badge-disponivel">Disponivel</span>
+                  <span className="s-v-badge s-v-badge-disponivel" style={{ position:"absolute", top:10, bottom:"auto", left:10 }}>Disponivel</span>
                 </div>
 
                 {/* fav + share */}
@@ -495,10 +496,10 @@ export default function VeiculoDetail({
                     ? [...v.photos].sort((a,b) => a.ordem - b.ordem)[0]?.url
                     : (v.tipo === "moto" ? "/hero-moto.png" : "/hero-carro.jpeg");
                   return (
-                    <Link key={v.id} href={`/veiculo/${v.id}`} className="s-v-card" style={{ textDecoration:"none" }}>
+                    <Link key={v.id} href={`/veiculo/${vehicleSlug(v)}`} className="s-v-card" style={{ textDecoration:"none" }}>
                       <div className="s-v-img">
                         <Image src={mainPhoto ?? fallbackSrc} alt={`${v.marca} ${v.modelo}`} fill style={{ objectFit:"cover" }} />
-                        <span className="s-v-badge s-v-badge-disponivel" style={{ position:"absolute", top:10, left:10 }}>Disponivel</span>
+                        <span className="s-v-badge s-v-badge-disponivel" style={{ position:"absolute", top:10, bottom:"auto", left:10 }}>Disponivel</span>
                       </div>
                       <div className="s-v-info">
                         <p className="s-v-make">{v.marca}</p>

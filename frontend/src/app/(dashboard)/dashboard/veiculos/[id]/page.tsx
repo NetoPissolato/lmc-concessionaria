@@ -394,6 +394,8 @@ export default function VehicleDetailPage() {
   const [confirmDeleteExpense, setConfirmDeleteExpense] = useState<string | null>(null);
   const [confirmDeleteVehicle, setConfirmDeleteVehicle] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [savingVideo, setSavingVideo] = useState(false);
 
   // Lock body scroll when any modal is open
   useBodyScrollLock(showAddExpense || !!editingExpense || !!confirmDeleteExpense || confirmDeleteVehicle);
@@ -401,6 +403,11 @@ export default function VehicleDetailPage() {
   const { data: vehicle, isLoading: vLoading } = useQuery<Vehicle>({ queryKey: ["vehicle", id], queryFn: () => vehiclesApi.get(id) });
   const { data: costCenter, isLoading: ccLoading } = useQuery<CostCenter>({ queryKey: ["vehicle-cost", id], queryFn: () => vehiclesApi.getCostCenter(id) });
   const { data: expenses = [], isLoading: expLoading } = useQuery<VehicleExpense[]>({ queryKey: ["vehicle-expenses", id], queryFn: () => vehiclesApi.getExpenses(id) });
+
+  // Inicializa videoUrl quando o veículo carrega
+  useEffect(() => {
+    if (vehicle) setVideoUrl((vehicle as Record<string, string>).video_url || "");
+  }, [vehicle?.id]);
 
   const updateStatusMutation = useMutation({
     mutationFn: (status: string) => vehiclesApi.update(id, { status }),
@@ -774,6 +781,45 @@ export default function VehicleDetailPage() {
                     </h3>
                     <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>Envie fotos do veículo, defina a foto de capa e organize a galeria.</p>
                     <PhotoUploader vehicleId={vehicle.id} />
+                  </div>
+
+                  {/* Video URL — opcional, fica na galeria */}
+                  <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 20 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      Vídeo YouTube <span style={{ fontSize: 11, fontWeight: 400, color: "var(--text-muted)", marginLeft: 4 }}>(opcional)</span>
+                    </h3>
+                    <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12 }}>Cole a URL do YouTube. O vídeo será exibido na galeria do site para os clientes.</p>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        className="input"
+                        style={{ flex: 1, fontSize: 13 }}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        value={videoUrl}
+                        onChange={e => setVideoUrl(e.target.value)}
+                      />
+                      <button
+                        disabled={savingVideo}
+                        onClick={async () => {
+                          setSavingVideo(true);
+                          try {
+                            await vehiclesApi.update(id, { video_url: videoUrl.trim() || null });
+                            queryClient.invalidateQueries({ queryKey: ["vehicle", id] });
+                            toast.success("Vídeo salvo!");
+                          } catch { toast.error("Erro ao salvar vídeo"); }
+                          finally { setSavingVideo(false); }
+                        }}
+                        style={{ padding: "0 18px", borderRadius: "var(--radius-md)", background: "var(--brand)", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
+                      >
+                        {savingVideo ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <Check size={13} />}
+                        Salvar
+                      </button>
+                    </div>
+                    {videoUrl && (
+                      <p style={{ fontSize: 11, color: "#22c55e", marginTop: 8, display: "flex", alignItems: "center", gap: 4 }}>
+                        <Check size={11} /> Vídeo configurado
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
