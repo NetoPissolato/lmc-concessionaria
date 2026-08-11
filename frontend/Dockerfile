@@ -37,6 +37,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Re-declarar ARG para que ${PORT} seja resolvido nesta stage
+ARG PORT=3000
+
 # Criar usuário sem privilégios
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nextjs
