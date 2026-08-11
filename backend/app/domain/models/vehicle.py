@@ -42,6 +42,24 @@ class TransmissionType(str, enum.Enum):
     CVT = "cvt"
 
 
+class CarroceriaType(str, enum.Enum):
+    SUV         = "suv"
+    HATCH       = "hatch"
+    SEDAN       = "sedan"
+    PICAPE      = "picape"
+    COUPE       = "coupe"
+    MINIVAN     = "minivan"
+    CONVERSIVEL = "conversivel"
+    PERUA       = "perua"
+    VAN         = "van"
+
+
+class CondicaoType(str, enum.Enum):
+    NOVO      = "novo"
+    SEMINOVO  = "seminovo"
+    USADO     = "usado"
+
+
 class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
     """
     Core vehicle entity — the heart of the system.
@@ -76,6 +94,24 @@ class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
     # Moto-specific fields
     cilindrada: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True)   # cc
     tipo_moto: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)      # Sport, Naked, Trail...
+
+    # Carroceria / condição / portas
+    carroceria: Mapped[Optional[CarroceriaType]] = mapped_column(
+        SAEnum(CarroceriaType, name="carroceria_type"),
+        nullable=True,
+        index=True,
+    )
+    condicao: Mapped[CondicaoType] = mapped_column(
+        SAEnum(CondicaoType, name="condicao_type"),
+        default=CondicaoType.USADO,
+        nullable=False,
+        server_default="usado",
+    )
+    portas: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True)       # 2 ou 4
+    opcionais: Mapped[Optional[str]] = mapped_column(Text, nullable=True)            # JSON list
+
+    # Analytics
+    visualizacoes: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
 
     # Legal documents (UNIQUE constraints prevent duplicates)
     placa: Mapped[str] = mapped_column(String(10), unique=True, nullable=False, index=True)

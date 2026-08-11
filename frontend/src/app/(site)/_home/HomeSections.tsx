@@ -4,8 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ArrowRight, ShieldCheck, FileCheck, CreditCard, Handshake, ChevronRight, Car } from "lucide-react";
-import type { PublicVehicle, PublicStats, PublicSettings } from "@/lib/publicApi";
-import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
+import type { PublicVehicle, PublicStats, PublicSettings, PublicModeloDestaque } from "@/lib/publicApi";
+import { FUEL_LABELS, CAMBIO_LABELS, CARROCERIA_LABELS } from "@/lib/publicApi";
 import { vehicleSlug } from "@/components/vehicle/shared";
 import ReviewsSection from "../sobre/_ReviewsSection";
 
@@ -256,12 +256,162 @@ function AvalieSection({ whatsapp = "" }: { whatsapp?: string }) {
   );
 }
 
+// ─── Modelos Mais Buscados ────────────────────────────────────────────────────
+function ModelosMaisBuscados({ modelos }: { modelos: PublicModeloDestaque[] }) {
+  const [activeTab, setActiveTab] = useState<string>("todos");
+
+  // Compute tabs: "todos" + any distinct carroceria in use
+  const carroceriaSet = Array.from(new Set(modelos.map(m => m.carroceria)));
+  const tabs: { value: string; label: string }[] = [
+    { value: "todos", label: "Todos" },
+    ...carroceriaSet.map(c => ({ value: c, label: CARROCERIA_LABELS[c] ?? c })),
+  ];
+
+  const visible = activeTab === "todos" ? modelos : modelos.filter(m => m.carroceria === activeTab);
+
+  return (
+    <section style={{ padding: "64px 0", borderTop: "1px solid var(--s-border)" }} aria-label="Modelos mais buscados">
+      <div className="s-container">
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2.5, color: "rgba(255,255,255,0.22)", marginBottom: 6 }}>Destaque</p>
+            <h2 style={{ fontSize: "clamp(20px,3vw,26px)", fontWeight: 900, color: "#fff", letterSpacing: "-0.5px", lineHeight: 1 }}>
+              Modelos mais <em style={{ color: "var(--s-orange)", fontStyle: "normal" }}>buscados</em>
+            </h2>
+          </div>
+          <Link href="/estoque" className="s-see-all" style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>
+            Ver estoque <ArrowRight size={14} strokeWidth={2.5} />
+          </Link>
+        </div>
+
+        {/* Category tabs */}
+        {tabs.length > 2 && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 28 }}>
+            {tabs.map(t => {
+              const active = activeTab === t.value;
+              return (
+                <button
+                  key={t.value}
+                  onClick={() => setActiveTab(t.value)}
+                  style={{
+                    height: 34, padding: "0 16px", borderRadius: 999, cursor: "pointer",
+                    fontSize: 12, fontWeight: active ? 700 : 500,
+                    border: `1px solid ${active ? "var(--s-orange)" : "rgba(255,255,255,0.12)"}`,
+                    background: active ? "rgba(244,121,32,0.15)" : "rgba(255,255,255,0.04)",
+                    color: active ? "var(--s-orange)" : "rgba(255,255,255,0.45)",
+                    transition: "all 0.18s",
+                  }}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Cards grid */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+          gap: 16,
+        }}>
+          {visible.map((m, i) => (
+            <Link
+              key={m.id}
+              href={`/estoque?modelo=${encodeURIComponent(m.modelo)}&marca=${encodeURIComponent(m.marca)}`}
+              style={{ textDecoration: "none", transitionDelay: `${i * 35}ms` }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  aspectRatio: "16/10",
+                  background: "#1a1b20",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  cursor: "pointer",
+                  transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s",
+                  boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px) scale(1.015)";
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 40px rgba(0,0,0,0.35)";
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(244,121,32,0.35)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLDivElement).style.transform = "";
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(0,0,0,0.18)";
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)";
+                }}
+              >
+                {/* Imagem */}
+                {m.imagem_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={m.imagem_url}
+                    alt={`${m.marca} ${m.modelo}`}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <BrandLogoFallback marca={m.marca} size={52} />
+                  </div>
+                )}
+
+                {/* Gradient overlay */}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.82) 100%)" }} />
+
+                {/* Count badge */}
+                {m.total_disponiveis > 0 && (
+                  <div style={{
+                    position: "absolute", top: 10, right: 10,
+                    background: "rgba(14,15,17,0.72)", backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: 999, padding: "3px 10px",
+                    fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)",
+                  }}>
+                    {m.total_disponiveis} {m.total_disponiveis === 1 ? "unidade" : "unidades"}
+                  </div>
+                )}
+
+                {/* Info */}
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.45)", marginBottom: 2, letterSpacing: 0.3 }}>
+                    {m.marca}
+                  </p>
+                  <p style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
+                    {m.modelo}
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "var(--s-orange)", letterSpacing: 0.5, textTransform: "uppercase" }}>
+                      {CARROCERIA_LABELS[m.carroceria] ?? m.carroceria}
+                    </span>
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>·</span>
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", display: "flex", alignItems: "center", gap: 3 }}>
+                      Ver ofertas
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────
 interface HomeSectionsProps {
   featuredVehicles?: PublicVehicle[];
   recentVehicles?: PublicVehicle[];   // todos os disponíveis (sem filtro destaque)
   stats?: PublicStats;
   settings?: PublicSettings;
+  modelosDestaque?: PublicModeloDestaque[];
 }
 
 const DEFAULT_SETTINGS: PublicSettings = {
@@ -273,9 +423,10 @@ const DEFAULT_SETTINGS: PublicSettings = {
   hero_subtitulo: "Carros e motos selecionados com qualidade e transparência",
   stat_clientes: 0, stat_anos: 0, stat_satisfacao: 98,
   modo_manutencao: false,
+  ga_id: "", pixel_id: "",
 };
 
-export default function HomeSections({ featuredVehicles = [], recentVehicles = [], stats, settings = DEFAULT_SETTINGS }: HomeSectionsProps) {
+export default function HomeSections({ featuredVehicles = [], recentVehicles = [], stats, settings = DEFAULT_SETTINGS, modelosDestaque = [] }: HomeSectionsProps) {
   const [tab, setTab]               = useState<"carro" | "moto">("carro");
   const [marca, setMarca]           = useState("");
   const [modelo, setModelo]         = useState("");
@@ -560,6 +711,11 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
           </div>
         </div>
       </section>
+
+      {/* ============== MODELOS MAIS BUSCADOS ============== */}
+      {modelosDestaque.length > 0 && (
+        <ModelosMaisBuscados modelos={modelosDestaque} />
+      )}
 
       {/* ============== DESTAQUES DA SEMANA ============== */}
       <section className="s-section" aria-label="Destaques da semana">

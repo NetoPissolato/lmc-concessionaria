@@ -406,7 +406,7 @@ export default function VehicleDetailPage() {
 
   // Inicializa videoUrl quando o veículo carrega
   useEffect(() => {
-    if (vehicle) setVideoUrl((vehicle as Record<string, string>).video_url || "");
+    if (vehicle) setVideoUrl(vehicle.video_url || "");
   }, [vehicle?.id]);
 
   const updateStatusMutation = useMutation({

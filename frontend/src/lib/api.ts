@@ -227,5 +227,23 @@ export const reportsApi = {
   comissoes:     (params?: PeriodParams) => api.get("/reports/comissoes",     { params }).then(r => r.data),
 };
 
+// ─── Modelos Destaque API ─────────────────────────────────────────────────────
+export const modelosDestaqueApi = {
+  list: () => api.get("/modelos-destaque").then((r) => r.data),
+  create: (data: { marca: string; modelo: string; carroceria: string; ativo?: boolean; ordem?: number }) =>
+    api.post("/modelos-destaque", data).then((r) => r.data),
+  update: (id: string, data: Partial<{ marca: string; modelo: string; carroceria: string; ativo: boolean; ordem: number }>) =>
+    api.put(`/modelos-destaque/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/modelos-destaque/${id}`),
+  uploadImagem: (id: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return api.post(`/modelos-destaque/${id}/imagem`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data);
+  },
+  removeImagem: (id: string) => api.delete(`/modelos-destaque/${id}/imagem`).then((r) => r.data),
+};
+
 export { TokenStorage };
 export default api;

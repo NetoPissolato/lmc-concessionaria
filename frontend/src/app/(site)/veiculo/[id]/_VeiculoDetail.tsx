@@ -10,7 +10,7 @@ import {
   CreditCard, ChevronLeft,
 } from "lucide-react";
 import type { PublicVehicle } from "@/lib/publicApi";
-import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
+import { FUEL_LABELS, CAMBIO_LABELS, CARROCERIA_LABELS, trackVehicleView } from "@/lib/publicApi";
 import { vehicleSlug } from "@/components/vehicle/shared";
 
 function fmtPrice(v: number) { return new Intl.NumberFormat("pt-BR").format(v); }
@@ -88,6 +88,12 @@ export default function VeiculoDetail({
 
   const prev = () => setActive(i => (i - 1 + totalPhotos) % totalPhotos);
   const next = () => setActive(i => (i + 1) % totalPhotos);
+
+  // Conta visualização ao carregar a página (client-side)
+  useEffect(() => {
+    trackVehicleView(vehicle.id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicle.id]);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (!lightbox) return;

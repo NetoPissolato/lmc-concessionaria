@@ -45,19 +45,34 @@ export interface PublicVehicle {
   versao: string | null;
   ano: number;
   cor: string;
-  combustivel: string; // "flex" | "gasolina" | "diesel" | ...
-  cambio: string;      // "manual" | "automatico" | "cvt" | "automatizado"
+  combustivel: string;
+  cambio: string;
   quilometragem: number;
   tipo: "carro" | "moto";
   cilindrada: number | null;
   tipo_moto: string | null;
+  carroceria: string | null;
+  condicao: string;
+  portas: number | null;
+  opcionais: string[];
   valor_anunciado: number | null;
   status: "disponivel";
   destaque: boolean;
   observacoes: string | null;
   video_url: string | null;
   photos: PublicPhoto[];
+  visualizacoes: number;
   created_at: string;
+}
+
+export interface PublicModeloDestaque {
+  id: string;
+  marca: string;
+  modelo: string;
+  carroceria: string;
+  imagem_url: string | null;
+  total_disponiveis: number;
+  ordem: number;
 }
 
 export interface PublicStats {
@@ -77,10 +92,16 @@ export interface PublicMarcas {
 export interface VehicleFilters {
   tipo?: "carro" | "moto";
   marca?: string;
+  modelo?: string;
   cambio?: string;
   combustivel?: string;
+  carroceria?: string;
+  condicao?: string;
   ano_min?: number;
+  ano_max?: number;
+  preco_min?: number;
   preco_max?: number;
+  km_max?: number;
   destaque?: boolean;
   q?: string;
   skip?: number;
@@ -105,6 +126,24 @@ export const CAMBIO_LABELS: Record<string, string> = {
   automatico:   "Automático",
   automatizado: "Automatizado",
   cvt:          "CVT",
+};
+
+export const CARROCERIA_LABELS: Record<string, string> = {
+  suv:         "SUV",
+  hatch:       "Hatch",
+  sedan:       "Sedã",
+  picape:      "Picape",
+  coupe:       "Cupê",
+  minivan:     "Minivan",
+  conversivel: "Conversível",
+  perua:       "Perua / SW",
+  van:         "Van / Utilitário",
+};
+
+export const CONDICAO_LABELS: Record<string, string> = {
+  novo:     "Novo",
+  seminovo: "Seminovo",
+  usado:    "Usado",
 };
 
 // ─── Helper interno ────────────────────────────────────────────────────────────
@@ -149,10 +188,16 @@ export async function getPublicVehicles(
   const params: Record<string, string | number | boolean> = {};
   if (filters.tipo)        params.tipo        = filters.tipo;
   if (filters.marca)       params.marca       = filters.marca;
+  if (filters.modelo)      params.modelo      = filters.modelo;
   if (filters.cambio)      params.cambio      = filters.cambio;
   if (filters.combustivel) params.combustivel = filters.combustivel;
+  if (filters.carroceria)  params.carroceria  = filters.carroceria;
+  if (filters.condicao)    params.condicao    = filters.condicao;
   if (filters.ano_min)     params.ano_min     = filters.ano_min;
+  if (filters.ano_max)     params.ano_max     = filters.ano_max;
+  if (filters.preco_min)   params.preco_min   = filters.preco_min;
   if (filters.preco_max)   params.preco_max   = filters.preco_max;
+  if (filters.km_max)      params.km_max      = filters.km_max;
   if (filters.destaque !== undefined) params.destaque = filters.destaque;
   if (filters.q)           params.q           = filters.q;
   if (filters.skip)        params.skip        = filters.skip;
@@ -168,7 +213,31 @@ export async function getPublicVehicles(
 
 /** Busca detalhe de um veículo pelo ID. Retorna null se não encontrado. */
 export async function getPublicVehicle(id: string): Promise<PublicVehicle | null> {
-  return fetchPublic<PublicVehicle>(`/vehicles/${id}`);
+  const data = await fetchPublic<PublicVehicle>(`/vehicles/${id}`);
+  if (!data) return null;
+  return {
+    ...data,
+    photos: data.photos.map(p => ({ ...p, url: resolvePhotoUrl(p.url) })),
+  };
+}
+
+/** Retorna a lista de modelos configurados como destaque pelo admin. */
+export async function getPublicModelosDestaque(): Promise<PublicModeloDestaque[]> {
+  const data = (await fetchPublic<PublicModeloDestaque[]>("/modelos-destaque")) ?? [];
+  return data.map(m => ({
+    ...m,
+    imagem_url: m.imagem_url ? resolvePhotoUrl(m.imagem_url) : null,
+  }));
+}
+
+/**
+ * Incrementa o contador de visualizações de um veículo.
+ * Chamado no client-side (useEffect) na página de detalhe do veículo.
+ * Falha silenciosamente.
+ */
+export function trackVehicleView(vehicleId: string): void {
+  const clientBase = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1") + "/public";
+  fetch(`${clientBase}/vehicles/${vehicleId}/view`, { method: "POST" }).catch(() => {});
 }
 
 /** Retorna estatísticas para o hero do site (total veículos, marcas, satisfação). */

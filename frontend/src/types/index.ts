@@ -19,6 +19,19 @@ export type FuelType =
 
 export type TransmissionType = "manual" | "automatico" | "automatizado" | "cvt";
 
+export type CarroceriaType =
+  | "suv"
+  | "hatch"
+  | "sedan"
+  | "picape"
+  | "coupe"
+  | "minivan"
+  | "conversivel"
+  | "perua"
+  | "van";
+
+export type CondicaoType = "novo" | "seminovo" | "usado";
+
 export type ExpenseCategory =
   | "mecanica"
   | "funilaria"
@@ -107,6 +120,13 @@ export interface Vehicle {
   tipo?: "carro" | "moto";
   cilindrada?: number;
   tipo_moto?: string;
+  carroceria?: CarroceriaType;
+  condicao?: CondicaoType;
+  portas?: number;
+  opcionais?: string[];
+  visualizacoes?: number;
+  destaque?: boolean;
+  video_url?: string;
   // Computed
   total_despesas?: number;
   custo_total?: number;
@@ -114,6 +134,19 @@ export interface Vehicle {
   margem_percentual?: number;
   // Gallery
   photos?: VehiclePhoto[];
+}
+
+// ─── ModeloDestaque ───────────────────────────────────────────────────────────
+export interface ModeloDestaque {
+  id: string;
+  marca: string;
+  modelo: string;
+  carroceria: CarroceriaType | string;
+  imagem_url?: string | null;
+  ativo: boolean;
+  ordem: number;
+  total_disponiveis?: number;
+  created_at: string;
 }
 
 export interface VehicleExpense {

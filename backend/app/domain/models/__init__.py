@@ -14,6 +14,7 @@ from app.domain.models.store_settings import StoreSettings  # noqa: F401
 from app.domain.models.lead import Lead  # noqa: F401
 from app.domain.models.review import Review  # noqa: F401
 from app.domain.models.availability_alert import AvailabilityAlert  # noqa: F401
+from app.domain.models.modelo_destaque import ModeloDestaque  # noqa: F401
 
 __all__ = [
     "Base",
@@ -29,4 +30,5 @@ __all__ = [
     "Lead",
     "Review",
     "AvailabilityAlert",
+    "ModeloDestaque",
 ]

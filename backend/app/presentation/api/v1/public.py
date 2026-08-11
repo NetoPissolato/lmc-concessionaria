@@ -7,7 +7,7 @@ NUNCA expoe dados financeiros internos (custo, margem, placa completa, chassi, e
 from fastapi import APIRouter, Query, Path as FPath, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, func, desc, update
 from sqlalchemy.orm import selectinload
 from fastapi import Depends
 from typing import Optional, List
@@ -24,6 +24,7 @@ from app.domain.models.review import Review
 from app.domain.models.availability_alert import AvailabilityAlert
 from app.domain.models.store_settings import StoreSettings
 from app.domain.models.user import User as UserModel
+from app.domain.models.modelo_destaque import ModeloDestaque
 from app.application.services.upload_service import UploadService
 
 router = APIRouter(prefix="/public", tags=["Publico"])
@@ -108,6 +109,14 @@ def _to_public(v: Vehicle) -> dict:
                 "ordem": p.ordem,
             })
 
+    # Deserializa opcionais de JSON string para lista
+    opcionais_list = []
+    if v.opcionais:
+        try:
+            opcionais_list = json.loads(v.opcionais)
+        except Exception:
+            opcionais_list = []
+
     return {
         "id": v.id,
         "marca": v.marca,
@@ -121,12 +130,17 @@ def _to_public(v: Vehicle) -> dict:
         "tipo": v.tipo.value,
         "cilindrada": v.cilindrada,
         "tipo_moto": v.tipo_moto,
+        "carroceria": v.carroceria.value if v.carroceria else None,
+        "condicao": v.condicao.value if v.condicao else "usado",
+        "portas": v.portas,
+        "opcionais": opcionais_list,
         "valor_anunciado": float(v.valor_anunciado) if v.valor_anunciado else None,
         "status": v.status.value,
         "destaque": v.destaque,
         "observacoes": v.observacoes,
         "photos": photos,
         "video_url": v.video_url,
+        "visualizacoes": v.visualizacoes or 0,
         "created_at": v.created_at.isoformat() if v.created_at else None,
     }
 
@@ -136,10 +150,16 @@ def _to_public(v: Vehicle) -> dict:
 async def list_public_vehicles(
     tipo: Optional[str] = Query(None, description="carro | moto"),
     marca: Optional[str] = Query(None, description="Filtrar por marca"),
+    modelo: Optional[str] = Query(None, description="Filtrar por modelo"),
     cambio: Optional[str] = Query(None, description="manual | automatico | cvt"),
     combustivel: Optional[str] = Query(None, description="flex | gasolina | diesel | ..."),
+    carroceria: Optional[str] = Query(None, description="suv | hatch | sedan | picape | coupe | minivan | conversivel | perua | van"),
+    condicao: Optional[str] = Query(None, description="novo | seminovo | usado"),
     ano_min: Optional[int] = Query(None, description="Ano mínimo do veículo"),
+    ano_max: Optional[int] = Query(None, description="Ano máximo do veículo"),
+    preco_min: Optional[float] = Query(None, description="Preço mínimo anunciado"),
     preco_max: Optional[float] = Query(None, description="Preço máximo anunciado"),
+    km_max: Optional[int] = Query(None, description="Quilometragem máxima"),
     destaque: Optional[bool] = Query(None, description="Filtrar apenas destaques"),
     q: Optional[str] = Query(None, description="Busca livre por marca/modelo"),
     skip: int = Query(0, ge=0),
@@ -161,7 +181,6 @@ async def list_public_vehicles(
         .order_by(Vehicle.destaque.desc(), Vehicle.created_at.desc())
     )
 
-    # Filtros opcionais
     if tipo:
         try:
             stmt = stmt.where(Vehicle.tipo == VehicleType(tipo.lower()))
@@ -171,17 +190,35 @@ async def list_public_vehicles(
     if marca:
         stmt = stmt.where(Vehicle.marca.ilike(f"%{marca}%"))
 
+    if modelo:
+        stmt = stmt.where(Vehicle.modelo.ilike(f"%{modelo}%"))
+
     if cambio:
         stmt = stmt.where(Vehicle.cambio == cambio.lower())
 
     if combustivel:
         stmt = stmt.where(Vehicle.combustivel == combustivel.lower())
 
+    if carroceria:
+        stmt = stmt.where(Vehicle.carroceria == carroceria.lower())
+
+    if condicao:
+        stmt = stmt.where(Vehicle.condicao == condicao.lower())
+
     if ano_min:
         stmt = stmt.where(Vehicle.ano >= ano_min)
 
+    if ano_max:
+        stmt = stmt.where(Vehicle.ano <= ano_max)
+
+    if preco_min:
+        stmt = stmt.where(Vehicle.valor_anunciado >= Decimal(str(preco_min)))
+
     if preco_max:
         stmt = stmt.where(Vehicle.valor_anunciado <= Decimal(str(preco_max)))
+
+    if km_max:
+        stmt = stmt.where(Vehicle.quilometragem <= km_max)
 
     if destaque is not None:
         stmt = stmt.where(Vehicle.destaque == destaque)
@@ -228,6 +265,88 @@ async def get_public_vehicle(
         )
 
     return _to_public(vehicle)
+
+
+# ─── POST /public/vehicles/{id}/view ───────────────────────────────────
+@router.post("/vehicles/{vehicle_id}/view", summary="Incrementar contador de visualizações")
+async def increment_vehicle_views(
+    vehicle_id: str = FPath(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Chamado pelo site quando um usuário abre a página de um veículo.
+    Incrementa o contador de visualizações de forma assíncrona.
+    """
+    await db.execute(
+        update(Vehicle)
+        .where(Vehicle.id == vehicle_id, Vehicle.deleted_at.is_(None))
+        .values(visualizacoes=Vehicle.visualizacoes + 1)
+    )
+    await db.commit()
+    return {"ok": True}
+
+
+# ─── GET /public/modelos-destaque ────────────────────────────────────
+@router.get("/modelos-destaque", summary="Modelos em destaque (site público)")
+async def list_public_modelos_destaque(db: AsyncSession = Depends(get_db)):
+    """
+    Retorna lista de modelos configurados como destaque pelo admin.
+    Inclui contagem de veículos disponíveis daquele modelo no estoque
+    e a URL de imagem do estoque como fallback.
+    """
+    stmt = (
+        select(ModeloDestaque)
+        .where(ModeloDestaque.ativo == True)  # noqa: E712
+        .order_by(ModeloDestaque.ordem.asc(), ModeloDestaque.created_at.asc())
+    )
+    result = await db.execute(stmt)
+    modelos = result.scalars().all()
+
+    # Para cada modelo, busca contagem + foto do estoque
+    out = []
+    for m in modelos:
+        # Conta veículos disponíveis desse marca+modelo
+        count_q = await db.execute(
+            select(func.count(Vehicle.id)).where(
+                Vehicle.marca.ilike(m.marca),
+                Vehicle.modelo.ilike(m.modelo),
+                Vehicle.status == VehicleStatus.DISPONIVEL,
+                Vehicle.deleted_at.is_(None),
+            )
+        )
+        total = count_q.scalar_one()
+
+        # Foto de fallback: pega a foto principal do primeiro veículo desse modelo
+        foto_estoque = None
+        if not m.imagem_url:
+            foto_q = await db.execute(
+                select(Vehicle)
+                .where(
+                    Vehicle.marca.ilike(m.marca),
+                    Vehicle.modelo.ilike(m.modelo),
+                    Vehicle.status == VehicleStatus.DISPONIVEL,
+                    Vehicle.deleted_at.is_(None),
+                )
+                .options(selectinload(Vehicle.photos))
+                .limit(1)
+            )
+            v = foto_q.scalar_one_or_none()
+            if v and v.photos:
+                main = next((p for p in v.photos if p.is_main), v.photos[0] if v.photos else None)
+                if main:
+                    foto_estoque = main.url
+
+        out.append({
+            "id": m.id,
+            "marca": m.marca,
+            "modelo": m.modelo,
+            "carroceria": m.carroceria,
+            "imagem_url": m.imagem_url or foto_estoque,
+            "total_disponiveis": total,
+            "ordem": m.ordem,
+        })
+
+    return out
 
 
 # ─── GET /public/stats ─────────────────────────────────────────────────────────

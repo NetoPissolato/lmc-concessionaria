@@ -2,7 +2,7 @@ from pydantic import BaseModel, field_validator, model_validator
 from typing import Optional, List
 from decimal import Decimal
 from datetime import date, datetime
-from app.domain.models.vehicle import VehicleStatus, FuelType, TransmissionType, VehicleType
+from app.domain.models.vehicle import VehicleStatus, FuelType, TransmissionType, VehicleType, CarroceriaType, CondicaoType
 from app.application.schemas.vehicle_photo import VehiclePhotoResponse
 
 
@@ -123,6 +123,10 @@ class VehicleCreate(BaseModel):
     observacoes: Optional[str] = None
     destaque: bool = False
     video_url: Optional[str] = None
+    carroceria: Optional[CarroceriaType] = None
+    condicao: CondicaoType = CondicaoType.USADO
+    portas: Optional[int] = None
+    opcionais: Optional[str] = None  # JSON list serialized as string
 
     @field_validator("marca")
     @classmethod
@@ -197,6 +201,10 @@ class VehicleUpdate(BaseModel):
     observacoes: Optional[str] = None
     destaque: Optional[bool] = None
     video_url: Optional[str] = None
+    carroceria: Optional[CarroceriaType] = None
+    condicao: Optional[CondicaoType] = None
+    portas: Optional[int] = None
+    opcionais: Optional[str] = None  # JSON list serialized as string
 
     # Mesmos normalizadores do VehicleCreate
     @field_validator("marca", mode="before")
@@ -245,6 +253,11 @@ class VehicleResponse(BaseModel):
     observacoes: Optional[str]
     destaque: bool = False
     video_url: Optional[str] = None
+    carroceria: Optional[CarroceriaType] = None
+    condicao: CondicaoType = CondicaoType.USADO
+    portas: Optional[int] = None
+    opcionais: Optional[str] = None
+    visualizacoes: int = 0
     created_at: datetime
     updated_at: datetime
     # Computed fields
@@ -277,6 +290,10 @@ class VehicleListResponse(BaseModel):
     destaque: bool = False
     data_compra: date                           # used for sort
     created_at: datetime
+    carroceria: Optional[CarroceriaType] = None
+    condicao: CondicaoType = CondicaoType.USADO
+    portas: Optional[int] = None
+    visualizacoes: int = 0
     # Computed from model properties (populated when expenses are eager-loaded)
     custo_total: Optional[Decimal] = None
     lucro_bruto: Optional[Decimal] = None

@@ -25,6 +25,7 @@ from app.presentation.api.v1 import auth, vehicles, customers_sales, financial, 
 from app.presentation.api.v1 import settings as settings_router_module
 from app.presentation.api.v1 import leads as leads_router_module
 from app.presentation.api.v1 import reviews as reviews_router_module
+from app.presentation.api.v1 import modelos_destaque as modelos_destaque_router
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -44,6 +45,7 @@ async def lifespan(app: FastAPI):
     Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
     Path(settings.UPLOAD_DIR, "avatars").mkdir(parents=True, exist_ok=True)
     Path(settings.UPLOAD_DIR, "vehicles").mkdir(parents=True, exist_ok=True)
+    Path(settings.UPLOAD_DIR, "modelos").mkdir(parents=True, exist_ok=True)
     logger.info(f"✅ Diretório de uploads: {settings.UPLOAD_DIR}")
 
     # Test Redis connection
@@ -147,6 +149,7 @@ app.include_router(public.router, prefix=PREFIX)  # Rotas publicas — sem JWT
 app.include_router(settings_router_module.router, prefix=PREFIX)
 app.include_router(leads_router_module.router, prefix=PREFIX)    # CRM: leads
 app.include_router(reviews_router_module.router, prefix=PREFIX)  # Reviews de clientes
+app.include_router(modelos_destaque_router.router, prefix=PREFIX)  # Modelos em destaque (home)
 
 # Static files for uploaded avatars — served at /uploads/avatars/<filename>
 _upload_path = Path(settings.UPLOAD_DIR)

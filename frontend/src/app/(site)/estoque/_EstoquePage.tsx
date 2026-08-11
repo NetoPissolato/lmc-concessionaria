@@ -7,10 +7,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import {
   SlidersHorizontal, X, ChevronRight,
   Search, LayoutGrid, List, Heart, Gauge, Fuel,
-  Calendar, ArrowUpDown, Car, ChevronLeft,
+  Calendar, ArrowUpDown, Car, ChevronLeft, Scale,
 } from "lucide-react";
 import type { PublicVehicle } from "@/lib/publicApi";
-import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
+import { FUEL_LABELS, CAMBIO_LABELS, CARROCERIA_LABELS } from "@/lib/publicApi";
 import AlerteMe from "../_AlerteMe";
 import { vehicleSlug } from "@/components/vehicle/shared";
 
@@ -26,15 +26,18 @@ interface Filters {
   tipo: string[];
   cambio: string[];
   combustivel: string[];
+  carroceria: string[];
+  condicao: string[];
   precoMax: number;
   anoMin: string;
   marca: string;
+  modelo: string;
   search: string;
 }
 
 const DEFAULT_FILTERS: Filters = {
-  tipo: [], cambio: [], combustivel: [],
-  precoMax: 999999, anoMin: "", marca: "", search: "",
+  tipo: [], cambio: [], combustivel: [], carroceria: [], condicao: [],
+  precoMax: 999999, anoMin: "", marca: "", modelo: "", search: "",
 };
 
 // Brand colors for fallback logo
@@ -113,7 +116,8 @@ function FilterSidebar({ filters, onChange, onClear, vehicles, onClose }: {
   function countBy(key: keyof Vehicle, val: string) { return vehicles.filter(v => String(v[key]) === val).length; }
   const marcas = [...new Set(vehicles.map(v => v.marca))].sort();
   const activeCount = filters.tipo.length + filters.cambio.length + filters.combustivel.length +
-    (filters.precoMax < 999999 ? 1 : 0) + (filters.anoMin ? 1 : 0) + (filters.marca ? 1 : 0);
+    filters.carroceria.length + filters.condicao.length +
+    (filters.precoMax < 999999 ? 1 : 0) + (filters.anoMin ? 1 : 0) + (filters.marca ? 1 : 0) + (filters.modelo ? 1 : 0);
   return (
     <aside className="s-sidebar" style={{ position:"sticky", top:"calc(var(--s-header-h) + 20px)" }}>
       <div style={{ display:"flex", alignItems:"center", marginBottom:20 }}>
@@ -147,6 +151,24 @@ function FilterSidebar({ filters, onChange, onClear, vehicles, onClose }: {
             <CheckRow key={val} label={label} count={countBy("combustivel",val)} checked={filters.combustivel.includes(val)} onToggle={() => onChange({ combustivel: toggleArr(filters.combustivel,val) })} />
           ))}
       </div>
+      {vehicles.some(v => v.carroceria) && (
+        <div className="s-filter-group">
+          <p className="s-filter-group-title">Carroceria</p>
+          {Object.entries(CARROCERIA_LABELS)
+            .filter(([val]) => vehicles.some(v => v.carroceria === val))
+            .map(([val, label]) => (
+              <CheckRow key={val} label={label} count={countBy("carroceria",val)} checked={filters.carroceria.includes(val)} onToggle={() => onChange({ carroceria: toggleArr(filters.carroceria,val) })} />
+            ))}
+        </div>
+      )}
+      {vehicles.some(v => v.condicao && v.condicao !== "usado") && (
+        <div className="s-filter-group">
+          <p className="s-filter-group-title">Condição</p>
+          <CheckRow label="Novo"     count={countBy("condicao","novo")}     checked={filters.condicao.includes("novo")}     onToggle={() => onChange({ condicao: toggleArr(filters.condicao,"novo") })} />
+          <CheckRow label="Seminovo" count={countBy("condicao","seminovo")} checked={filters.condicao.includes("seminovo")} onToggle={() => onChange({ condicao: toggleArr(filters.condicao,"seminovo") })} />
+          <CheckRow label="Usado"    count={countBy("condicao","usado")}    checked={filters.condicao.includes("usado")}    onToggle={() => onChange({ condicao: toggleArr(filters.condicao,"usado") })} />
+        </div>
+      )}
       <div className="s-filter-group">
         <p className="s-filter-group-title">Marca</p>
         <select className="s-select-light" value={filters.marca} onChange={e => onChange({ marca: e.target.value })} style={{ width:"100%" }}>
@@ -195,7 +217,7 @@ function CompareBar({ ids, vehicles, onRemove, onClear }: { ids: string[]; vehic
       padding:"12px 20px", display:"flex", alignItems:"center", gap:12,
       animation:"s-fadeInUp 0.3s both",
     }}>
-      <GitCompare size={18} color="var(--s-orange)" strokeWidth={2} />
+      <Scale size={18} color="var(--s-orange)" strokeWidth={2} />
       <span style={{ fontSize:13, color:"rgba(255,255,255,0.70)", fontWeight:600 }}>
         {ids.length} veículo{ids.length > 1 ? "s" : ""} para comparar
       </span>
@@ -360,13 +382,16 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
 
   // Init from URL
   const [filters, setFilters] = useState<Filters>(() => ({
-    tipo:         searchParams.get("tipo")   ? [searchParams.get("tipo")!]  : [],
-    marca:        searchParams.get("marca")  ?? "",
-    anoMin:       searchParams.get("anoMin") ?? "",
-    precoMax:     searchParams.get("preco")  ? Number(searchParams.get("preco")) : 999999,
+    tipo:         searchParams.get("tipo")        ? [searchParams.get("tipo")!]  : [],
+    marca:        searchParams.get("marca")       ?? "",
+    modelo:       searchParams.get("modelo")      ?? "",
+    anoMin:       searchParams.get("anoMin")      ?? "",
+    precoMax:     searchParams.get("preco")       ? Number(searchParams.get("preco")) : 999999,
     cambio:       [],
     combustivel:  [],
-    search:       searchParams.get("q")      ?? "",
+    carroceria:   searchParams.get("carroceria") ? [searchParams.get("carroceria")!] : [],
+    condicao:     [],
+    search:       searchParams.get("q")           ?? "",
   }));
   const [sort, setSort]             = useState("recentes");
   const [viewMode, setViewMode]     = useState<"grid"|"list">("grid");
@@ -404,13 +429,16 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
 
   const result = useMemo(() => {
     let list = [...vehicles];
-    if (filters.search)          list = list.filter(v => (v.marca+" "+v.modelo+" "+(v.versao??"")+" "+(v.cor??" ")).toLowerCase().includes(filters.search.toLowerCase()));
+    if (filters.search)             list = list.filter(v => (v.marca+" "+v.modelo+" "+(v.versao??"")+" "+(v.cor??" ")).toLowerCase().includes(filters.search.toLowerCase()));
     if (filters.tipo.length)        list = list.filter(v => filters.tipo.includes(v.tipo));
     if (filters.cambio.length)      list = list.filter(v => filters.cambio.some(c => v.cambio?.toLowerCase().includes(c.toLowerCase())));
     if (filters.combustivel.length) list = list.filter(v => filters.combustivel.some(c => v.combustivel?.toLowerCase().includes(c.toLowerCase())));
+    if (filters.carroceria.length)  list = list.filter(v => v.carroceria && filters.carroceria.includes(v.carroceria));
+    if (filters.condicao.length)    list = list.filter(v => v.condicao && filters.condicao.includes(v.condicao));
     if (filters.precoMax < 999999)  list = list.filter(v => (v.valor_anunciado ?? 0) <= filters.precoMax);
     if (filters.anoMin)             list = list.filter(v => v.ano >= Number(filters.anoMin));
-    if (filters.marca)              list = list.filter(v => v.marca === filters.marca);
+    if (filters.marca)              list = list.filter(v => v.marca.toLowerCase().includes(filters.marca.toLowerCase()));
+    if (filters.modelo)             list = list.filter(v => v.modelo.toLowerCase().includes(filters.modelo.toLowerCase()));
     if (sort === "menor-preco") list.sort((a,b) => (a.valor_anunciado ?? 0) - (b.valor_anunciado ?? 0));
     if (sort === "maior-preco") list.sort((a,b) => (b.valor_anunciado ?? 0) - (a.valor_anunciado ?? 0));
     if (sort === "menor-km")    list.sort((a,b) => (a.quilometragem??0) - (b.quilometragem??0));
@@ -425,8 +453,11 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
     ...filters.tipo.map(t        => ({ label: t === "carro" ? "Carros" : "Motos", onRemove: () => updateFilters({ tipo: filters.tipo.filter(x => x !== t) }) })),
     ...filters.cambio.map(c      => ({ label: c, onRemove: () => updateFilters({ cambio: filters.cambio.filter(x => x !== c) }) })),
     ...filters.combustivel.map(c => ({ label: c, onRemove: () => updateFilters({ combustivel: filters.combustivel.filter(x => x !== c) }) })),
-    ...(filters.marca  ? [{ label: filters.marca, onRemove: () => updateFilters({ marca: "" }) }] : []),
-    ...(filters.anoMin ? [{ label: "A partir de "+filters.anoMin, onRemove: () => updateFilters({ anoMin: "" }) }] : []),
+    ...filters.carroceria.map(c  => ({ label: CARROCERIA_LABELS[c] ?? c, onRemove: () => updateFilters({ carroceria: filters.carroceria.filter(x => x !== c) }) })),
+    ...filters.condicao.map(c    => ({ label: c, onRemove: () => updateFilters({ condicao: filters.condicao.filter(x => x !== c) }) })),
+    ...(filters.marca  ? [{ label: filters.marca,                              onRemove: () => updateFilters({ marca: "" }) }] : []),
+    ...(filters.modelo ? [{ label: `Modelo: ${filters.modelo}`,               onRemove: () => updateFilters({ modelo: "" }) }] : []),
+    ...(filters.anoMin ? [{ label: "A partir de "+filters.anoMin,             onRemove: () => updateFilters({ anoMin: "" }) }] : []),
     ...(filters.precoMax < 999999 ? [{ label: "Ate R$ "+fmtPrice(filters.precoMax), onRemove: () => updateFilters({ precoMax: 999999 }) }] : []),
   ];
 

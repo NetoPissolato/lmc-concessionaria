@@ -56,6 +56,10 @@ export default function EditarVeiculoPage() {
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const { isMobile } = useBreakpoint();
+  // Extra fields not in FormState
+  const [carroceria, setCarroceria] = useState("");
+  const [condicao,   setCondicao]   = useState("usado");
+  const [portas,     setPortas]     = useState<number | "">(4);
 
   const { data: vehicle, isLoading } = useQuery<Vehicle>({
     queryKey: ["vehicle", id],
@@ -104,8 +108,12 @@ export default function EditarVeiculoPage() {
       valor_minimo: vehicle.valor_minimo || 0,
       status: vehicle.status,
       observacoes: vehicle.observacoes || "",
-      video_url: (vehicle as Record<string, string>).video_url || "",
+      video_url: vehicle.video_url || "",
     });
+    // Populate extra fields
+    setCarroceria(vehicle.carroceria || "");
+    setCondicao(vehicle.condicao || "usado");
+    setPortas(vehicle.portas || "");
   }, [vehicle]);
 
   const mutation = useMutation({
@@ -180,6 +188,9 @@ export default function EditarVeiculoPage() {
       status: form.status,
       observacoes: form.observacoes.trim() || undefined,
       video_url: form.video_url.trim() || undefined,
+      carroceria: (carroceria || undefined) as import("@/types").CarroceriaType | undefined,
+      condicao: condicao as import("@/types").CondicaoType | undefined,
+      portas: portas || undefined,
     });
   };
 
@@ -253,6 +264,34 @@ export default function EditarVeiculoPage() {
                     onChange={e => setForm(f => ({ ...f, quilometragem: maskKM(e.target.value) }))} />
                   <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
                 </div>
+              </Field>
+              <Field label="Carroceria" error={undefined}>
+                <select className="input" style={{ fontSize: "13px" }} value={carroceria} onChange={e => setCarroceria(e.target.value)}>
+                  <option value="">Selecionar...</option>
+                  <option value="suv">SUV</option>
+                  <option value="hatch">Hatch</option>
+                  <option value="sedan">Sedã</option>
+                  <option value="picape">Picape</option>
+                  <option value="coupe">Cupê</option>
+                  <option value="minivan">Minivan</option>
+                  <option value="conversivel">Conversível</option>
+                  <option value="perua">Perua / SW</option>
+                  <option value="van">Van / Utilitário</option>
+                </select>
+              </Field>
+              <Field label="Condição" error={undefined}>
+                <select className="input" style={{ fontSize: "13px" }} value={condicao} onChange={e => setCondicao(e.target.value)}>
+                  <option value="usado">Usado</option>
+                  <option value="seminovo">Seminovo</option>
+                  <option value="novo">Novo</option>
+                </select>
+              </Field>
+              <Field label="Portas" error={undefined}>
+                <select className="input" style={{ fontSize: "13px" }} value={portas} onChange={e => setPortas(e.target.value === "" ? "" : Number(e.target.value))}>
+                  <option value="">N/A</option>
+                  <option value={2}>2 portas</option>
+                  <option value={4}>4 portas</option>
+                </select>
               </Field>
               <Field label="Status" required>
                 <Select
