@@ -478,3 +478,41 @@ async def create_availability_alert(
     db.add(alert)
     await db.commit()
     return {"ok": True, "message": "Perfeito! Voce sera notificado quando o veiculo estiver disponivel."}
+
+
+# ─── POST /public/leads — Formulário de contato público ───────────────────────
+
+class LeadPublicSchema(BaseModel):
+    nome: str
+    telefone: str = "nao informado"
+    email: Optional[str] = None
+    mensagem: Optional[str] = None
+    veiculo_id: Optional[str] = None
+    veiculo_descricao: Optional[str] = None
+    origem: str = "contato"
+
+
+@router.post("/leads", status_code=201, summary="Salvar lead do formulario de contato")
+async def create_public_lead(
+    body: LeadPublicSchema,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Recebe o formulario de contato do site publico e salva como lead no CRM.
+    Nao requer autenticacao.
+    """
+    import uuid
+    lead = Lead(
+        id=str(uuid.uuid4()),
+        nome=body.nome.strip(),
+        telefone=body.telefone.strip(),
+        email=body.email.strip() if body.email else None,
+        mensagem=body.mensagem,
+        veiculo_id=body.veiculo_id,
+        veiculo_descricao=body.veiculo_descricao,
+        status=LeadStatus.novo,
+        origem=body.origem,
+    )
+    db.add(lead)
+    await db.commit()
+    return {"ok": True, "message": "Mensagem recebida! Entraremos em contato em breve."}
