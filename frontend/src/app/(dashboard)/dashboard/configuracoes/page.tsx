@@ -29,7 +29,6 @@ const EMPTY: FormState = {
   stat_clientes:0,stat_anos:0,stat_satisfacao:98,modo_manutencao:false,
 };
 
-// Styles
 const inp: React.CSSProperties = {
   width:"100%", padding:"11px 14px",
   background:"rgba(255,255,255,0.04)",
@@ -44,18 +43,13 @@ const lbl: React.CSSProperties = {
   color:"var(--text-muted)", marginBottom:7,
 };
 
-function Inp({ val, set, ph, type="text", icon }: { val:string|number; set:(v:string)=>void; ph?:string; type?:string; icon?:React.ReactNode }) {
+function Inp({ val, set, ph, type="text" }: { val:string|number; set:(v:string)=>void; ph?:string; type?:string }) {
   const [focus, setFocus] = React.useState(false);
   return (
-    <div style={{ position:"relative" }}>
-      {icon && <span style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"var(--text-muted)", display:"flex" }}>{icon}</span>}
-      <input type={type} value={val} onChange={e=>set(e.target.value)}
-        onFocus={()=>setFocus(true)} onBlur={()=>setFocus(false)}
-        placeholder={ph}
-        style={{ ...inp, paddingLeft: icon ? 36 : 14,
-          borderColor: focus ? "var(--brand)" : "rgba(255,255,255,0.09)",
-          background: focus ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.04)" }} />
-    </div>
+    <input type={type} value={val} onChange={e=>set(e.target.value)}
+      onFocus={()=>setFocus(true)} onBlur={()=>setFocus(false)}
+      placeholder={ph}
+      style={{ ...inp, borderColor: focus ? "var(--brand)" : "rgba(255,255,255,0.09)", background: focus ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.04)" }} />
   );
 }
 function NumInp({ val, set, ph }: { val:number; set:(v:number)=>void; ph?:string }) {
@@ -64,9 +58,7 @@ function NumInp({ val, set, ph }: { val:number; set:(v:number)=>void; ph?:string
     <input type="number" value={val} onChange={e=>set(Number(e.target.value))}
       onFocus={()=>setFocus(true)} onBlur={()=>setFocus(false)}
       placeholder={ph}
-      style={{ ...inp,
-        borderColor: focus ? "var(--brand)" : "rgba(255,255,255,0.09)",
-        background: focus ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.04)" }} />
+      style={{ ...inp, borderColor: focus ? "var(--brand)" : "rgba(255,255,255,0.09)", background: focus ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.04)" }} />
   );
 }
 
@@ -95,10 +87,10 @@ function Field({ label, children }: { label:string; children:React.ReactNode }) 
 }
 
 const TABS = [
-  { id:"contato", label:"Contato & Redes",  icon:"??" },
-  { id:"loja",    label:"Dados da Loja",    icon:"??" },
-  { id:"site",    label:"Site Publico",     icon:"??" },
-  { id:"sistema", label:"Sistema",          icon:"??" },
+  { id:"contato", label:"Contato & Redes",  icon:"#" },
+  { id:"loja",    label:"Dados da Loja",    icon:"@" },
+  { id:"site",    label:"Site Publico",     icon:">" },
+  { id:"sistema", label:"Sistema",          icon:"*" },
 ];
 
 export default function ConfiguracoesPage() {
@@ -136,22 +128,17 @@ export default function ConfiguracoesPage() {
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:320, gap:16 }}>
       <div style={{ width:36, height:36, borderRadius:"50%", border:"3px solid rgba(245,166,35,0.20)", borderTop:"3px solid var(--brand)", animation:"spin 0.8s linear infinite" }} />
       <span style={{ fontSize:13, color:"var(--text-muted)" }}>Carregando configuracoes...</span>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{"@keyframes spin { to { transform: rotate(360deg); } }"}</style>
     </div>
   );
 
   return (
     <div style={{ maxWidth:860, margin:"0 auto", paddingBottom:60 }}>
 
-      {/* Header */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:32, gap:16, flexWrap:"wrap" }}>
         <div>
-          <h1 style={{ fontSize:24, fontWeight:900, color:"var(--text-primary)", letterSpacing:"-0.5px", marginBottom:4 }}>
-            Configuracoes
-          </h1>
-          <p style={{ fontSize:13, color:"var(--text-muted)" }}>
-            Gerencie as informacoes da sua loja — mudancas aparecem no site imediatamente apos salvar.
-          </p>
+          <h1 style={{ fontSize:24, fontWeight:900, color:"var(--text-primary)", letterSpacing:"-0.5px", marginBottom:4 }}>Configuracoes</h1>
+          <p style={{ fontSize:13, color:"var(--text-muted)" }}>Gerencie as informacoes da sua loja - mudancas aparecem no site imediatamente apos salvar.</p>
         </div>
         <button onClick={handleSave} disabled={saving}
           style={{
@@ -164,17 +151,16 @@ export default function ConfiguracoesPage() {
             boxShadow: saved ? "0 4px 20px rgba(34,197,94,0.35)" : "0 4px 20px rgba(245,166,35,0.30)",
             whiteSpace:"nowrap",
           }}>
-          {saving ? "? Salvando..." : saved ? "? Salvo!" : "?? Salvar alteracoes"}
+          {saving ? "Salvando..." : saved ? "Salvo!" : "Salvar alteracoes"}
         </button>
       </div>
 
       {error && (
-        <div style={{ padding:"12px 16px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.25)", borderRadius:12, marginBottom:20, fontSize:13, color:"#ef4444", display:"flex", alignItems:"center", gap:8 }}>
-          ?? {error}
+        <div style={{ padding:"12px 16px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.25)", borderRadius:12, marginBottom:20, fontSize:13, color:"#ef4444" }}>
+          {error}
         </div>
       )}
 
-      {/* Tabs */}
       <div style={{ display:"flex", gap:4, marginBottom:28, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:5, flexWrap:"wrap" }}>
         {TABS.map(t=>(
           <button key={t.id} onClick={()=>setTab(t.id)}
@@ -187,49 +173,46 @@ export default function ConfiguracoesPage() {
               transition:"all 150ms",
               boxShadow: tab===t.id ? "0 2px 12px rgba(0,0,0,0.20)" : "none",
             }}>
-            <span>{t.icon}</span>
-            <span>{t.label}</span>
+            {t.label}
           </button>
         ))}
       </div>
 
-      {/* CONTATO */}
       {tab==="contato" && <>
-        <Section title="Contato" subtitle="Telefone, WhatsApp e e-mail exibidos no site e no topbar" icon="??">
+        <Section title="Contato" subtitle="Telefone, WhatsApp e e-mail exibidos no site e no topbar" icon="T">
           <Row>
-            <Field label="?? WhatsApp (somente numeros)">
+            <Field label="WhatsApp (somente numeros)">
               <Inp val={form.whatsapp} set={v=>set("whatsapp",v)} ph="5511999999999" />
             </Field>
-            <Field label="?? Telefone fixo">
+            <Field label="Telefone fixo">
               <Inp val={form.telefone} set={v=>set("telefone",v)} ph="(11) 3456-7890" />
             </Field>
           </Row>
-          <Field label="?? E-mail de contato">
+          <Field label="E-mail de contato">
             <Inp val={form.email_contato} set={v=>set("email_contato",v)} ph="contato@lmcveiculos.com.br" type="email" />
           </Field>
         </Section>
 
-        <Section title="Redes Sociais" subtitle="Links exibidos no topbar, rodape e pagina de contato" icon="??">
+        <Section title="Redes Sociais" subtitle="Links exibidos no topbar, rodape e pagina de contato" icon="R">
           <Row cols="1fr 1fr 1fr">
-            <Field label="?? Instagram">
+            <Field label="Instagram">
               <Inp val={form.instagram} set={v=>set("instagram",v)} ph="https://instagram.com/sua" />
             </Field>
-            <Field label="?? Facebook">
+            <Field label="Facebook">
               <Inp val={form.facebook} set={v=>set("facebook",v)} ph="https://facebook.com/sua" />
             </Field>
-            <Field label="?? YouTube">
+            <Field label="YouTube">
               <Inp val={form.youtube} set={v=>set("youtube",v)} ph="https://youtube.com/@sua" />
             </Field>
           </Row>
           <div style={{ padding:"12px 16px", background:"rgba(245,166,35,0.07)", border:"1px solid rgba(245,166,35,0.15)", borderRadius:10, fontSize:12, color:"rgba(255,255,255,0.55)" }}>
-            ?? Deixe em branco os campos que voce nao usa — os icones nao aparecerao no site.
+            Deixe em branco os campos que voce nao usa - os icones nao aparecerao no site.
           </div>
         </Section>
       </>}
 
-      {/* LOJA */}
       {tab==="loja" && <>
-        <Section title="Identidade da Loja" subtitle="Nome, slogan e CNPJ da concessionaria" icon="??">
+        <Section title="Identidade da Loja" subtitle="Nome, slogan e CNPJ da concessionaria" icon="L">
           <Row>
             <Field label="Nome da loja">
               <Inp val={form.nome_loja} set={v=>set("nome_loja",v)} ph="LMC Veiculos" />
@@ -243,7 +226,7 @@ export default function ConfiguracoesPage() {
           </Field>
         </Section>
 
-        <Section title="Endereco & Horario" subtitle="Endereco fisico e horario de atendimento exibidos no site" icon="??">
+        <Section title="Endereco e Horario" subtitle="Endereco fisico e horario de atendimento exibidos no site" icon="E">
           <div style={{ marginBottom:14 }}>
             <Field label="Endereco completo">
               <Inp val={form.endereco} set={v=>set("endereco",v)} ph="Rua das Flores, 123 - Bairro" />
@@ -260,35 +243,33 @@ export default function ConfiguracoesPage() {
               <Inp val={form.cep} set={v=>set("cep",v)} ph="00000-000" />
             </Field>
           </Row>
-          <Field label="?? Horario de atendimento (texto exibido no topbar)">
+          <Field label="Horario de atendimento (texto exibido no topbar)">
             <Inp val={form.horario} set={v=>set("horario",v)} ph="Seg-Sex: 8h-18h | Sab: 8h-13h" />
           </Field>
         </Section>
       </>}
 
-      {/* SITE */}
       {tab==="site" && <>
-        <Section title="Estatisticas da Home" subtitle="Numeros exibidos na secao de destaques da pagina inicial" icon="??">
+        <Section title="Estatisticas da Home" subtitle="Numeros exibidos na secao de destaques da pagina inicial" icon="S">
           <Row cols="1fr 1fr 1fr">
-            <Field label="?? Clientes atendidos">
+            <Field label="Clientes atendidos">
               <NumInp val={form.stat_clientes} set={v=>set("stat_clientes",v)} ph="500" />
             </Field>
-            <Field label="?? Anos de mercado">
+            <Field label="Anos de mercado">
               <NumInp val={form.stat_anos} set={v=>set("stat_anos",v)} ph="10" />
             </Field>
-            <Field label="? Satisfacao (%)">
+            <Field label="Satisfacao (%)">
               <NumInp val={form.stat_satisfacao} set={v=>set("stat_satisfacao",v)} ph="98" />
             </Field>
           </Row>
           <div style={{ padding:"12px 16px", background:"rgba(99,102,241,0.06)", border:"1px solid rgba(99,102,241,0.15)", borderRadius:10, fontSize:12, color:"rgba(255,255,255,0.50)" }}>
-            ?? Titulo e subtitulo do hero sao editados diretamente no codigo-fonte do site.
+            Titulo e subtitulo do hero sao editados diretamente no codigo-fonte do site.
           </div>
         </Section>
       </>}
 
-      {/* SISTEMA */}
       {tab==="sistema" && (
-        <Section title="Modo Manutencao" subtitle="Quando ativo, o site publico exibe uma pagina de aviso" icon="??">
+        <Section title="Modo Manutencao" subtitle="Quando ativo, o site publico exibe uma pagina de aviso" icon="M">
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
             <div>
               <p style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", marginBottom:4 }}>Modo manutencao</p>
@@ -302,7 +283,7 @@ export default function ConfiguracoesPage() {
           </div>
           {form.modo_manutencao && (
             <div style={{ marginTop:16, padding:"12px 16px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.20)", borderRadius:10, fontSize:13, color:"#ef4444" }}>
-              ?? O site publico esta em modo manutencao. Visitantes veem uma pagina de aviso.
+              O site publico esta em modo manutencao. Visitantes veem uma pagina de aviso.
             </div>
           )}
         </Section>
