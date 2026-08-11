@@ -37,8 +37,8 @@ function StatCard({ value, label, color, active, onClick }: {
   value: string | number; label: string; color: string; active: boolean; onClick(): void;
 }) {
   return (
-    <button onClick={onClick} style={{
-      flex: "1 1 0", minWidth: 120, padding: "16px 18px",
+    <button onClick={onClick} className="av-stat-card" style={{
+      padding: "16px 18px",
       borderRadius: 12, textAlign: "left", cursor: "pointer",
       background: active ? `${color}10` : "var(--surface)",
       border: `1.5px solid ${active ? color : "var(--border)"}`,
@@ -116,6 +116,22 @@ export default function ReviewsPage() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
+      <style>{`
+        .av-stat-card { flex: 1 1 120px; min-width: 120px; }
+        .av-stat-nota { flex: 1 1 120px; min-width: 120px; }
+        .av-card-body { padding:16px 18px; display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+        .av-content { flex:1; min-width:0; }
+        .av-actions { display:flex; gap:6px; flex-shrink:0; align-items:center; }
+        @media (max-width:640px) {
+          .av-stat-card { flex:1 1 calc(50% - 5px); min-width:calc(50% - 5px); }
+          .av-stat-nota { flex:1 1 calc(50% - 5px); min-width:calc(50% - 5px); }
+          .av-card-body { flex-direction:column; gap:10px; }
+          .av-actions { width:100%; flex-wrap:nowrap; overflow-x:auto; }
+        }
+        @media (max-width:420px) {
+          .av-stat-card, .av-stat-nota { flex:1 1 100%; }
+        }
+      `}</style>
 
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 12, flexWrap: "wrap" }}>
@@ -153,8 +169,8 @@ export default function ReviewsPage() {
           value={approved} label="Publicadas" color="#34d399"
           active={filter === "aprovado"} onClick={() => setFilter("aprovado")}
         />
-        <div style={{
-          flex: "1 1 0", minWidth: 120, padding: "16px 18px",
+        <div className="av-stat-nota" style={{
+          padding: "16px 18px",
           borderRadius: 12, background: "var(--surface)", border: "1px solid var(--border)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
@@ -199,7 +215,7 @@ export default function ReviewsPage() {
                 borderLeft: `3px solid ${isPending ? "#f59e0b" : "#34d399"}`,
                 overflow: "hidden",
               }}>
-                <div style={{ padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                <div className="av-card-body">
 
                   {/* Avatar */}
                   <div style={{
@@ -213,7 +229,7 @@ export default function ReviewsPage() {
                   </div>
 
                   {/* Content */}
-                  <div style={{ flex: 1, minWidth: 200 }}>
+                  <div className="av-content">
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>{review.nome}</span>
                       {review.cidade && (
@@ -236,7 +252,7 @@ export default function ReviewsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center" }}>
+                  <div className="av-actions">
                     {isPending ? (
                       <button
                         onClick={() => approve(review.id)}

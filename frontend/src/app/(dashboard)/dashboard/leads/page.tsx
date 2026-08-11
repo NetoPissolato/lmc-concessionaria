@@ -127,8 +127,8 @@ function KpiCard({ label, count, color, active, onClick }: {
   label: string; count: number; color: string; active: boolean; onClick(): void;
 }) {
   return (
-    <button onClick={onClick} style={{
-      flex: "1 1 0", minWidth: 0, padding: "14px 16px",
+    <button onClick={onClick} className="leads-kpi-card" style={{
+      padding: "14px 16px",
       borderRadius: 12, cursor: "pointer", textAlign: "left",
       background: active ? `${color}12` : "var(--surface)",
       border: `1.5px solid ${active ? color : "var(--border)"}`,
@@ -198,6 +198,22 @@ export default function LeadsPage() {
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto" }}>
+      <style>{`
+        .leads-kpi-card { flex: 1 1 130px; min-width: 130px; }
+        .leads-main-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; flex-wrap:wrap; }
+        .leads-left { display:flex; align-items:center; gap:12px; min-width:0; flex:1; }
+        .leads-right { display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:nowrap; }
+        .leads-name { font-size:14px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
+        @media (max-width:640px) {
+          .leads-kpi-card { flex: 1 1 calc(50% - 5px); min-width: calc(50% - 5px); }
+          .leads-left { min-width:0; flex:1 1 100%; }
+          .leads-right { flex:1 1 100%; padding:0 16px 12px; margin-top:-4px; overflow-x:auto; }
+          .leads-name { max-width:140px; }
+        }
+        @media (max-width:420px) {
+          .leads-kpi-card { flex:1 1 100%; }
+        }
+      `}</style>
 
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 12, flexWrap: "wrap" }}>
@@ -280,16 +296,9 @@ export default function LeadsPage() {
                 borderLeft: `3px solid ${cfg.color}`,
               }}>
                 {/* Main row */}
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  padding: "14px 16px",
-                  flexWrap: "wrap",
-                }}>
+                <div className="leads-main-row">
                   {/* Left: identity */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
+                  <div className="leads-left">
                     <div style={{
                       width: 36, height: 36, borderRadius: 9,
                       background: cfg.bg, border: `1px solid ${cfg.border}`,
@@ -299,7 +308,7 @@ export default function LeadsPage() {
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>{lead.nome}</p>
+                        <p className="leads-name">{lead.nome}</p>
                         <StatusPill status={lead.status} />
                         {lead.veiculo_descricao && (
                           <span style={{
@@ -320,7 +329,7 @@ export default function LeadsPage() {
                   </div>
 
                   {/* Right: actions */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "nowrap" }}>
+                  <div className="leads-right">
                     <StatusDropdown
                       lead={lead} token={token}
                       onChange={updated => setLeads(l => l.map(x => x.id === updated.id ? updated : x))}
