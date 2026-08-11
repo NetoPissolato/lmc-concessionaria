@@ -7,12 +7,19 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from typing import Optional
+from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.presentation.dependencies.auth import get_current_user_payload
 from app.domain.models.review import Review
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
+
+
+class ReviewUpdateSchema(BaseModel):
+    aprovado: Optional[bool] = None
+    texto: Optional[str] = None
+    nota: Optional[int] = None
 
 
 def _to_dict(r: Review) -> dict:
@@ -52,7 +59,7 @@ async def list_reviews(
 @router.patch("/{review_id}", summary="Aprovar ou reprovar review")
 async def update_review(
     review_id: str,
-    body: dict,
+    body: ReviewUpdateSchema,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user_payload),
 ):
@@ -61,8 +68,8 @@ async def update_review(
     if not review:
         raise HTTPException(status_code=404, detail="Review nao encontrada")
 
-    if "aprovado" in body:
-        review.aprovado = bool(body["aprovado"])
+    if body.aprovado is not None:
+        review.aprovado = body.aprovado
 
     await db.commit()
     await db.refresh(review)
