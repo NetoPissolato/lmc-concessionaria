@@ -41,10 +41,37 @@ export default function ContatoClient() {
   const [subject, setSubject] = useState("");
   const [msg,     setMsg]     = useState("");
   const [sent,    setSent]    = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error,   setError]   = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api/v1") + "/public";
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSent(true);
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch(`${BACKEND_URL}/leads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: name,
+          telefone: phone || "nao informado",
+          email: email,
+          mensagem: subject ? `[${subject}] ${msg}` : msg,
+          origem: "contato",
+        }),
+      });
+      if (res.ok) {
+        setSent(true);
+      } else {
+        setError("Erro ao enviar. Tente pelo WhatsApp ou tente novamente.");
+      }
+    } catch {
+      setError("Erro de conexao. Tente pelo WhatsApp ou novamente em instantes.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -250,16 +277,22 @@ export default function ContatoClient() {
                         style={{ ...inputStyle, resize:"vertical", minHeight:130, lineHeight:1.7 }} />
                     </div>
 
-                    <button type="submit"
+                    {error && (
+                      <div style={{ padding:"12px 16px", borderRadius:10, background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.20)", color:"#ef4444", fontSize:13, fontWeight:600 }}>
+                        {error}
+                      </div>
+                    )}
+
+                    <button type="submit" disabled={sending}
                       style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10,
-                        height:52, borderRadius:13, background:"var(--s-orange)", color:"#fff",
-                        border:"none", fontWeight:800, fontSize:15, cursor:"pointer",
+                        height:52, borderRadius:13, background: sending ? "rgba(244,121,32,0.6)" : "var(--s-orange)", color:"#fff",
+                        border:"none", fontWeight:800, fontSize:15, cursor: sending ? "not-allowed" : "pointer",
                         letterSpacing:"0.2px", transition:"all 160ms", fontFamily:"inherit",
-                        boxShadow:"0 4px 20px rgba(244,121,32,0.30)" }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background="#e06910"; (e.currentTarget as HTMLElement).style.boxShadow="0 6px 24px rgba(244,121,32,0.40)"; (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background="var(--s-orange)"; (e.currentTarget as HTMLElement).style.boxShadow="0 4px 20px rgba(244,121,32,0.30)"; (e.currentTarget as HTMLElement).style.transform="none"; }}>
+                        boxShadow:"0 4px 20px rgba(244,121,32,0.30)", opacity: sending ? 0.8 : 1 }}
+                      onMouseEnter={e => { if (!sending) { (e.currentTarget as HTMLElement).style.background="#e06910"; (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"; }}}
+                      onMouseLeave={e => { if (!sending) { (e.currentTarget as HTMLElement).style.background="var(--s-orange)"; (e.currentTarget as HTMLElement).style.transform="none"; }}}>
                       <Send size={17} strokeWidth={2} />
-                      Enviar mensagem
+                      {sending ? "Enviando..." : "Enviar mensagem"}
                     </button>
                   </form>
                 </>
