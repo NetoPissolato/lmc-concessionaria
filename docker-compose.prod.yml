@@ -93,15 +93,15 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # URL pública da API — acessível pelo browser dos visitantes E pelo SSR/ISR do Next.js
-        NEXT_PUBLIC_API_URL: https://lcm.spacerstorepaineladmin.com/api/v1
+        # URL relativa — browser do visitante chama pelo mesmo dominio (nginx faz proxy pra API)
+        NEXT_PUBLIC_API_URL: /api/v1
         # URL interna Docker — usada pelo Next.js Server Components (SSR/ISR)
         BACKEND_INTERNAL_URL: http://backend:8000
         PORT: "3001"
     container_name: lmc_frontend_site
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: https://lcm.spacerstorepaineladmin.com/api/v1
+      NEXT_PUBLIC_API_URL: /api/v1
       BACKEND_INTERNAL_URL: http://backend:8000
       PORT: "3001"
     depends_on:
