@@ -83,7 +83,7 @@ services:
       BACKEND_INTERNAL_URL: http://backend:8000
       PORT: "3000"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 60s
@@ -112,7 +112,7 @@ services:
       BACKEND_INTERNAL_URL: http://backend:8000
       PORT: "3001"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/ || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/ || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 60s
