@@ -383,7 +383,6 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
                         />
                       </div>
                     </div>
-                    </div>
                   </div>
                 </div>
 
