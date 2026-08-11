@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -22,7 +22,20 @@ const DIFERENCIAIS = [
   { icon: CheckCircle, text: "IPVA 2024 pago"         },
 ];
 
-const WPP_NUMBER = "5511999999999"; // ← troque pelo número real da LMC
+// Extrai ID do YouTube de varias formas de URL
+function getYoutubeId(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const patterns = [
+    /youtube\.com\/watch\?v=([^&]+)/,
+    /youtu\.be\/([^?]+)/,
+    /youtube\.com\/embed\/([^?]+)/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
 
 // Retorna a URL da foto ou fallback
 function getPhotoSrc(v: PublicVehicle, index = 0): string {
@@ -38,9 +51,11 @@ function getPhotoSrc(v: PublicVehicle, index = 0): string {
 export default function VeiculoDetail({
   vehicle,
   related = [],
+  wppNumber = "5511999999999",
 }: {
   vehicle: PublicVehicle;
   related?: PublicVehicle[];
+  wppNumber?: string;
 }) {
   const photos      = vehicle.photos?.length > 0
     ? [...vehicle.photos].sort((a, b) => a.ordem - b.ordem)
@@ -48,25 +63,47 @@ export default function VeiculoDetail({
   const totalPhotos = photos ? photos.length : 1;
   const fallbackSrc = vehicle.tipo === "moto" ? "/moto-placeholder.svg" : "/car-placeholder.svg";
   const isPlaceholder = !photos;
+  const youtubeId = getYoutubeId(vehicle.video_url);
 
-  const [active, setActive] = useState(0);
-  const [fav,    setFav]    = useState(false);
-  const [name,   setName]   = useState("");
-  const [phone,  setPhone]  = useState("");
-  const [msg,    setMsg]    = useState(
+  const [active,   setActive]   = useState(0);
+  const [fav,      setFav]      = useState(false);
+  const [lightbox, setLightbox] = useState(false);
+  const [name,     setName]     = useState("");
+  const [phone,    setPhone]    = useState("");
+  const [msg,      setMsg]      = useState(
     `Ola! Tenho interesse no ${vehicle.marca} ${vehicle.modelo} ${vehicle.ano}.`
   );
-  const [sent, setSent] = useState(false);
+  const [sent,    setSent]    = useState(false);
   const [sending, setSending] = useState(false);
+  const [toast,   setToast]   = useState<string | null>(null);
 
   const prev = () => setActive(i => (i - 1 + totalPhotos) % totalPhotos);
   const next = () => setActive(i => (i + 1) % totalPhotos);
 
-  const preco       = vehicle.valor_anunciado ?? 0;
-  const wppMsg      = encodeURIComponent(
-    `Ola! Vi o ${vehicle.marca} ${vehicle.modelo} ${vehicle.ano} (R$ ${fmtPrice(preco)}) no site e tenho interesse.`
+  const handleKey = useCallback((e: KeyboardEvent) => {
+    if (!lightbox) return;
+    if (e.key === "Escape")     setLightbox(false);
+    if (e.key === "ArrowLeft")  setActive(i => (i - 1 + totalPhotos) % totalPhotos);
+    if (e.key === "ArrowRight") setActive(i => (i + 1) % totalPhotos);
+  }, [lightbox, totalPhotos]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [handleKey]);
+
+  useEffect(() => {
+    document.body.style.overflow = lightbox ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [lightbox]);
+
+  const preco    = vehicle.valor_anunciado ?? 0;
+  const wppMsg   = encodeURIComponent(
+    `Ola! Vi o ${vehicle.marca} ${vehicle.modelo}${vehicle.versao ? " " + vehicle.versao : ""} ${vehicle.ano}` +
+    (preco > 0 ? ` (R$ ${fmtPrice(preco)})` : "") +
+    " no site e tenho interesse. Pode me dar mais informacoes?"
   );
-  const wppLink    = `https://wa.me/${WPP_NUMBER}?text=${wppMsg}`;
+  const wppLink     = `https://wa.me/${wppNumber.replace(/\D/g, "")}?text=${wppMsg}`;
   const installment = preco > 0 ? Math.round(preco / 60) : 0;
 
   // JSON-LD structured data for SEO
@@ -101,11 +138,13 @@ export default function VeiculoDetail({
     { icon: Zap,       label:"Tipo",           value: vehicle.tipo === "moto" ? "Moto" : "Carro" },
   ];
 
+  const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api/v1") + "/public";
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSending(true);
     try {
-      await fetch("/api/lead", {
+      const res = await fetch(`${BACKEND_URL}/leads`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -113,14 +152,24 @@ export default function VeiculoDetail({
           telefone: phone,
           mensagem: msg,
           veiculo_id: vehicle.id,
-          veiculo_nome: `${vehicle.marca} ${vehicle.modelo} ${vehicle.ano}`,
+          veiculo_descricao: `${vehicle.marca} ${vehicle.modelo} ${vehicle.ano}`,
+          origem: "veiculo",
         }),
       });
+      if (res.ok) {
+        setSent(true);
+        setToast("Mensagem enviada! Entraremos em contato em breve.");
+        setTimeout(() => setToast(null), 5000);
+      } else {
+        setToast("Erro ao enviar. Tente pelo WhatsApp.");
+        setTimeout(() => setToast(null), 4000);
+      }
     } catch {
-      // Falha silenciosa — formulário marca como enviado de qualquer forma
+      setSent(true); // Mostra confirmacao mesmo offline
+      setToast("Mensagem registrada! Retornaremos em breve.");
+      setTimeout(() => setToast(null), 5000);
     } finally {
       setSending(false);
-      setSent(true);
     }
   }
 
@@ -130,6 +179,45 @@ export default function VeiculoDetail({
     <>
       {/* JSON-LD Structured Data */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      {/* Lightbox */}
+      {lightbox && photos && (
+        <div
+          onClick={() => setLightbox(false)}
+          style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.96)", display:"flex", alignItems:"center", justifyContent:"center" }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); prev(); }}
+            style={{ position:"fixed", left:20, top:"50%", transform:"translateY(-50%)", background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:"50%", width:52, height:52, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff", zIndex:10000 }}>
+            <ChevronLeft size={22} />
+          </button>
+          <div onClick={e => e.stopPropagation()} style={{ maxWidth:"90vw", maxHeight:"88vh", position:"relative", textAlign:"center" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photos[active]?.url} alt={`Foto ${active + 1}`} style={{ maxWidth:"90vw", maxHeight:"85vh", objectFit:"contain", borderRadius:10 }} />
+            <p style={{ marginTop:12, color:"rgba(255,255,255,0.45)", fontSize:13 }}>{active + 1} / {totalPhotos}</p>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); next(); }}
+            style={{ position:"fixed", right:20, top:"50%", transform:"translateY(-50%)", background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:"50%", width:52, height:52, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff", zIndex:10000 }}>
+            <ChevronRight size={22} />
+          </button>
+          <button
+            onClick={() => setLightbox(false)}
+            style={{ position:"fixed", top:20, right:20, background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:"50%", width:44, height:44, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff", fontSize:18, zIndex:10000 }}>
+            &times;
+          </button>
+          <p style={{ position:"fixed", bottom:20, left:"50%", transform:"translateX(-50%)", color:"rgba(255,255,255,0.25)", fontSize:12 }}>
+            ESC para fechar &middot; Setas para navegar
+          </p>
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={{ position:"fixed", bottom:90, right:20, zIndex:9998, background:"#1a1d24", border:"1px solid rgba(255,255,255,0.12)", borderRadius:12, padding:"14px 20px", maxWidth:320, boxShadow:"0 8px 32px rgba(0,0,0,0.5)", color:"var(--s-text-1)", fontSize:14, fontWeight:600 }}>
+          {toast}
+        </div>
+      )}
 
       {/* breadcrumb */}
       <div style={{ background:"var(--s-dark)", borderBottom:"1px solid rgba(255,255,255,0.07)", padding:"14px 0" }}>
@@ -155,8 +243,12 @@ export default function VeiculoDetail({
 
             {/* ── GALLERY ── */}
             <div className="s-vd-gallery">
-              {/* Main photo */}
-              <div className="s-vd-main-photo" style={{ position:"relative", borderRadius:16, overflow:"hidden", aspectRatio:"16/10", background:"#1a1d24", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              {/* Main photo - click to open lightbox */}
+              <div
+                className="s-vd-main-photo"
+                style={{ position:"relative", borderRadius:16, overflow:"hidden", aspectRatio:"16/10", background:"#1a1d24", display:"flex", alignItems:"center", justifyContent:"center", cursor: photos ? "zoom-in" : "default" }}
+                onClick={() => photos && setLightbox(true)}
+              >
                 {isPlaceholder ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -228,6 +320,21 @@ export default function VeiculoDetail({
                       {active === i && <div style={{ position:"absolute", bottom:0, left:0, right:0, height:3, background:"var(--s-orange)", animation:"thumbBarSlide .28s ease" }} />}
                     </button>
                   ))}
+                </div>
+              )}
+
+              {/* YouTube Video Player */}
+              {youtubeId && (
+                <div style={{ marginTop:16, borderRadius:14, overflow:"hidden", background:"#0d0f14", border:"1px solid rgba(255,255,255,0.07)" }}>
+                  <div style={{ position:"relative", paddingTop:"56.25%" }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
+                      title={`Video: ${vehicle.marca} ${vehicle.modelo}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ position:"absolute", top:0, left:0, width:"100%", height:"100%", border:"none" }}
+                    />
+                  </div>
                 </div>
               )}
             </div>

@@ -55,6 +55,7 @@ export interface PublicVehicle {
   status: "disponivel";
   destaque: boolean;
   observacoes: string | null;
+  video_url: string | null;
   photos: PublicPhoto[];
   created_at: string;
 }
