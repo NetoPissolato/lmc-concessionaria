@@ -62,10 +62,11 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
       { href: "/dashboard/veiculos", label: "Carros",    icon: Car,             color: "#38bdf8", adminOnly: false },
       { href: "/dashboard/motos",    label: "Motos",     icon: Bike,            color: "#f97316", adminOnly: false },
       { href: "/dashboard/clientes", label: "Clientes",  icon: Users,           color: "#a78bfa", adminOnly: false },
+      { href: "/dashboard/leads",    label: "Leads CRM", icon: ShoppingBag,     color: "#22c55e", adminOnly: false },
     ],
   },
   {
-    label: "Negócios",
+    label: "Negocios",
     items: [
       {
         href: "/dashboard/vendas",
@@ -79,14 +80,14 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
         ],
       },
       { href: "/dashboard/financeiro", label: "Financeiro", icon: DollarSign, color: "#f59e0b", adminOnly: true },
-      { href: "/dashboard/relatorios", label: "Relatórios", icon: FileText,   color: "#f97316", adminOnly: true },
+      { href: "/dashboard/relatorios", label: "Relatorios", icon: FileText,   color: "#f97316", adminOnly: true },
     ],
   },
   {
     label: "Sistema",
     items: [
-      { href: "/dashboard/usuarios",       label: "Usuários",      icon: UserCog,    color: "#ec4899", adminOnly: true },
-      { href: "/dashboard/configuracoes",  label: "Configurações", icon: SettingsIcon, color: "#94a3b8", adminOnly: true },
+      { href: "/dashboard/usuarios",       label: "Usuarios",      icon: UserCog,    color: "#ec4899", adminOnly: true },
+      { href: "/dashboard/configuracoes",  label: "Configuracoes", icon: SettingsIcon, color: "#94a3b8", adminOnly: true },
     ],
   },
 ];
