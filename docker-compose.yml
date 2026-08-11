@@ -44,14 +44,17 @@ services:
       dockerfile: Dockerfile
     container_name: lmc_backend
     restart: unless-stopped
-    env_file:
-      - ./backend/.env
     environment:
       DATABASE_URL: postgresql+asyncpg://lmc_user:lmc_secure_pass_2024@postgres:5432/lmc_veiculos
       REDIS_URL: redis://redis:6379/0
+      JWT_SECRET_KEY: lmc_jwt_secret_super_seguro_2024
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
       API_HOST: 0.0.0.0
       API_PORT: "8000"
       ALLOWED_ORIGINS: http://localhost:3000
+      ENVIRONMENT: production
     ports:
       - "8000:8000"
     volumes:
