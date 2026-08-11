@@ -126,7 +126,7 @@ async function fetchPublic<T>(
     const timer = setTimeout(() => controller.abort(), 8_000);
 
     const res = await fetch(url.toString(), {
-      next: { revalidate: 60 },
+      cache: "no-store", // Sem cache — veiculos aparecem no site imediatamente apos adicionar
       signal: controller.signal,
     });
     clearTimeout(timer);
