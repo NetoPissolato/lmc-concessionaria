@@ -281,13 +281,15 @@ export default function LeadsPage() {
               }}>
                 {/* Main row */}
                 <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr auto",
-                  gap: 12, alignItems: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
                   padding: "14px 16px",
+                  flexWrap: "wrap",
                 }}>
                   {/* Left: identity */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
                     <div style={{
                       width: 36, height: 36, borderRadius: 9,
                       background: cfg.bg, border: `1px solid ${cfg.border}`,
@@ -318,7 +320,7 @@ export default function LeadsPage() {
                   </div>
 
                   {/* Right: actions */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "nowrap" }}>
                     <StatusDropdown
                       lead={lead} token={token}
                       onChange={updated => setLeads(l => l.map(x => x.id === updated.id ? updated : x))}
