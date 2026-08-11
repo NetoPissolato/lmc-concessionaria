@@ -397,7 +397,7 @@ export default function VeiculoDetail({
                   style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, width:"100%", height:50, borderRadius:12, background:"#25D366", color:"#fff", textDecoration:"none", fontFamily:"inherit", fontSize:15, fontWeight:800, marginBottom:10, border:"none", cursor:"pointer", boxShadow:"0 4px 20px rgba(37,211,102,.28)" }}>
                   <MessageCircle size={19} strokeWidth={2} /> Tenho interesse - WhatsApp
                 </a>
-                <a href={`tel:+${WPP_NUMBER}`}
+                <a href={`tel:+${wppNumber}`}
                   style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:9, width:"100%", height:44, borderRadius:12, background:"transparent", color:"var(--s-text-2)", textDecoration:"none", fontFamily:"inherit", fontSize:13, fontWeight:700, marginBottom:18, border:"1.5px solid var(--s-border)", cursor:"pointer" }}>
                   <Phone size={16} strokeWidth={2} /> Ligar para a concessionaria
                 </a>
@@ -532,7 +532,7 @@ export default function VeiculoDetail({
           style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, height:50, borderRadius:12, background:"#25D366", color:"#fff", textDecoration:"none", fontSize:15, fontWeight:800 }}>
           <MessageCircle size={18} strokeWidth={2} /> WhatsApp
         </a>
-        <a href={`tel:+${WPP_NUMBER}`}
+        <a href={`tel:+${wppNumber}`}
           style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, height:50, borderRadius:12, background:"var(--s-dark-3)", color:"#fff", textDecoration:"none", fontSize:15, fontWeight:700, border:"1.5px solid rgba(255,255,255,.12)" }}>
           <Phone size={17} strokeWidth={2} /> Ligar
         </a>
