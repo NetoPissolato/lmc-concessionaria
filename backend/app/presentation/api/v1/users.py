@@ -130,7 +130,7 @@ async def update_user(
         entidade="users",
         entidade_id=user_id,
         dados_antes=dados_antes,
-        dados_depois=body.model_dump(exclude_none=True),
+        dados_depois=body.model_dump(exclude_none=True, mode="json"),
         descricao=f"Perfil atualizado: {user.nome}",
     )
     return updated
