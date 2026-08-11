@@ -14,10 +14,23 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column('store_settings', sa.Column('ga_id',    sa.String(50), nullable=True, server_default=''))
-    op.add_column('store_settings', sa.Column('pixel_id', sa.String(50), nullable=True, server_default=''))
+    conn = op.get_bind()
+    # IF NOT EXISTS via DO block para evitar erro se coluna ja existe
+    conn.execute(sa.text("""
+        DO $$ BEGIN
+            ALTER TABLE store_settings ADD COLUMN ga_id VARCHAR(50) DEFAULT '';
+        EXCEPTION WHEN duplicate_column THEN NULL;
+        END $$;
+    """))
+    conn.execute(sa.text("""
+        DO $$ BEGIN
+            ALTER TABLE store_settings ADD COLUMN pixel_id VARCHAR(50) DEFAULT '';
+        EXCEPTION WHEN duplicate_column THEN NULL;
+        END $$;
+    """))
 
 
 def downgrade() -> None:
-    op.drop_column('store_settings', 'ga_id')
-    op.drop_column('store_settings', 'pixel_id')
+    conn = op.get_bind()
+    conn.execute(sa.text("ALTER TABLE store_settings DROP COLUMN IF EXISTS ga_id"))
+    conn.execute(sa.text("ALTER TABLE store_settings DROP COLUMN IF EXISTS pixel_id"))

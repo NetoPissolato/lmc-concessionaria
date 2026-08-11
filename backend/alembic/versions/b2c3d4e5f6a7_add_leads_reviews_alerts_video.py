@@ -15,65 +15,90 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # lead_status enum
-    lead_status = sa.Enum('novo', 'em_atendimento', 'proposta', 'fechado', 'perdido', name='lead_status')
-    lead_status.create(op.get_bind(), checkfirst=True)
+    conn = op.get_bind()
 
-    op.create_table(
-        'leads',
-        sa.Column('id', postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column('nome', sa.String(120), nullable=False),
-        sa.Column('telefone', sa.String(30), nullable=False),
-        sa.Column('email', sa.String(120), nullable=True),
-        sa.Column('mensagem', sa.Text(), nullable=True),
-        sa.Column('veiculo_id', postgresql.UUID(as_uuid=False), nullable=True),
-        sa.Column('veiculo_descricao', sa.String(200), nullable=True),
-        sa.Column('status', sa.Enum('novo', 'em_atendimento', 'proposta', 'fechado', 'perdido', name='lead_status', create_type=False), nullable=False, server_default='novo'),
-        sa.Column('origem', sa.String(50), nullable=False, server_default='contato'),
-        sa.Column('observacoes', sa.Text(), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-        sa.ForeignKeyConstraint(['veiculo_id'], ['vehicles.id'], ondelete='SET NULL'),
-    )
+    # ─── lead_status enum (IF NOT EXISTS via DO block) ───────────────────────
+    conn.execute(sa.text("""
+        DO $$ BEGIN
+            CREATE TYPE lead_status AS ENUM (
+                'novo', 'em_atendimento', 'proposta', 'fechado', 'perdido'
+            );
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+    """))
 
-    op.create_table(
-        'reviews',
-        sa.Column('id', postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column('nome', sa.String(120), nullable=False),
-        sa.Column('nota', sa.Integer(), nullable=False),
-        sa.Column('texto', sa.Text(), nullable=False),
-        sa.Column('foto_url', sa.String(500), nullable=True),
-        sa.Column('cidade', sa.String(100), nullable=True),
-        sa.Column('aprovado', sa.Boolean(), nullable=False, server_default='false'),
-        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-    )
+    # ─── leads table (IF NOT EXISTS) ─────────────────────────────────────────
+    conn.execute(sa.text("""
+        CREATE TABLE IF NOT EXISTS leads (
+            id UUID PRIMARY KEY,
+            nome VARCHAR(120) NOT NULL,
+            telefone VARCHAR(30) NOT NULL,
+            email VARCHAR(120),
+            mensagem TEXT,
+            veiculo_id UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+            veiculo_descricao VARCHAR(200),
+            status lead_status NOT NULL DEFAULT 'novo',
+            origem VARCHAR(50) NOT NULL DEFAULT 'contato',
+            observacoes TEXT,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+    """))
 
-    op.create_table(
-        'availability_alerts',
-        sa.Column('id', postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column('email', sa.String(120), nullable=False),
-        sa.Column('nome', sa.String(120), nullable=True),
-        sa.Column('marca', sa.String(80), nullable=True),
-        sa.Column('modelo', sa.String(80), nullable=True),
-        sa.Column('tipo', sa.String(20), nullable=True),
-        sa.Column('ano_min', sa.Integer(), nullable=True),
-        sa.Column('ano_max', sa.Integer(), nullable=True),
-        sa.Column('preco_max', sa.Numeric(12, 2), nullable=True),
-        sa.Column('ativo', sa.Boolean(), nullable=False, server_default='true'),
-        sa.Column('notificacoes_enviadas', sa.Integer(), nullable=False, server_default='0'),
-        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-    )
-    op.create_index('ix_availability_alerts_email', 'availability_alerts', ['email'])
+    # ─── reviews table (IF NOT EXISTS) ───────────────────────────────────────
+    conn.execute(sa.text("""
+        CREATE TABLE IF NOT EXISTS reviews (
+            id UUID PRIMARY KEY,
+            nome VARCHAR(120) NOT NULL,
+            nota INTEGER NOT NULL,
+            texto TEXT NOT NULL,
+            foto_url VARCHAR(500),
+            cidade VARCHAR(100),
+            aprovado BOOLEAN NOT NULL DEFAULT false,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+    """))
 
-    op.add_column('vehicles', sa.Column('video_url', sa.String(500), nullable=True))
+    # ─── availability_alerts table (IF NOT EXISTS) ────────────────────────────
+    conn.execute(sa.text("""
+        CREATE TABLE IF NOT EXISTS availability_alerts (
+            id UUID PRIMARY KEY,
+            email VARCHAR(120) NOT NULL,
+            nome VARCHAR(120),
+            marca VARCHAR(80),
+            modelo VARCHAR(80),
+            tipo VARCHAR(20),
+            ano_min INTEGER,
+            ano_max INTEGER,
+            preco_max NUMERIC(12, 2),
+            ativo BOOLEAN NOT NULL DEFAULT true,
+            notificacoes_enviadas INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+    """))
+
+    # index
+    conn.execute(sa.text("""
+        CREATE INDEX IF NOT EXISTS ix_availability_alerts_email
+        ON availability_alerts (email)
+    """))
+
+    # ─── video_url column on vehicles (IF NOT EXISTS) ────────────────────────
+    conn.execute(sa.text("""
+        DO $$ BEGIN
+            ALTER TABLE vehicles ADD COLUMN video_url VARCHAR(500);
+        EXCEPTION WHEN duplicate_column THEN NULL;
+        END $$;
+    """))
 
 
 def downgrade() -> None:
-    op.drop_column('vehicles', 'video_url')
-    op.drop_index('ix_availability_alerts_email', table_name='availability_alerts')
-    op.drop_table('availability_alerts')
-    op.drop_table('reviews')
-    op.drop_table('leads')
-    op.execute("DROP TYPE IF EXISTS lead_status")
+    conn = op.get_bind()
+    conn.execute(sa.text("ALTER TABLE vehicles DROP COLUMN IF EXISTS video_url"))
+    conn.execute(sa.text("DROP INDEX IF EXISTS ix_availability_alerts_email"))
+    conn.execute(sa.text("DROP TABLE IF EXISTS availability_alerts"))
+    conn.execute(sa.text("DROP TABLE IF EXISTS reviews"))
+    conn.execute(sa.text("DROP TABLE IF EXISTS leads"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS lead_status"))
