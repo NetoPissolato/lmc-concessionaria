@@ -232,7 +232,21 @@ const DEFAULT_SETTINGS: PublicSettings = {
   modo_manutencao: false,
 };
 
-/** Retorna configurações públicas da loja (ISR 30s). */
+/** Retorna configurações públicas da loja — SEMPRE fresco (sem cache). */
 export async function getPublicSettings(): Promise<PublicSettings> {
-  return (await fetchPublic<PublicSettings>("/settings")) ?? DEFAULT_SETTINGS;
+  try {
+    const url = `${API_BASE}/settings`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8_000);
+    const res = await fetch(url, {
+      cache: "no-store", // Sem cache — mudanças no painel aparecem imediatamente
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) return DEFAULT_SETTINGS;
+    const data = await res.json();
+    return { ...DEFAULT_SETTINGS, ...data };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
 }
