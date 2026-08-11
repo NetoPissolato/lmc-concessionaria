@@ -47,7 +47,7 @@ type FormState = {
   valor_multas_display: string; valor_multas: number;
   valor_anunciado_display: string; valor_anunciado: number;
   valor_minimo_display: string; valor_minimo: number;
-  status: VehicleStatus; observacoes: string;
+  status: VehicleStatus; observacoes: string; video_url: string;
 };
 
 export default function EditarVeiculoPage() {
@@ -71,7 +71,7 @@ export default function EditarVeiculoPage() {
     valor_multas_display: "", valor_multas: 0,
     valor_anunciado_display: "", valor_anunciado: 0,
     valor_minimo_display: "", valor_minimo: 0,
-    status: "disponivel", observacoes: "",
+    status: "disponivel", observacoes: "", video_url: "",
   });
 
   // Populate form when vehicle loads
@@ -104,6 +104,7 @@ export default function EditarVeiculoPage() {
       valor_minimo: vehicle.valor_minimo || 0,
       status: vehicle.status,
       observacoes: vehicle.observacoes || "",
+      video_url: (vehicle as Record<string, string>).video_url || "",
     });
   }, [vehicle]);
 
@@ -178,6 +179,7 @@ export default function EditarVeiculoPage() {
       valor_minimo: form.valor_minimo || undefined,
       status: form.status,
       observacoes: form.observacoes.trim() || undefined,
+      video_url: form.video_url.trim() || undefined,
     });
   };
 
@@ -300,6 +302,9 @@ export default function EditarVeiculoPage() {
               </Field>
               <Field label="Observações" error={errors.observacoes}>
                 <textarea {...inp("observacoes")} rows={3} style={{ height: "auto", paddingTop: 8, fontSize: "13px" }} placeholder="Anotações sobre o veículo..." />
+              </Field>
+              <Field label="Video YouTube (URL)" error={errors.video_url}>
+                <input {...inp("video_url")} placeholder="https://www.youtube.com/watch?v=..." />
               </Field>
             </div>
           </div>

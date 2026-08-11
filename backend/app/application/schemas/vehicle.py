@@ -122,6 +122,7 @@ class VehicleCreate(BaseModel):
     valor_minimo: Optional[Decimal] = None
     observacoes: Optional[str] = None
     destaque: bool = False
+    video_url: Optional[str] = None
 
     @field_validator("marca")
     @classmethod
@@ -195,6 +196,7 @@ class VehicleUpdate(BaseModel):
     status: Optional[VehicleStatus] = None
     observacoes: Optional[str] = None
     destaque: Optional[bool] = None
+    video_url: Optional[str] = None
 
     # Mesmos normalizadores do VehicleCreate
     @field_validator("marca", mode="before")
@@ -242,6 +244,7 @@ class VehicleResponse(BaseModel):
     status: VehicleStatus
     observacoes: Optional[str]
     destaque: bool = False
+    video_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     # Computed fields
