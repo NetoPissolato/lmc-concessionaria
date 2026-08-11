@@ -210,6 +210,8 @@ export interface PublicSettings {
   stat_anos:      number;
   stat_satisfacao: number;
   modo_manutencao: boolean;
+  ga_id:          string;
+  pixel_id:       string;
 }
 
 const DEFAULT_SETTINGS: PublicSettings = {
@@ -231,6 +233,8 @@ const DEFAULT_SETTINGS: PublicSettings = {
   stat_anos:       0,
   stat_satisfacao: 98,
   modo_manutencao: false,
+  ga_id:           "",
+  pixel_id:        "",
 };
 
 /** Retorna configurações públicas da loja — SEMPRE fresco (sem cache). */

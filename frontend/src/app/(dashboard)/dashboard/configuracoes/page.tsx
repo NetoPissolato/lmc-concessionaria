@@ -22,11 +22,13 @@ interface FormState {
   endereco: string; cidade: string; estado: string; cep: string; horario: string;
   stat_clientes: number; stat_anos: number; stat_satisfacao: number;
   modo_manutencao: boolean;
+  ga_id: string; pixel_id: string;
 }
 const EMPTY: FormState = {
   whatsapp:"",telefone:"",email_contato:"",instagram:"",facebook:"",youtube:"",
   nome_loja:"",slogan:"",cnpj:"",endereco:"",cidade:"",estado:"",cep:"",horario:"",
   stat_clientes:0,stat_anos:0,stat_satisfacao:98,modo_manutencao:false,
+  ga_id:"",pixel_id:"",
 };
 
 const inp: React.CSSProperties = {
@@ -243,7 +245,7 @@ export default function ConfiguracoesPage() {
         </Section>
       </>}
 
-      {tab==="sistema" && (
+      {tab==="sistema" && (<>
         <Section title="Modo Manutencao" subtitle="Quando ativo, o site publico exibe uma pagina de aviso" icon={<IcoCog />}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
             <div>
@@ -262,7 +264,20 @@ export default function ConfiguracoesPage() {
             </div>
           )}
         </Section>
-      )}
+        <Section title="Analytics" subtitle="Rastreamento de visitas e conversoes" icon={<IcoBar />}>
+          <Row>
+            <Field label="Google Analytics 4 ID">
+              <Inp val={form.ga_id} set={v=>set("ga_id",v)} ph="G-XXXXXXXXXX" />
+            </Field>
+            <Field label="Meta Pixel ID">
+              <Inp val={form.pixel_id} set={v=>set("pixel_id",v)} ph="1234567890" />
+            </Field>
+          </Row>
+          <div style={{ padding:"12px 16px", background:"rgba(59,130,246,0.06)", border:"1px solid rgba(59,130,246,0.15)", borderRadius:10, fontSize:12, color:"rgba(255,255,255,0.50)" }}>
+            Os scripts sao injetados automaticamente no site apos salvar. Deixe em branco para desativar.
+          </div>
+        </Section>
+      </>)}
     </div>
   );
 }

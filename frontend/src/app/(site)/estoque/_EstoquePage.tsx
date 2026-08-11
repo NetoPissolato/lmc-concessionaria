@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { PublicVehicle } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
+import AlerteMe from "../_AlerteMe";
 
 
 const PAGE_SIZE = 9;
@@ -541,11 +542,17 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
                   {[...Array(PAGE_SIZE)].map((_,i) => <SkeletonCard key={i} />)}
                 </div>
               ) : result.length === 0 ? (
-                <div style={{ textAlign:"center", padding:"80px 0", background:"var(--s-white)", border:"1px solid var(--s-border)", borderRadius:16 }}>
-                  <Car size={52} strokeWidth={1} color="var(--s-text-3)" style={{ margin:"0 auto 16px" }} />
-                  <p style={{ fontSize:18, fontWeight:700, color:"var(--s-text-1)", marginBottom:8 }}>Nenhum veiculo encontrado</p>
-                  <p style={{ fontSize:14, color:"var(--s-text-3)", marginBottom:24 }}>Tente ajustar ou limpar os filtros</p>
-                  <button onClick={clearFilters} className="s-btn s-btn-primary s-btn-md">Limpar filtros</button>
+                <div style={{ padding: "48px 24px", background: "var(--s-white)", border: "1px solid var(--s-border)", borderRadius: 16 }}>
+                  <div style={{ textAlign: "center", marginBottom: 32 }}>
+                    <Car size={48} strokeWidth={1} color="var(--s-text-3)" style={{ margin: "0 auto 14px" }} />
+                    <p style={{ fontSize: 18, fontWeight: 700, color: "var(--s-text-1)", marginBottom: 8 }}>Nenhum veiculo encontrado</p>
+                    <p style={{ fontSize: 14, color: "var(--s-text-3)", marginBottom: 20 }}>Tente ajustar ou limpar os filtros</p>
+                    <button onClick={clearFilters} className="s-btn s-btn-primary s-btn-md">Limpar filtros</button>
+                  </div>
+                  <AlerteMe
+                    marca={filters.marca || undefined}
+                    tipo={filters.tipo[0] || undefined}
+                  />
                 </div>
               ) : viewMode === "grid" ? (
                 <>

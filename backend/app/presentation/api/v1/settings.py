@@ -43,6 +43,8 @@ class SettingsUpdate(BaseModel):
     stat_satisfacao:  Optional[int] = None
     max_fotos_veiculo: Optional[int] = None
     modo_manutencao:  Optional[bool] = None
+    ga_id:            Optional[str] = None
+    pixel_id:         Optional[str] = None
 
 
 # ─── Helper: get or create singleton ────────────────────────────────────────
@@ -81,6 +83,8 @@ def _to_dict(s: StoreSettings) -> dict:
         "stat_satisfacao":   s.stat_satisfacao,
         "max_fotos_veiculo": s.max_fotos_veiculo,
         "modo_manutencao":   s.modo_manutencao,
+        "ga_id":             s.ga_id or "",
+        "pixel_id":          s.pixel_id or "",
         "updated_at":        s.updated_at.isoformat() if s.updated_at else None,
     }
 

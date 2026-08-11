@@ -22,8 +22,39 @@ from app.domain.models.vehicle_photo import VehiclePhoto
 from app.domain.models.lead import Lead, LeadStatus
 from app.domain.models.review import Review
 from app.domain.models.availability_alert import AvailabilityAlert
+from app.domain.models.store_settings import StoreSettings
 
 router = APIRouter(prefix="/public", tags=["Publico"])
+
+
+# ─── Public Settings (safe fields only) ───────────────────────────────────────
+
+@router.get("/settings", summary="Configuracoes publicas da loja")
+async def get_public_settings(db: AsyncSession = Depends(get_db)):
+    """Retorna apenas campos seguros para o site publico (sem dados administrativos)."""
+    result = await db.execute(select(StoreSettings).limit(1))
+    s = result.scalar_one_or_none()
+    if not s:
+        return {}
+    return {
+        "nome_loja":     s.nome_loja,
+        "slogan":        s.slogan,
+        "whatsapp":      s.whatsapp,
+        "telefone":      s.telefone,
+        "email_contato": s.email_contato,
+        "instagram":     s.instagram,
+        "facebook":      s.facebook,
+        "youtube":       s.youtube,
+        "endereco":      s.endereco,
+        "cidade":        s.cidade,
+        "estado":        s.estado,
+        "horario":       s.horario,
+        "stat_clientes": s.stat_clientes,
+        "stat_anos":     s.stat_anos,
+        "stat_satisfacao": s.stat_satisfacao,
+        "ga_id":         s.ga_id or "",
+        "pixel_id":      s.pixel_id or "",
+    }
 
 
 # ─── Schema público — nunca expõe dados internos ──────────────────────────────

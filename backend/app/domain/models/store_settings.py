@@ -46,5 +46,9 @@ class StoreSettings(Base):
     max_fotos_veiculo = Column(Integer, nullable=False, default=10)
     modo_manutencao   = Column(Boolean, nullable=False, default=False)
 
+    # Analytics
+    ga_id             = Column(String(50),  nullable=True, default="")   # Google Analytics 4 (G-XXXXXXXXXX)
+    pixel_id          = Column(String(50),  nullable=True, default="")   # Meta Pixel ID
+
     # Auditoria
     updated_at = Column(DateTime(timezone=True), nullable=True)

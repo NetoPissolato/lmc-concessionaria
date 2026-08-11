@@ -1,7 +1,8 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight, MapPin, Phone, Mail, Clock, Award, Handshake, Users, ShieldCheck, Star, ArrowRight } from "lucide-react";
+import ReviewsSection from "./_ReviewsSection";
 
 export const metadata: Metadata = {
   title: "Sobre a LMC Veiculos | Nossa historia e equipe",
@@ -310,6 +311,10 @@ export default function SobrePage() {
       {/* ===========================================
           RESPONSIVE STYLES
       =========================================== */}
+
+      {/* Reviews Section */}
+      <ReviewsSection />
+
       <style>{`
         .s-sobre-numbers {
           display: grid;
