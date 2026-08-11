@@ -106,7 +106,9 @@ class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
     # Meta
     observacoes: Mapped[str | None] = mapped_column(Text, nullable=True)
     destaque: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="false")
+    video_url: Mapped[str | None] = mapped_column(String(500), nullable=True, comment="Link YouTube do video do veiculo")
     created_by: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id"), nullable=True)
+
 
     # Relationships
     expenses = relationship("VehicleExpense", back_populates="vehicle", cascade="all, delete-orphan")

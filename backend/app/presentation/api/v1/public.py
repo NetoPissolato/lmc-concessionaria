@@ -1,25 +1,29 @@
 """
-Rotas públicas — sem autenticação.
-Expõe apenas veículos com status=disponivel.
-NUNCA expõe dados financeiros internos (custo, margem, placa completa, chassi, etc).
+Rotas publicas - sem autenticacao.
+Expoe apenas veiculos com status=disponivel.
+NUNCA expoe dados financeiros internos (custo, margem, placa completa, chassi, etc).
 """
 
 from fastapi import APIRouter, Query, Path as FPath, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, desc
 from sqlalchemy.orm import selectinload
 from fastapi import Depends
 from typing import Optional, List
 from decimal import Decimal
 from datetime import datetime
+from pydantic import BaseModel, EmailStr
 import json
 
 from app.core.database import get_db
 from app.domain.models.vehicle import Vehicle, VehicleStatus, VehicleType
 from app.domain.models.vehicle_photo import VehiclePhoto
+from app.domain.models.lead import Lead, LeadStatus
+from app.domain.models.review import Review
+from app.domain.models.availability_alert import AvailabilityAlert
 
-router = APIRouter(prefix="/public", tags=["Público"])
+router = APIRouter(prefix="/public", tags=["Publico"])
 
 
 # ─── Schema público — nunca expõe dados internos ──────────────────────────────
@@ -58,6 +62,7 @@ def _to_public(v: Vehicle) -> dict:
         "destaque": v.destaque,
         "observacoes": v.observacoes,
         "photos": photos,
+        "video_url": v.video_url,
         "created_at": v.created_at.isoformat() if v.created_at else None,
     }
 
@@ -302,3 +307,143 @@ async def get_public_settings(db: AsyncSession = Depends(get_db)):
         "stat_satisfacao": s.stat_satisfacao,
         "modo_manutencao": s.modo_manutencao,
     }
+
+
+# ============================================================
+# LEADS - Formulario de contato
+# ============================================================
+
+class LeadCreateSchema(BaseModel):
+    nome: str
+    telefone: str
+    email: Optional[str] = None
+    mensagem: Optional[str] = None
+    veiculo_id: Optional[str] = None
+    veiculo_descricao: Optional[str] = None
+    origem: str = "contato"
+
+
+@router.post("/leads", status_code=201, summary="Enviar lead de contato")
+async def create_lead(
+    body: LeadCreateSchema,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Recebe lead do formulario de contato do site.
+    Salva no banco com status=novo para o admin acompanhar.
+    """
+    lead = Lead(
+        nome=body.nome.strip(),
+        telefone=body.telefone.strip(),
+        email=body.email,
+        mensagem=body.mensagem,
+        veiculo_id=body.veiculo_id,
+        veiculo_descricao=body.veiculo_descricao,
+        origem=body.origem,
+        status=LeadStatus.NOVO,
+    )
+    db.add(lead)
+    await db.commit()
+    await db.refresh(lead)
+    return {"ok": True, "id": lead.id, "message": "Mensagem recebida! Entraremos em contato em breve."}
+
+
+# ============================================================
+# REVIEWS - Avaliacoes de clientes
+# ============================================================
+
+class ReviewCreateSchema(BaseModel):
+    nome: str
+    nota: int
+    texto: str
+    cidade: Optional[str] = None
+
+
+@router.get("/reviews", summary="Listar avaliacoes aprovadas")
+async def list_public_reviews(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=50),
+    db: AsyncSession = Depends(get_db),
+):
+    """Retorna apenas reviews aprovadas pelo admin."""
+    stmt = (
+        select(Review)
+        .where(Review.aprovado == True)  # noqa: E712
+        .order_by(desc(Review.created_at))
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
+    reviews = result.scalars().all()
+    return [
+        {
+            "id": r.id,
+            "nome": r.nome,
+            "nota": r.nota,
+            "texto": r.texto,
+            "foto_url": r.foto_url,
+            "cidade": r.cidade,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reviews
+    ]
+
+
+@router.post("/reviews", status_code=201, summary="Enviar avaliacao (fica pendente de aprovacao)")
+async def create_review(
+    body: ReviewCreateSchema,
+    db: AsyncSession = Depends(get_db),
+):
+    if not (1 <= body.nota <= 5):
+        raise HTTPException(status_code=422, detail="Nota deve ser entre 1 e 5")
+    if len(body.texto.strip()) < 10:
+        raise HTTPException(status_code=422, detail="Texto muito curto (minimo 10 caracteres)")
+
+    review = Review(
+        nome=body.nome.strip(),
+        nota=body.nota,
+        texto=body.texto.strip(),
+        cidade=body.cidade,
+        aprovado=False,  # Fica pendente ate admin aprovar
+    )
+    db.add(review)
+    await db.commit()
+    return {"ok": True, "message": "Avaliacao recebida! Sera publicada apos revisao."}
+
+
+# ============================================================
+# ALERTAS DE DISPONIBILIDADE
+# ============================================================
+
+class AlertCreateSchema(BaseModel):
+    email: str
+    nome: Optional[str] = None
+    marca: Optional[str] = None
+    modelo: Optional[str] = None
+    tipo: Optional[str] = None
+    ano_min: Optional[int] = None
+    ano_max: Optional[int] = None
+    preco_max: Optional[float] = None
+
+
+@router.post("/availability-alerts", status_code=201, summary="Cadastrar alerta de disponibilidade")
+async def create_availability_alert(
+    body: AlertCreateSchema,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Visitante quer ser notificado quando um veiculo especifico entrar no estoque.
+    """
+    alert = AvailabilityAlert(
+        email=body.email.strip().lower(),
+        nome=body.nome,
+        marca=body.marca,
+        modelo=body.modelo,
+        tipo=body.tipo,
+        ano_min=body.ano_min,
+        ano_max=body.ano_max,
+        preco_max=Decimal(str(body.preco_max)) if body.preco_max else None,
+    )
+    db.add(alert)
+    await db.commit()
+    return {"ok": True, "message": "Perfeito! Voce sera notificado quando o veiculo estiver disponivel."}
