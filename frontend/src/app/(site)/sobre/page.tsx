@@ -4,6 +4,9 @@ import Image from "next/image";
 import { ChevronRight, MapPin, Phone, Mail, Clock, Award, Handshake, Users, ShieldCheck, Star, ArrowRight } from "lucide-react";
 import ReviewsSection from "./_ReviewsSection";
 
+const API_INTERNAL = process.env.BACKEND_INTERNAL_URL ?? "http://backend:8000";
+const API_PUBLIC = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
+
 export const metadata: Metadata = {
   title: "Sobre a LMC Veiculos | Nossa historia e equipe",
   description: "Conheca a historia da LMC Veiculos, nossa missao, valores e equipe dedicada a oferecer a melhor experiencia na compra de veiculos.",
@@ -44,12 +47,35 @@ const VALUES = [
   },
 ];
 
-const TEAM = [
-  { name: "Carlos Lima",   role: "Gerente Geral",            initials: "CL", exp: "15 anos de experiencia" },
-  { name: "Ana Paula",     role: "Consultora de Vendas",     initials: "AP", exp: "8 anos de experiencia"  },
-  { name: "Roberto Melo",  role: "Consultor de Vendas",      initials: "RM", exp: "6 anos de experiencia"  },
-  { name: "Juliana Costa", role: "Financeiro e Documentacao",initials: "JC", exp: "10 anos de experiencia" },
-];
+interface TeamMember {
+  id: string;
+  nome: string;
+  cargo: string;
+  foto: string | null;
+  data_contratacao: string | null;
+}
+
+function calcTenure(dateStr: string | null): string {
+  if (!dateStr) return "";
+  const start = new Date(dateStr);
+  const now = new Date();
+  const months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+  if (months < 1) return "Recém-contratado";
+  const years = Math.floor(months / 12);
+  const rem = months % 12;
+  if (years === 0) return `${rem} ${rem === 1 ? "mes" : "meses"} na empresa`;
+  if (rem === 0) return `${years} ${years === 1 ? "ano" : "anos"} na empresa`;
+  return `${years} ${years === 1 ? "ano" : "anos"} e ${rem} ${rem === 1 ? "mes" : "meses"} na empresa`;
+}
+
+async function fetchTeam(): Promise<TeamMember[]> {
+  try {
+    const res = await fetch(`${API_INTERNAL}/api/v1/public/team`, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
+    return res.json();
+  } catch { return []; }
+}
+
 
 const CONTACT = [
   { icon: MapPin, label: "Endereco",  text: "Rua das Flores, 123 — Bairro, Cidade/UF"            },
@@ -58,7 +84,8 @@ const CONTACT = [
   { icon: Clock,  label: "Horario",   text: "Seg–Sex: 8h–18h  |  Sab: 8h–13h  |  Dom: Fechado"  },
 ];
 
-export default function SobrePage() {
+export default async function SobrePage() {
+  const team = await fetchTeam();
   return (
     <>
       {/* ===========================================
@@ -218,6 +245,7 @@ export default function SobrePage() {
       {/* ===========================================
           TEAM
       =========================================== */}
+      {team.length > 0 && (
       <section className="s-section" style={{ background:"var(--s-bg)" }}>
         <div className="s-container">
           <div style={{ textAlign:"center", marginBottom:52 }}>
@@ -229,35 +257,41 @@ export default function SobrePage() {
             </h2>
           </div>
           <div className="s-grid-4" style={{ gap:20 }}>
-            {TEAM.map((t, i) => {
+            {team.map((t, i) => {
               const colors = ["#f47920","#3b82f6","#22c55e","#a855f7"];
               const c = colors[i % colors.length];
+              const initials = t.nome.split(" ").slice(0, 2).map(p => p[0]).join("").toUpperCase();
+              const tenure = calcTenure(t.data_contratacao);
               return (
-                <div key={t.name} style={{
+                <div key={t.id} style={{
                   background:"var(--s-white)", border:"1px solid var(--s-border)",
                   borderRadius:16, padding:"28px 22px", textAlign:"center",
                   boxShadow:"0 2px 16px rgba(0,0,0,0.05)",
-                  transitionDelay: `${i * 80}ms`,
                 }}>
                   {/* Avatar */}
                   <div style={{
                     width:72, height:72, borderRadius:"50%",
-                    background:`linear-gradient(135deg,${c}33,${c}11)`,
+                    background: t.foto ? "transparent" : `linear-gradient(135deg,${c}33,${c}11)`,
                     border:`2.5px solid ${c}44`,
                     display:"flex", alignItems:"center", justifyContent:"center",
                     margin:"0 auto 16px", fontSize:22, fontWeight:900, color:c,
+                    overflow:"hidden",
                   }}>
-                    {t.initials}
+                    {t.foto
+                      ? <img src={t.foto} alt={t.nome} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                      : initials
+                    }
                   </div>
-                  <p style={{ fontSize:15, fontWeight:800, color:"var(--s-text-1)", marginBottom:4 }}>{t.name}</p>
-                  <p style={{ fontSize:12.5, color:c, fontWeight:700, marginBottom:6 }}>{t.role}</p>
-                  <p style={{ fontSize:11.5, color:"var(--s-text-3)" }}>{t.exp}</p>
+                  <p style={{ fontSize:15, fontWeight:800, color:"var(--s-text-1)", marginBottom:4 }}>{t.nome}</p>
+                  <p style={{ fontSize:12.5, color:c, fontWeight:700, marginBottom:6 }}>{t.cargo}</p>
+                  {tenure && <p style={{ fontSize:11.5, color:"var(--s-text-3)" }}>{tenure}</p>}
                 </div>
               );
             })}
           </div>
         </div>
       </section>
+      )}
 
       {/* ===========================================
           LOCATION / CONTACT

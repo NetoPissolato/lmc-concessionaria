@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Phone, Mail, MessageSquare, ChevronDown, ChevronUp,
   Trash2, RefreshCw, Car, ExternalLink, AlertTriangle,
@@ -45,9 +46,13 @@ function initials(nome: string) {
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
-// ─── Confirm Modal ────────────────────────────────────────────────────────────
+// ─── Confirm Modal ───────────────────────────────────────────────────────────
 function ConfirmModal({ message, onConfirm, onCancel }: { message: string; onConfirm(): void; onCancel(): void }) {
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+
+  const modal = (
     <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 28px 24px", maxWidth: 380, width: "100%", boxShadow: "0 24px 60px rgba(0,0,0,0.6)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
@@ -66,6 +71,8 @@ function ConfirmModal({ message, onConfirm, onCancel }: { message: string; onCon
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
 
 // ─── Status Dropdown ──────────────────────────────────────────────────────────
@@ -184,7 +191,7 @@ export default function LeadsPage() {
       )}
       <style>{`
         .leads-kpi-card { flex: 1 1 130px; min-width: 130px; }
-        .leads-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color 160ms,box-shadow 160ms; }
+        .leads-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; transition:border-color 160ms,box-shadow 160ms; }
         .leads-card:hover { border-color:rgba(255,255,255,0.12); box-shadow:0 4px 20px rgba(0,0,0,0.25); }
         .leads-main-row { display:flex; align-items:center; gap:14px; padding:14px 16px; }
         .leads-left { flex:1; min-width:0; }

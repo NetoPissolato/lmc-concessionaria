@@ -305,14 +305,16 @@ async def delete_user(
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 def _serialize(user) -> dict:
     return {
-        "id":           user.id,
-        "nome":         user.nome,
-        "email":        user.email,
-        "usuario":      user.usuario,
-        "telefone":     user.telefone,
-        "foto":         UploadService.get_url(user.foto),
-        "role":         user.role.value,
-        "ativo":        user.ativo,
-        "ultimo_login": user.ultimo_login.isoformat() if user.ultimo_login else None,
-        "created_at":   user.created_at.isoformat(),
+        "id":                user.id,
+        "nome":              user.nome,
+        "email":             user.email,
+        "usuario":           user.usuario,
+        "telefone":          user.telefone,
+        "foto":              UploadService.get_url(user.foto),
+        "role":              user.role.value,
+        "ativo":             user.ativo,
+        "cargo":             user.cargo,
+        "data_contratacao":  user.data_contratacao.isoformat() if user.data_contratacao else None,
+        "ultimo_login":      user.ultimo_login.isoformat() if user.ultimo_login else None,
+        "created_at":        user.created_at.isoformat(),
     }

@@ -1,6 +1,6 @@
 import uuid
-from datetime import datetime
-from sqlalchemy import String, Boolean, Enum as SAEnum, DateTime
+from datetime import datetime, date
+from sqlalchemy import String, Boolean, Enum as SAEnum, DateTime, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 import enum
@@ -42,6 +42,10 @@ class User(Base, TimestampMixin, SoftDeleteMixin):
         nullable=False,
     )
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # Cargo/funcao exibido na pagina de equipe do site publico
+    cargo: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    # Data de contratacao — usada para calcular tempo de empresa
+    data_contratacao: Mapped[date | None] = mapped_column(Date, nullable=True)
     # Recorded on every successful login
     ultimo_login: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True

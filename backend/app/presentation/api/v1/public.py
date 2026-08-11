@@ -23,8 +23,41 @@ from app.domain.models.lead import Lead, LeadStatus
 from app.domain.models.review import Review
 from app.domain.models.availability_alert import AvailabilityAlert
 from app.domain.models.store_settings import StoreSettings
+from app.domain.models.user import User as UserModel
+from app.application.services.upload_service import UploadService
 
 router = APIRouter(prefix="/public", tags=["Publico"])
+
+
+# ─── Public Team (employees with cargo set) ───────────────────────────────────────────
+@router.get("/team", summary="Equipe da loja (funcionarios com cargo)")
+async def get_team(db: AsyncSession = Depends(get_db)):
+    """
+    Retorna funcionarios ativos que possuem cargo preenchido.
+    Usado na pagina 'Sobre' do site publico.
+    NUNCA expoe: email, telefone, senha, role.
+    """
+    result = await db.execute(
+        select(UserModel)
+        .where(
+            UserModel.ativo == True,
+            UserModel.cargo.isnot(None),
+            UserModel.cargo != "",
+            UserModel.deleted_at.is_(None),
+        )
+        .order_by(UserModel.data_contratacao.asc().nulls_last(), UserModel.nome.asc())
+    )
+    users = result.scalars().all()
+    return [
+        {
+            "id":               u.id,
+            "nome":             u.nome,
+            "cargo":            u.cargo,
+            "foto":             UploadService.get_url(u.foto),
+            "data_contratacao": u.data_contratacao.isoformat() if u.data_contratacao else None,
+        }
+        for u in users
+    ]
 
 
 # ─── Public Settings (safe fields only) ───────────────────────────────────────

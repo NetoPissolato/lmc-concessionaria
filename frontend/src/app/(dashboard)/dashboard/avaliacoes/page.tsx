@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Star, CheckCircle, XCircle, Trash2, RefreshCw, MessageSquare, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
@@ -17,9 +18,13 @@ interface Review {
   created_at: string;
 }
 
-// ─── Confirm Modal ────────────────────────────────────────────────────────────
+// ─── Confirm Modal ───────────────────────────────────────────────────────────
 function ConfirmModal({ message, onConfirm, onCancel }: { message: string; onConfirm(): void; onCancel(): void }) {
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+
+  const modal = (
     <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 28px 24px", maxWidth: 380, width: "100%", boxShadow: "0 24px 60px rgba(0,0,0,0.6)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
@@ -38,6 +43,8 @@ function ConfirmModal({ message, onConfirm, onCancel }: { message: string; onCon
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
 
 // ─── Stars ────────────────────────────────────────────────────────────────────

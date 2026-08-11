@@ -44,6 +44,19 @@ export default function ContatoClient() {
   const [sending, setSending] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
 
+  /** Mascara telefone BR: (11) 9 9999-9999 ou (11) 9999-9999 */
+  function maskPhone(raw: string): string {
+    const digits = raw.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2)  return digits.length ? `(${digits}` : "";
+    if (digits.length <= 6)  return `(${digits.slice(0,2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+  }
+
+  function handlePhoneChange(raw: string) {
+    setPhone(maskPhone(raw));
+  }
+
   const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api/v1") + "/public";
 
   async function handleSubmit(e: React.FormEvent) {
@@ -245,10 +258,29 @@ export default function ContatoClient() {
                         <label style={{ fontSize:12, fontWeight:700, color:"var(--s-text-2)", textTransform:"uppercase", letterSpacing:0.8 }}>
                           WhatsApp / Telefone
                         </label>
-                        <input
-                          type="tel" placeholder="(11) 9 0000-0000"
-                          value={phone} onChange={e => setPhone(e.target.value)}
-                          style={inputStyle} />
+                        {/* Phone input with +55 prefix */}
+                        <div style={{ position:"relative" }}>
+                          <div style={{
+                            position:"absolute", left:0, top:0, bottom:0,
+                            display:"flex", alignItems:"center", paddingLeft:12, gap:6,
+                            borderRight:"1.5px solid var(--s-border)", paddingRight:10,
+                            pointerEvents:"none", userSelect:"none",
+                          }}>
+                            <span style={{ fontSize:16, lineHeight:1 }}>🇧🇷</span>
+                            <span style={{ fontSize:12, fontWeight:700, color:"var(--s-text-2)", whiteSpace:"nowrap" }}>+55</span>
+                          </div>
+                          <input
+                            type="tel"
+                            placeholder="(11) 9 0000-0000"
+                            value={phone}
+                            onChange={e => handlePhoneChange(e.target.value)}
+                            maxLength={16}
+                            style={{ ...inputStyle, paddingLeft:76 }}
+                          />
+                          {phone.replace(/\D/g,"").length >= 10 && (
+                            <div style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", width:8, height:8, borderRadius:"50%", background:"#22c55e" }} />
+                          )}
+                        </div>
                       </div>
                       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                         <label style={{ fontSize:12, fontWeight:700, color:"var(--s-text-2)", textTransform:"uppercase", letterSpacing:0.8 }}>

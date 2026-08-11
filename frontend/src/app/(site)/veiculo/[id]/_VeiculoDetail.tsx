@@ -71,6 +71,14 @@ export default function VeiculoDetail({
   const [lightbox, setLightbox] = useState(false);
   const [name,     setName]     = useState("");
   const [phone,    setPhone]    = useState("");
+
+  function maskPhone(raw: string): string {
+    const digits = raw.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2)  return digits.length ? `(${digits}` : "";
+    if (digits.length <= 6)  return `(${digits.slice(0,2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+  }
   const [msg,      setMsg]      = useState(
     `Ola! Tenho interesse no ${vehicle.marca} ${vehicle.modelo} ${vehicle.ano}.`
   );
@@ -417,7 +425,31 @@ export default function VeiculoDetail({
                 ) : (
                   <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:9 }}>
                     <input className="s-input-light" type="text"  placeholder="Seu nome"          value={name}  onChange={e => setName(e.target.value)}  required />
-                    <input className="s-input-light" type="tel"   placeholder="WhatsApp / Telefone" value={phone} onChange={e => setPhone(e.target.value)} required />
+                    {/* Phone with +55 mask */}
+                    <div style={{ position:"relative" }}>
+                      <div style={{
+                        position:"absolute", left:0, top:0, bottom:0,
+                        display:"flex", alignItems:"center", paddingLeft:10, gap:5,
+                        borderRight:"1px solid rgba(0,0,0,0.12)", paddingRight:8,
+                        pointerEvents:"none", userSelect:"none",
+                      }}>
+                        <span style={{ fontSize:14, lineHeight:1 }}>🇧🇷</span>
+                        <span style={{ fontSize:11, fontWeight:700, color:"var(--s-text-3)", whiteSpace:"nowrap" }}>+55</span>
+                      </div>
+                      <input
+                        className="s-input-light"
+                        type="tel"
+                        placeholder="(11) 9 0000-0000"
+                        value={phone}
+                        onChange={e => setPhone(maskPhone(e.target.value))}
+                        maxLength={16}
+                        required
+                        style={{ paddingLeft:66 }}
+                      />
+                      {phone.replace(/\D/g,"").length >= 10 && (
+                        <div style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", width:7, height:7, borderRadius:"50%", background:"#22c55e" }} />
+                      )}
+                    </div>
                     <textarea className="s-textarea-light" placeholder="Mensagem" value={msg} onChange={e => setMsg(e.target.value)} rows={3} style={{ minHeight:70 }} />
                     <button type="submit" className="s-btn s-btn-primary s-btn-md s-btn-full" disabled={sending}>
                       {sending ? "Enviando..." : "Enviar mensagem"}

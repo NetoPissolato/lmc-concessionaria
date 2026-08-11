@@ -30,6 +30,8 @@ interface UserItem {
   foto: string | null;
   role: "admin" | "funcionario";
   ativo: boolean;
+  cargo: string | null;
+  data_contratacao: string | null;
   ultimo_login: string | null;
   created_at: string;
 }
@@ -195,6 +197,8 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
     senha: "",
     telefone: user?.telefone ?? "",
     role: (user?.role ?? "funcionario") as "admin" | "funcionario",
+    cargo: user?.cargo ?? "",
+    data_contratacao: user?.data_contratacao ?? "",
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.foto ? avatarUrl(user.foto, user.nome) : null);
@@ -226,7 +230,12 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
     try {
       let savedUser: UserItem;
       if (isEdit) {
-        const payload: Record<string, unknown> = { nome: form.nome, telefone: form.telefone || null };
+        const payload: Record<string, unknown> = {
+          nome: form.nome,
+          telefone: form.telefone || null,
+          cargo: form.cargo || null,
+          data_contratacao: form.data_contratacao || null,
+        };
         if (form.usuario) payload.usuario = form.usuario;
         savedUser = await usersApi.update(user!.id, payload);
         if (form.role !== user!.role) await usersApi.changeRole(user!.id, form.role);
@@ -234,6 +243,8 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
         const payload: Record<string, unknown> = {
           nome: form.nome, email: form.email, senha: form.senha,
           role: form.role, telefone: form.telefone || null,
+          cargo: form.cargo || null,
+          data_contratacao: form.data_contratacao || null,
         };
         if (form.usuario) payload.usuario = form.usuario;
         savedUser = await usersApi.create(payload) as UserItem;
@@ -372,6 +383,31 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
                         />
                       </div>
                     </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cargo + Data de contratacao */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 220px), 1fr))", gap: 12, marginBottom: 16 }}>
+                  <div>
+                    <label style={labelStyle}>Cargo <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>— aparece no site em "Nossa Equipe"</span></label>
+                    <input
+                      value={form.cargo}
+                      onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
+                      placeholder="Ex: Consultor de Vendas"
+                      maxLength={120}
+                      style={inp}
+                    />
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", marginTop: 4 }}>Deixe vazio para ocultar do site.</p>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Data de contratacao</label>
+                    <input
+                      type="date"
+                      value={form.data_contratacao}
+                      onChange={e => setForm(f => ({ ...f, data_contratacao: e.target.value }))}
+                      style={{ ...inp, colorScheme: "dark" }}
+                    />
                   </div>
                 </div>
 

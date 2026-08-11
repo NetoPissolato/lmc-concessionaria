@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 from app.domain.models.user import UserRole
 
 
@@ -11,6 +11,8 @@ class UserCreate(BaseModel):
     usuario: Optional[str] = None
     telefone: Optional[str] = None
     role: UserRole = UserRole.FUNCIONARIO
+    cargo: Optional[str] = None
+    data_contratacao: Optional[date] = None
 
     @field_validator("senha")
     @classmethod
@@ -47,6 +49,8 @@ class UserUpdate(BaseModel):
     usuario: Optional[str] = None
     telefone: Optional[str] = None
     ativo: Optional[bool] = None
+    cargo: Optional[str] = None
+    data_contratacao: Optional[date] = None
     # NOTE: role change is allowed only via explicit admin endpoint — never via mass-assignment here
 
     @field_validator("usuario")
@@ -74,6 +78,8 @@ class UserResponse(BaseModel):
     foto: Optional[str]
     role: UserRole
     ativo: bool
+    cargo: Optional[str]
+    data_contratacao: Optional[date]
     ultimo_login: Optional[datetime]
     created_at: datetime
 
