@@ -291,7 +291,11 @@ export default function LeadsPage() {
                       <button onClick={() => setExpanded(isOpen ? null : lead.id)} className="leads-icon-btn">
                         {isOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                       </button>
-                      <button onClick={() => deleteLead(lead.id)} disabled={deletingId === lead.id} className="leads-icon-btn" style={{ color: "#ef4444", borderColor: "rgba(239,68,68,0.20)", background: "rgba(239,68,68,0.05)" }}>
+                      <button
+                        onClick={(e) => e.shiftKey ? doDeleteLead(lead.id) : deleteLead(lead.id)}
+                        disabled={deletingId === lead.id}
+                        title="Excluir lead (Shift+clique para excluir sem confirmação)"
+                        className="leads-icon-btn" style={{ color: "#ef4444", borderColor: "rgba(239,68,68,0.20)", background: "rgba(239,68,68,0.05)" }}>
                         <Trash2 size={13} />
                       </button>
                     </div>

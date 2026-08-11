@@ -247,7 +247,11 @@ export default function ReviewsPage() {
                           <XCircle size={13} strokeWidth={2} /> Despublicar
                         </button>
                       )}
-                      <button onClick={() => deleteReview(review.id)} disabled={acting === review.id} className="av-icon-btn" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#ef4444", opacity: acting === review.id ? 0.5 : 1 }}>
+                      <button
+                        onClick={(e) => e.shiftKey ? doDelete(review.id) : deleteReview(review.id)}
+                        disabled={acting === review.id}
+                        title="Excluir avaliacao (Shift+clique para excluir sem confirmação)"
+                        className="av-icon-btn" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#ef4444", opacity: acting === review.id ? 0.5 : 1 }}>
                         <Trash2 size={13} />
                       </button>
                     </div>
