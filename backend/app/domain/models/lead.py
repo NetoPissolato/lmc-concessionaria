@@ -48,7 +48,7 @@ class Lead(Base, TimestampMixin):
     )
 
     status: Mapped[LeadStatus] = mapped_column(
-        SAEnum(LeadStatus, name="lead_status"),
+        SAEnum(LeadStatus, name="lead_status", values_callable=lambda x: [e.value for e in x]),
         default=LeadStatus.NOVO,
         nullable=False,
     )
