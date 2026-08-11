@@ -62,11 +62,19 @@ function NumInp({ val, set, ph }: { val:number; set:(v:number)=>void; ph?:string
   );
 }
 
-function Section({ title, subtitle, icon, children }: { title:string; subtitle:string; icon:string; children:React.ReactNode }) {
+function IcoPhone() { return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.44 2 2 0 0 1 3.56 1.25h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6 6l.88-.88a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.5 16.92z"/></svg>); }
+function IcoShare() { return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>); }
+function IcoBuild() { return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>); }
+function IcoMap() { return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>); }
+function IcoBar() { return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>); }
+function IcoCog() { return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>); }
+function IcoSave() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>); }
+
+function Section({ title, subtitle, icon, children }: { title:string; subtitle:string; icon:React.ReactNode; children:React.ReactNode }) {
   return (
     <div style={{ background:"rgba(255,255,255,0.025)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:18, overflow:"hidden", marginBottom:16 }}>
       <div style={{ padding:"20px 24px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:14 }}>
-        <div style={{ width:42, height:42, borderRadius:13, background:"linear-gradient(135deg,#F5A623,#e8920e)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0, boxShadow:"0 4px 14px rgba(245,166,35,0.30)" }}>
+        <div style={{ width:42, height:42, borderRadius:13, background:"linear-gradient(135deg,#F5A623,#e8920e)", display:"flex", alignItems:"center", justifyContent:"center", color:"#000", flexShrink:0, boxShadow:"0 4px 14px rgba(245,166,35,0.30)" }}>
           {icon}
         </div>
         <div>
@@ -87,10 +95,10 @@ function Field({ label, children }: { label:string; children:React.ReactNode }) 
 }
 
 const TABS = [
-  { id:"contato", label:"Contato & Redes",  icon:"#" },
-  { id:"loja",    label:"Dados da Loja",    icon:"@" },
-  { id:"site",    label:"Site Publico",     icon:">" },
-  { id:"sistema", label:"Sistema",          icon:"*" },
+  { id:"contato", label:"Contato & Redes",  icon:<IcoPhone /> },
+  { id:"loja",    label:"Dados da Loja",    icon:<IcoBuild /> },
+  { id:"site",    label:"Site Publico",     icon:<IcoBar /> },
+  { id:"sistema", label:"Sistema",          icon:<IcoCog /> },
 ];
 
 export default function ConfiguracoesPage() {
@@ -134,7 +142,6 @@ export default function ConfiguracoesPage() {
 
   return (
     <div style={{ maxWidth:860, margin:"0 auto", paddingBottom:60 }}>
-
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:32, gap:16, flexWrap:"wrap" }}>
         <div>
           <h1 style={{ fontSize:24, fontWeight:900, color:"var(--text-primary)", letterSpacing:"-0.5px", marginBottom:4 }}>Configuracoes</h1>
@@ -151,7 +158,8 @@ export default function ConfiguracoesPage() {
             boxShadow: saved ? "0 4px 20px rgba(34,197,94,0.35)" : "0 4px 20px rgba(245,166,35,0.30)",
             whiteSpace:"nowrap",
           }}>
-          {saving ? "Salvando..." : saved ? "Salvo!" : "Salvar alteracoes"}
+          <IcoSave />
+          {saving ? "Salvando..." : saved ? "Salvo com sucesso!" : "Salvar alteracoes"}
         </button>
       </div>
 
@@ -173,37 +181,25 @@ export default function ConfiguracoesPage() {
               transition:"all 150ms",
               boxShadow: tab===t.id ? "0 2px 12px rgba(0,0,0,0.20)" : "none",
             }}>
+            <span style={{ color: tab===t.id ? "var(--brand)" : "var(--text-muted)" }}>{t.icon}</span>
             {t.label}
           </button>
         ))}
       </div>
 
       {tab==="contato" && <>
-        <Section title="Contato" subtitle="Telefone, WhatsApp e e-mail exibidos no site e no topbar" icon="T">
+        <Section title="Contato" subtitle="Telefone, WhatsApp e e-mail exibidos no site e no topbar" icon={<IcoPhone />}>
           <Row>
-            <Field label="WhatsApp (somente numeros)">
-              <Inp val={form.whatsapp} set={v=>set("whatsapp",v)} ph="5511999999999" />
-            </Field>
-            <Field label="Telefone fixo">
-              <Inp val={form.telefone} set={v=>set("telefone",v)} ph="(11) 3456-7890" />
-            </Field>
+            <Field label="WhatsApp (somente numeros)"><Inp val={form.whatsapp} set={v=>set("whatsapp",v)} ph="5511999999999" /></Field>
+            <Field label="Telefone fixo"><Inp val={form.telefone} set={v=>set("telefone",v)} ph="(11) 3456-7890" /></Field>
           </Row>
-          <Field label="E-mail de contato">
-            <Inp val={form.email_contato} set={v=>set("email_contato",v)} ph="contato@lmcveiculos.com.br" type="email" />
-          </Field>
+          <Field label="E-mail de contato"><Inp val={form.email_contato} set={v=>set("email_contato",v)} ph="contato@lmcveiculos.com.br" type="email" /></Field>
         </Section>
-
-        <Section title="Redes Sociais" subtitle="Links exibidos no topbar, rodape e pagina de contato" icon="R">
+        <Section title="Redes Sociais" subtitle="Links exibidos no topbar, rodape e pagina de contato" icon={<IcoShare />}>
           <Row cols="1fr 1fr 1fr">
-            <Field label="Instagram">
-              <Inp val={form.instagram} set={v=>set("instagram",v)} ph="https://instagram.com/sua" />
-            </Field>
-            <Field label="Facebook">
-              <Inp val={form.facebook} set={v=>set("facebook",v)} ph="https://facebook.com/sua" />
-            </Field>
-            <Field label="YouTube">
-              <Inp val={form.youtube} set={v=>set("youtube",v)} ph="https://youtube.com/@sua" />
-            </Field>
+            <Field label="Instagram"><Inp val={form.instagram} set={v=>set("instagram",v)} ph="https://instagram.com/sua" /></Field>
+            <Field label="Facebook"><Inp val={form.facebook} set={v=>set("facebook",v)} ph="https://facebook.com/sua" /></Field>
+            <Field label="YouTube"><Inp val={form.youtube} set={v=>set("youtube",v)} ph="https://youtube.com/@sua" /></Field>
           </Row>
           <div style={{ padding:"12px 16px", background:"rgba(245,166,35,0.07)", border:"1px solid rgba(245,166,35,0.15)", borderRadius:10, fontSize:12, color:"rgba(255,255,255,0.55)" }}>
             Deixe em branco os campos que voce nao usa - os icones nao aparecerao no site.
@@ -212,36 +208,21 @@ export default function ConfiguracoesPage() {
       </>}
 
       {tab==="loja" && <>
-        <Section title="Identidade da Loja" subtitle="Nome, slogan e CNPJ da concessionaria" icon="L">
+        <Section title="Identidade da Loja" subtitle="Nome, slogan e CNPJ da concessionaria" icon={<IcoBuild />}>
           <Row>
-            <Field label="Nome da loja">
-              <Inp val={form.nome_loja} set={v=>set("nome_loja",v)} ph="LMC Veiculos" />
-            </Field>
-            <Field label="CNPJ">
-              <Inp val={form.cnpj} set={v=>set("cnpj",v)} ph="00.000.000/0001-00" />
-            </Field>
+            <Field label="Nome da loja"><Inp val={form.nome_loja} set={v=>set("nome_loja",v)} ph="LMC Veiculos" /></Field>
+            <Field label="CNPJ"><Inp val={form.cnpj} set={v=>set("cnpj",v)} ph="00.000.000/0001-00" /></Field>
           </Row>
-          <Field label="Slogan">
-            <Inp val={form.slogan} set={v=>set("slogan",v)} ph="Seu proximo veiculo esta aqui" />
-          </Field>
+          <Field label="Slogan"><Inp val={form.slogan} set={v=>set("slogan",v)} ph="Seu proximo veiculo esta aqui" /></Field>
         </Section>
-
-        <Section title="Endereco e Horario" subtitle="Endereco fisico e horario de atendimento exibidos no site" icon="E">
+        <Section title="Endereco e Horario" subtitle="Endereco fisico e horario de atendimento exibidos no site" icon={<IcoMap />}>
           <div style={{ marginBottom:14 }}>
-            <Field label="Endereco completo">
-              <Inp val={form.endereco} set={v=>set("endereco",v)} ph="Rua das Flores, 123 - Bairro" />
-            </Field>
+            <Field label="Endereco completo"><Inp val={form.endereco} set={v=>set("endereco",v)} ph="Rua das Flores, 123 - Bairro" /></Field>
           </div>
           <Row cols="1fr 80px 130px">
-            <Field label="Cidade">
-              <Inp val={form.cidade} set={v=>set("cidade",v)} ph="Sao Paulo" />
-            </Field>
-            <Field label="UF">
-              <Inp val={form.estado} set={v=>set("estado",v)} ph="SP" />
-            </Field>
-            <Field label="CEP">
-              <Inp val={form.cep} set={v=>set("cep",v)} ph="00000-000" />
-            </Field>
+            <Field label="Cidade"><Inp val={form.cidade} set={v=>set("cidade",v)} ph="Sao Paulo" /></Field>
+            <Field label="UF"><Inp val={form.estado} set={v=>set("estado",v)} ph="SP" /></Field>
+            <Field label="CEP"><Inp val={form.cep} set={v=>set("cep",v)} ph="00000-000" /></Field>
           </Row>
           <Field label="Horario de atendimento (texto exibido no topbar)">
             <Inp val={form.horario} set={v=>set("horario",v)} ph="Seg-Sex: 8h-18h | Sab: 8h-13h" />
@@ -250,17 +231,11 @@ export default function ConfiguracoesPage() {
       </>}
 
       {tab==="site" && <>
-        <Section title="Estatisticas da Home" subtitle="Numeros exibidos na secao de destaques da pagina inicial" icon="S">
+        <Section title="Estatisticas da Home" subtitle="Numeros exibidos na secao de destaques da pagina inicial" icon={<IcoBar />}>
           <Row cols="1fr 1fr 1fr">
-            <Field label="Clientes atendidos">
-              <NumInp val={form.stat_clientes} set={v=>set("stat_clientes",v)} ph="500" />
-            </Field>
-            <Field label="Anos de mercado">
-              <NumInp val={form.stat_anos} set={v=>set("stat_anos",v)} ph="10" />
-            </Field>
-            <Field label="Satisfacao (%)">
-              <NumInp val={form.stat_satisfacao} set={v=>set("stat_satisfacao",v)} ph="98" />
-            </Field>
+            <Field label="Clientes atendidos"><NumInp val={form.stat_clientes} set={v=>set("stat_clientes",v)} ph="500" /></Field>
+            <Field label="Anos de mercado"><NumInp val={form.stat_anos} set={v=>set("stat_anos",v)} ph="10" /></Field>
+            <Field label="Satisfacao (%)"><NumInp val={form.stat_satisfacao} set={v=>set("stat_satisfacao",v)} ph="98" /></Field>
           </Row>
           <div style={{ padding:"12px 16px", background:"rgba(99,102,241,0.06)", border:"1px solid rgba(99,102,241,0.15)", borderRadius:10, fontSize:12, color:"rgba(255,255,255,0.50)" }}>
             Titulo e subtitulo do hero sao editados diretamente no codigo-fonte do site.
@@ -269,7 +244,7 @@ export default function ConfiguracoesPage() {
       </>}
 
       {tab==="sistema" && (
-        <Section title="Modo Manutencao" subtitle="Quando ativo, o site publico exibe uma pagina de aviso" icon="M">
+        <Section title="Modo Manutencao" subtitle="Quando ativo, o site publico exibe uma pagina de aviso" icon={<IcoCog />}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
             <div>
               <p style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", marginBottom:4 }}>Modo manutencao</p>
@@ -288,7 +263,6 @@ export default function ConfiguracoesPage() {
           )}
         </Section>
       )}
-
     </div>
   );
 }
