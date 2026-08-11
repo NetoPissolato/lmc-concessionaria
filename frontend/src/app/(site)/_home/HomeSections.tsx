@@ -7,6 +7,7 @@ import { Search, ArrowRight, ShieldCheck, FileCheck, CreditCard, Handshake, Chev
 import type { PublicVehicle, PublicStats, PublicSettings } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS } from "@/lib/publicApi";
 import { vehicleSlug } from "@/components/vehicle/shared";
+import ReviewsSection from "../sobre/_ReviewsSection";
 
 // Cores fallback por marca
 const BRAND_COLORS: Record<string,string> = {
@@ -880,6 +881,8 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
           </div>
         </div>
       </section>
+
+      <ReviewsSection />
 
       <style>{`
         /* ── Hero layout ── */

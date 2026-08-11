@@ -70,7 +70,7 @@ function calcTenure(dateStr: string | null): string {
 
 async function fetchTeam(): Promise<TeamMember[]> {
   try {
-    const res = await fetch(`${API_INTERNAL}/api/v1/public/team`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_INTERNAL}/api/v1/public/team`, { cache: "no-store" });
     if (!res.ok) return [];
     return res.json();
   } catch { return []; }
@@ -246,7 +246,7 @@ export default async function SobrePage() {
           TEAM — premium dark cards
       =========================================== */}
       {team.length > 0 && (
-      <section style={{ background:"var(--s-dark)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"80px 0", position:"relative", overflow:"hidden" }}>
+      <section style={{ background:"var(--s-dark-3)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"80px 0", position:"relative", overflow:"hidden" }}>
         {/* Decorative glow */}
         <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:700, height:400, borderRadius:"50%",
           background:"radial-gradient(ellipse, rgba(244,121,32,0.07) 0%, transparent 70%)", pointerEvents:"none" }} />

@@ -58,8 +58,7 @@ class BaseRepository(Generic[ModelType]):
 
     async def update(self, instance: ModelType, **data) -> ModelType:
         for field, value in data.items():
-            if value is not None:
-                setattr(instance, field, value)
+            setattr(instance, field, value)
         self.db.add(instance)
         await self.db.flush()
         await self.db.refresh(instance)

@@ -119,8 +119,8 @@ async def update_user(
     if body.usuario and await repo.username_exists(body.usuario, exclude_id=user_id):
         raise HTTPException(status_code=409, detail="Nome de usuário já em uso")
 
-    dados_antes = {"nome": user.nome, "ativo": user.ativo, "usuario": user.usuario}
-    updated = await repo.update(user, **body.model_dump(exclude_none=True))
+    dados_antes = {"nome": user.nome, "ativo": user.ativo, "usuario": user.usuario, "cargo": user.cargo}
+    updated = await repo.update(user, **body.model_dump(exclude_unset=True))
 
     # Audit
     audit = AuditRepository(db)
@@ -130,7 +130,7 @@ async def update_user(
         entidade="users",
         entidade_id=user_id,
         dados_antes=dados_antes,
-        dados_depois=body.model_dump(exclude_none=True, mode="json"),
+        dados_depois=body.model_dump(exclude_unset=True, mode="json"),
         descricao=f"Perfil atualizado: {user.nome}",
     )
     return updated
