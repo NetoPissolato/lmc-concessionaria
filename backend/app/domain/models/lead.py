@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import String, Text, DateTime, Enum as SAEnum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 from app.domain.models.base import TimestampMixin
@@ -27,7 +26,7 @@ class Lead(Base, TimestampMixin):
     __tablename__ = "leads"
 
     id: Mapped[str] = mapped_column(
-        UUID(as_uuid=False),
+        String(36),
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
     )
@@ -38,7 +37,7 @@ class Lead(Base, TimestampMixin):
 
     # Veiculo de interesse (opcional — preenchido quando lead vem da pagina do veiculo)
     veiculo_id: Mapped[Optional[str]] = mapped_column(
-        UUID(as_uuid=False),
+        String(36),
         ForeignKey("vehicles.id", ondelete="SET NULL"),
         nullable=True,
     )

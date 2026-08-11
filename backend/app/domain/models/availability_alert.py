@@ -3,7 +3,6 @@ from typing import Optional
 from decimal import Decimal
 from sqlalchemy import String, Numeric, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 from app.domain.models.base import TimestampMixin
@@ -22,7 +21,7 @@ class AvailabilityAlert(Base, TimestampMixin):
     __tablename__ = "availability_alerts"
 
     id: Mapped[str] = mapped_column(
-        UUID(as_uuid=False),
+        String(36),
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
     )

@@ -2,7 +2,6 @@ import uuid
 from typing import Optional
 from sqlalchemy import String, Text, Integer, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 from app.domain.models.base import TimestampMixin
@@ -16,7 +15,7 @@ class Review(Base, TimestampMixin):
     __tablename__ = "reviews"
 
     id: Mapped[str] = mapped_column(
-        UUID(as_uuid=False),
+        String(36),
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
     )
