@@ -30,12 +30,12 @@ def upgrade() -> None:
     # ─── leads table (IF NOT EXISTS) ─────────────────────────────────────────
     conn.execute(sa.text("""
         CREATE TABLE IF NOT EXISTS leads (
-            id UUID PRIMARY KEY,
+            id VARCHAR(36) PRIMARY KEY,
             nome VARCHAR(120) NOT NULL,
             telefone VARCHAR(30) NOT NULL,
             email VARCHAR(120),
             mensagem TEXT,
-            veiculo_id UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+            veiculo_id VARCHAR(36) REFERENCES vehicles(id) ON DELETE SET NULL,
             veiculo_descricao VARCHAR(200),
             status lead_status NOT NULL DEFAULT 'novo',
             origem VARCHAR(50) NOT NULL DEFAULT 'contato',
@@ -48,7 +48,7 @@ def upgrade() -> None:
     # ─── reviews table (IF NOT EXISTS) ───────────────────────────────────────
     conn.execute(sa.text("""
         CREATE TABLE IF NOT EXISTS reviews (
-            id UUID PRIMARY KEY,
+            id VARCHAR(36) PRIMARY KEY,
             nome VARCHAR(120) NOT NULL,
             nota INTEGER NOT NULL,
             texto TEXT NOT NULL,
@@ -63,7 +63,7 @@ def upgrade() -> None:
     # ─── availability_alerts table (IF NOT EXISTS) ────────────────────────────
     conn.execute(sa.text("""
         CREATE TABLE IF NOT EXISTS availability_alerts (
-            id UUID PRIMARY KEY,
+            id VARCHAR(36) PRIMARY KEY,
             email VARCHAR(120) NOT NULL,
             nome VARCHAR(120),
             marca VARCHAR(80),
