@@ -162,7 +162,13 @@ export default function LeadsPage() {
     setConfirmDeleteId(null); setDeletingId(id);
     try {
       await fetch(`${API}/leads/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-      setLeads(l => l.filter(x => x.id !== id));
+      setLeads(prev => {
+        const next = prev.filter(x => x.id !== id);
+        const newCounts: Record<string, number> = {};
+        for (const l of next) newCounts[l.status] = (newCounts[l.status] ?? 0) + 1;
+        setCounts(newCounts);
+        return next;
+      });
     } finally { setDeletingId(null); }
   }
 
