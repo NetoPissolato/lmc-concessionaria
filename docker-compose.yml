@@ -44,6 +44,9 @@ services:
       dockerfile: Dockerfile
     container_name: lmc_backend
     restart: unless-stopped
+    env_file:
+      - path: ./backend/.env
+        required: false       # nao quebra se nao existir — usa environment abaixo
     environment:
       DATABASE_URL: postgresql+asyncpg://lmc_user:lmc_secure_pass_2024@postgres:5432/lmc_veiculos
       REDIS_URL: redis://redis:6379/0

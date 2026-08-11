@@ -71,6 +71,30 @@ mkdir -p $PROJECT_DIR/certbot/conf
 mkdir -p $PROJECT_DIR/certbot/www
 mkdir -p $PROJECT_DIR/backend/uploads
 
+# ─── 7. Gerar arquivo .env do backend ────────────────────────────────────────
+echo ""
+echo "[7/7] Gerando arquivo .env do backend..."
+
+# Gera JWT secret aleatorio de 64 chars
+JWT_SECRET=$(openssl rand -hex 32)
+DB_PASS="lmc_secure_pass_2024"
+
+cat > $PROJECT_DIR/backend/.env << ENVEOF
+DATABASE_URL=postgresql+asyncpg://lmc_user:${DB_PASS}@postgres:5432/lmc_veiculos
+REDIS_URL=redis://redis:6379/0
+JWT_SECRET_KEY=${JWT_SECRET}
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
+API_HOST=0.0.0.0
+API_PORT=8000
+ALLOWED_ORIGINS=https://${DOMAIN}
+ENVIRONMENT=production
+ENVEOF
+
+chmod 600 $PROJECT_DIR/backend/.env
+echo "Arquivo .env gerado com JWT secret aleatorio."
+
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
 echo "  Setup concluído com sucesso!"
