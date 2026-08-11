@@ -204,6 +204,7 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.foto ? avatarUrl(user.foto, user.nome) : null);
   const [loading, setLoading] = useState(false);
   const [errs, setErrs] = useState<Record<string, string>>({});
+  const [showOnSite, setShowOnSite] = useState<boolean>(!!(user?.cargo && user.cargo.trim()));
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -233,7 +234,7 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
         const payload: Record<string, unknown> = {
           nome: form.nome,
           telefone: form.telefone || null,
-          cargo: form.cargo || null,
+          cargo: showOnSite ? (form.cargo || null) : null,
           data_contratacao: form.data_contratacao || null,
         };
         if (form.usuario) payload.usuario = form.usuario;
@@ -389,15 +390,30 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
                 {/* Cargo + Data de contratacao */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 220px), 1fr))", gap: 12, marginBottom: 16 }}>
                   <div>
-                    <label style={labelStyle}>Cargo <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>— aparece no site em "Nossa Equipe"</span></label>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                      <label style={labelStyle}>Cargo <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>— Nossa Equipe</span></label>
+                      <button
+                        type="button"
+                        onClick={() => setShowOnSite(s => !s)}
+                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 9px 3px 6px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700, transition: "all 150ms",
+                          background: showOnSite ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.06)",
+                          color: showOnSite ? "#34d399" : "rgba(255,255,255,0.35)",
+                        }}
+                      >
+                        {showOnSite
+                          ? <ToggleRight size={16} strokeWidth={2} />
+                          : <ToggleLeft size={16} strokeWidth={2} />}
+                        {showOnSite ? "Exibir no site" : "Oculto do site"}
+                      </button>
+                    </div>
                     <input
                       value={form.cargo}
                       onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
-                      placeholder="Ex: Consultor de Vendas"
+                      placeholder={showOnSite ? "Ex: Consultor de Vendas" : "Oculto do site"}
+                      disabled={!showOnSite}
                       maxLength={120}
-                      style={inp}
+                      style={{ ...inp, opacity: showOnSite ? 1 : 0.4, cursor: showOnSite ? undefined : "not-allowed" }}
                     />
-                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", marginTop: 4 }}>Deixe vazio para ocultar do site.</p>
                   </div>
                   <div>
                     <label style={labelStyle}>Data de contratacao</label>
