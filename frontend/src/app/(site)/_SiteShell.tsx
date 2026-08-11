@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Search, Menu, X, Phone, Mail, MapPin, Clock,
   MessageCircle, ArrowUp,
 } from "lucide-react";
 import { useCountUp } from "./useAnimations";
-import type { PublicSettings } from "@/lib/publicApi";
+import type { PublicSettings, PublicVehicle } from "@/lib/publicApi";
 
 const SCHEDULE = [
   { day: "Seg", open: "08:00", close: "18:00", weekday: 1 },
@@ -41,8 +41,57 @@ const NAV = [
 ];
 
 function SiteHeader({ s }: { s: PublicSettings }) {
-  const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname   = usePathname();
+  const router     = useRouter();
+  const [mobileOpen,    setMobileOpen]    = useState(false);
+  const [searchQuery,   setSearchQuery]   = useState("");
+  const [searchResults, setSearchResults] = useState<PublicVehicle[]>([]);
+  const [searchOpen,    setSearchOpen]    = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api/v1") + "/public";
+
+  // Debounced search
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) {
+      setSearchResults([]);
+      setSearchOpen(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const res = await fetch(`${BACKEND_URL}/vehicles?q=${encodeURIComponent(searchQuery)}&limit=6`);
+        if (res.ok) {
+          const data: PublicVehicle[] = await res.json();
+          setSearchResults(data);
+          setSearchOpen(true);
+        }
+      } catch { /* silently fail */ }
+      finally { setSearchLoading(false); }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, BACKEND_URL]);
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Escape") { setSearchOpen(false); setSearchQuery(""); }
+    if (e.key === "Enter" && searchQuery.trim()) {
+      setSearchOpen(false);
+      router.push(`/estoque?q=${encodeURIComponent(searchQuery)}`);
+    }
+  }
+
   const wppLink = "https://wa.me/" + (s.whatsapp || "5511999999999");
   const tel     = s.telefone      || "(11) 9 9999-9999";
   const email   = s.email_contato || "contato@lmcveiculos.com.br";
@@ -87,9 +136,60 @@ function SiteHeader({ s }: { s: PublicSettings }) {
           <Link href="/home" className="s-logo" style={{ gap:0 }}>
             <Image src="/LogoLMC.png" alt="LMC Veiculos" width={130} height={48} style={{ objectFit:"contain" }} priority />
           </Link>
-          <div className="s-header-search">
+          <div className="s-header-search" ref={searchRef} style={{ position:"relative" }}>
             <span className="s-header-search-icon"><Search size={15} strokeWidth={2} /></span>
-            <input type="text" placeholder="Pesquise marca, modelo, ano..." aria-label="Pesquisar veiculos" />
+            <input
+              type="text"
+              placeholder="Pesquise marca, modelo, ano..."
+              aria-label="Pesquisar veiculos"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onFocus={() => searchResults.length > 0 && setSearchOpen(true)}
+              onKeyDown={handleKeyDown}
+            />
+            {searchLoading && (
+              <span style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", fontSize:11, color:"rgba(255,255,255,0.4)" }}>...</span>
+            )}
+            {searchOpen && searchResults.length > 0 && (
+              <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, right:0, background:"#1a1d24", border:"1px solid rgba(255,255,255,0.10)", borderRadius:14, boxShadow:"0 16px 48px rgba(0,0,0,0.6)", zIndex:1000, overflow:"hidden" }}>
+                {searchResults.map((v) => {
+                  const mainPhoto = v.photos?.find(p => p.is_main) ?? v.photos?.[0];
+                  const preco = v.valor_anunciado ? `R$ ${new Intl.NumberFormat("pt-BR").format(v.valor_anunciado)}` : "Consulte";
+                  return (
+                    <Link
+                      key={v.id}
+                      href={`/veiculo/${v.id}`}
+                      onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                      style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 14px", textDecoration:"none", transition:"background 150ms", borderBottom:"1px solid rgba(255,255,255,0.05)" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <div style={{ width:44, height:36, borderRadius:8, overflow:"hidden", flexShrink:0, background:"#0d0f14" }}>
+                        {mainPhoto ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={mainPhoto.url} alt={v.modelo} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                        ) : (
+                          <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                            <Search size={14} color="rgba(255,255,255,0.2)" />
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <p style={{ fontSize:13, fontWeight:700, color:"#fff", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{v.marca} {v.modelo} {v.ano}</p>
+                        <p style={{ fontSize:11, color:"rgba(255,255,255,0.45)" }}>{preco} &middot; {v.cambio}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
+                <Link
+                  href={`/estoque?q=${encodeURIComponent(searchQuery)}`}
+                  onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                  style={{ display:"block", padding:"10px 14px", textAlign:"center", fontSize:12, fontWeight:700, color:"var(--s-orange)", textDecoration:"none", background:"rgba(244,121,32,0.05)" }}
+                >
+                  Ver todos os resultados para "{searchQuery}" &rarr;
+                </Link>
+              </div>
+            )}
           </div>
           <nav className="s-nav" aria-label="Navegacao principal">
             {NAV.map(n => (
