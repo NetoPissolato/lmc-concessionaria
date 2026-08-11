@@ -70,7 +70,7 @@ function calcTenure(dateStr: string | null): string {
 
 async function fetchTeam(): Promise<TeamMember[]> {
   try {
-    const res = await fetch(`${API_INTERNAL}/api/v1/public/team`, { next: { revalidate: 300 } });
+    const res = await fetch(`${API_INTERNAL}/api/v1/public/team`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     return res.json();
   } catch { return []; }
