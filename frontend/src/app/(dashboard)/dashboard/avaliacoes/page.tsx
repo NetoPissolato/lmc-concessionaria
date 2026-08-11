@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Star, CheckCircle, XCircle, Trash2, RefreshCw, MessageSquare } from "lucide-react";
+import { Star, CheckCircle, XCircle, Trash2, RefreshCw, MessageSquare, AlertTriangle } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "");
@@ -14,6 +14,51 @@ interface Review {
   cidade: string | null;
   aprovado: boolean;
   created_at: string;
+}
+
+// ─── Confirm Modal ───────────────────────────────────────────────────────────
+function ConfirmModal({ message, onConfirm, onCancel }: {
+  message: string; onConfirm(): void; onCancel(): void;
+}) {
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    }}>
+      <div style={{
+        background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: 16, padding: "28px 28px 24px", maxWidth: 380, width: "100%",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+            background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.20)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <AlertTriangle size={18} color="#ef4444" strokeWidth={2} />
+          </div>
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)", marginBottom: 2 }}>Confirmar exclusao</p>
+            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>{message}</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 20 }}>
+          <button onClick={onCancel} style={{
+            padding: "8px 18px", borderRadius: 9,
+            border: "1px solid var(--border)", background: "var(--surface-2)",
+            color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}>Cancelar</button>
+          <button onClick={onConfirm} style={{
+            padding: "8px 18px", borderRadius: 9,
+            border: "none", background: "#ef4444",
+            color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+          }}>Excluir</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── Star Row ─────────────────────────────────────────────────────────────────
@@ -55,8 +100,9 @@ export default function ReviewsPage() {
   const token = getToken();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"" | "pendente" | "aprovado">("");
+  const [filter, setFilter] = useState<"" | "pendente" | "aprovado">("" );
   const [acting, setActing] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const fetchReviews = useCallback(async () => {
     if (!token) return;
@@ -101,7 +147,11 @@ export default function ReviewsPage() {
   }
 
   async function deleteReview(id: string) {
-    if (!confirm("Remover esta avaliacao permanentemente?")) return;
+    setConfirmDelete(id);
+  }
+
+  async function doDelete(id: string) {
+    setConfirmDelete(null);
     setActing(id);
     try {
       await fetch(`${API}/reviews/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
@@ -116,6 +166,13 @@ export default function ReviewsPage() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
+      {confirmDelete && (
+        <ConfirmModal
+          message="Esta avaliacao sera removida permanentemente."
+          onConfirm={() => doDelete(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
       <style>{`
         .av-stat-card { flex: 1 1 120px; min-width: 120px; }
         .av-stat-nota { flex: 1 1 120px; min-width: 120px; }

@@ -3,13 +3,58 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   User, Phone, Mail, MessageSquare, ChevronDown, ChevronUp,
-  Trash2, RefreshCw, Car, ArrowUpRight, Circle,
+  Trash2, RefreshCw, Car, ArrowUpRight, Circle, AlertTriangle,
 } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "");
 
 type LeadStatus = "novo" | "em_atendimento" | "proposta" | "fechado" | "perdido";
+
+// ─── Confirm Modal ───────────────────────────────────────────────────────────
+function ConfirmModal({ message, onConfirm, onCancel }: {
+  message: string; onConfirm(): void; onCancel(): void;
+}) {
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    }}>
+      <div style={{
+        background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: 16, padding: "28px 28px 24px", maxWidth: 380, width: "100%",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+            background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.20)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <AlertTriangle size={18} color="#ef4444" strokeWidth={2} />
+          </div>
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)", marginBottom: 2 }}>Confirmar exclusao</p>
+            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>{message}</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 20 }}>
+          <button onClick={onCancel} style={{
+            padding: "8px 18px", borderRadius: 9,
+            border: "1px solid var(--border)", background: "var(--surface-2)",
+            color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}>Cancelar</button>
+          <button onClick={onConfirm} style={{
+            padding: "8px 18px", borderRadius: 9,
+            border: "none", background: "#ef4444",
+            color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+          }}>Excluir</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface Lead {
   id: string;
@@ -149,6 +194,7 @@ export default function LeadsPage() {
   const [filterStatus, setFilterStatus] = useState<LeadStatus | "">("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [savingNotes, setSavingNotes] = useState<Record<string, boolean>>({});
 
@@ -169,7 +215,12 @@ export default function LeadsPage() {
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
 
   async function deleteLead(id: string) {
-    if (!token || !confirm("Remover este lead?")) return;
+    if (!token) return;
+    setConfirmDeleteId(id);
+  }
+
+  async function doDeleteLead(id: string) {
+    setConfirmDeleteId(null);
     setDeletingId(id);
     try {
       await fetch(`${API}/leads/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
@@ -198,6 +249,13 @@ export default function LeadsPage() {
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto" }}>
+      {confirmDeleteId && (
+        <ConfirmModal
+          message="Este lead sera removido permanentemente."
+          onConfirm={() => doDeleteLead(confirmDeleteId)}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
       <style>{`
         .leads-kpi-card { flex: 1 1 130px; min-width: 130px; }
         .leads-main-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; flex-wrap:wrap; }
