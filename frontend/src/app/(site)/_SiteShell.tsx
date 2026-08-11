@@ -78,26 +78,6 @@ function SiteHeader({ s }: { s: PublicSettings }) {
                 Fechado
               </span>
             )}
-            <div style={{ display:"flex", alignItems:"center", gap:6, marginLeft:8, paddingLeft:12, borderLeft:"1px solid rgba(255,255,255,0.12)" }}>
-              {s.instagram && s.instagram !== "#" && (
-                <a href={s.instagram} target="_blank" rel="noopener" aria-label="Instagram" style={{ opacity:0.80, display:"flex", transition:"opacity 150ms" }}>
-                  <img src="/logos/instagram.svg" alt="Instagram" width={14} height={14} />
-                </a>
-              )}
-              {s.facebook && s.facebook !== "#" && (
-                <a href={s.facebook} target="_blank" rel="noopener" aria-label="Facebook" style={{ opacity:0.80, display:"flex", transition:"opacity 150ms" }}>
-                  <img src="/logos/facebook.svg" alt="Facebook" width={14} height={14} />
-                </a>
-              )}
-              {s.youtube && s.youtube !== "#" && (
-                <a href={s.youtube} target="_blank" rel="noopener" aria-label="YouTube" style={{ opacity:0.80, display:"flex", transition:"opacity 150ms" }}>
-                  <img src="/logos/youtube.svg" alt="YouTube" width={16} height={14} />
-                </a>
-              )}
-              <a href={wppLink} target="_blank" rel="noopener" aria-label="WhatsApp" style={{ opacity:0.80, display:"flex", transition:"opacity 150ms" }}>
-                <img src="/logos/whatsapp.svg" alt="WhatsApp" width={14} height={14} />
-              </a>
-            </div>
           </div>
         </div>
       </div>
@@ -163,21 +143,15 @@ function SiteFooter({ s }: { s: PublicSettings }) {
               Sua concessionaria de confianca. Transparencia, qualidade e as melhores condicoes para voce realizar o sonho do seu veiculo ideal.
             </p>
             <div className="s-footer-socials">
-              {s.facebook && s.facebook !== "#" && (
-                <a href={s.facebook} className="s-social-btn" aria-label="Facebook" target="_blank" rel="noopener">
-                  <img src="/logos/facebook.svg" alt="Facebook" width={50} height={50} />
-                </a>
-              )}
-              {s.instagram && s.instagram !== "#" && (
-                <a href={s.instagram} className="s-social-btn" aria-label="Instagram" target="_blank" rel="noopener">
-                  <img src="/logos/instagram.svg" alt="Instagram" width={50} height={50} />
-                </a>
-              )}
-              {s.youtube && s.youtube !== "#" && (
-                <a href={s.youtube} className="s-social-btn" aria-label="YouTube" target="_blank" rel="noopener">
-                  <img src="/logos/youtube.svg" alt="YouTube" width={50} height={50} />
-                </a>
-              )}
+              <a href={s.facebook || "#"} className="s-social-btn" aria-label="Facebook" target="_blank" rel="noopener">
+                <img src="/logos/facebook.svg" alt="Facebook" width={50} height={50} />
+              </a>
+              <a href={s.instagram || "#"} className="s-social-btn" aria-label="Instagram" target="_blank" rel="noopener">
+                <img src="/logos/instagram.svg" alt="Instagram" width={50} height={50} />
+              </a>
+              <a href={s.youtube || "#"} className="s-social-btn" aria-label="YouTube" target="_blank" rel="noopener">
+                <img src="/logos/youtube.svg" alt="YouTube" width={50} height={50} />
+              </a>
               <a href={wppLink} className="s-social-btn" aria-label="WhatsApp" target="_blank" rel="noopener">
                 <img src="/logos/whatsapp.svg" alt="WhatsApp" width={50} height={50} />
               </a>
