@@ -6,14 +6,12 @@ Gerenciamento do funil de vendas.
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel
-from datetime import datetime
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.presentation.dependencies.auth import get_current_user_payload
 from app.domain.models.lead import Lead, LeadStatus
-from app.domain.models.user import User
 
 router = APIRouter(prefix="/leads", tags=["Leads"])
 
@@ -49,7 +47,7 @@ async def list_leads(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user_payload),
 ):
     stmt = select(Lead).order_by(desc(Lead.created_at))
     if status:
@@ -77,7 +75,7 @@ async def update_lead(
     lead_id: str,
     body: LeadUpdateSchema,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user_payload),
 ):
     result = await db.execute(select(Lead).where(Lead.id == lead_id))
     lead = result.scalar_one_or_none()
@@ -100,7 +98,7 @@ async def update_lead(
 async def delete_lead(
     lead_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user_payload),
 ):
     result = await db.execute(select(Lead).where(Lead.id == lead_id))
     lead = result.scalar_one_or_none()
