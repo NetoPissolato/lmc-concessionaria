@@ -141,6 +141,7 @@ export const CAMBIO_LABELS: Record<string, string> = {
 };
 
 export const CARROCERIA_LABELS: Record<string, string> = {
+  // Carros
   suv:         "SUV",
   hatch:       "Hatch",
   sedan:       "Sedã",
@@ -150,6 +151,17 @@ export const CARROCERIA_LABELS: Record<string, string> = {
   conversivel: "Conversível",
   perua:       "Perua / SW",
   van:         "Van / Utilitário",
+  // Motos
+  naked:       "Naked",
+  sport:       "Sport",
+  trail:       "Trail",
+  scooter:     "Scooter",
+  touring:     "Touring",
+  custom:      "Custom",
+  bigtrail:    "Big Trail",
+  enduro:      "Enduro",
+  motocross:   "Motocross",
+  chopper:     "Chopper",
 };
 
 export const CONDICAO_LABELS: Record<string, string> = {

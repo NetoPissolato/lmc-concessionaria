@@ -351,6 +351,72 @@ const CAT_ICONS: Record<string, React.ReactNode> = {
       <circle cx="33" cy="14.5" r="2.5"/>
     </svg>
   ),
+  // ── Motos ──────────────────────────────────────────────────────────────
+  naked: (
+    <svg width="22" height="18" viewBox="0 0 44 30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="22" r="5"/>
+      <circle cx="34" cy="22" r="5"/>
+      <path d="M15 22 L20 22 L22 12 L28 10 L32 12 L34 17"/>
+      <path d="M22 12 L18 8 L24 6 L28 10"/>
+      <path d="M28 10 L30 6"/>
+    </svg>
+  ),
+  sport: (
+    <svg width="22" height="18" viewBox="0 0 44 30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="22" r="5"/>
+      <circle cx="34" cy="22" r="5"/>
+      <path d="M15 22 L20 22 L24 10 L30 8 L34 17"/>
+      <path d="M20 22 L22 14 L18 8 L26 6 L30 8"/>
+      <path d="M18 8 L16 5 L22 5"/>
+    </svg>
+  ),
+  trail: (
+    <svg width="22" height="18" viewBox="0 0 44 30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="22" r="5.5"/>
+      <circle cx="34" cy="22" r="5.5"/>
+      <path d="M15.5 22 L20 22 L23 11 L28 9 L33 16.5"/>
+      <path d="M23 11 L19 7 L25 5 L29 9"/>
+      <path d="M28 9 L32 6"/>
+    </svg>
+  ),
+  scooter: (
+    <svg width="22" height="18" viewBox="0 0 44 30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="22" r="5"/>
+      <circle cx="34" cy="22" r="5"/>
+      <path d="M15 22 L20 22 L22 16 L28 14 L34 17"/>
+      <path d="M20 22 L22 16 L24 11 L30 10 L32 14"/>
+      <path d="M24 11 L24 7 L28 7"/>
+    </svg>
+  ),
+  touring: (
+    <svg width="22" height="18" viewBox="0 0 44 30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="22" r="5"/>
+      <circle cx="34" cy="22" r="5"/>
+      <path d="M15 22 L20 22 L22 12 L30 10 L34 17"/>
+      <path d="M22 12 L18 8 L26 6 L30 10"/>
+      <path d="M30 10 L36 12 L36 17"/>
+      <path d="M6 17 L8 12 L14 12"/>
+    </svg>
+  ),
+  custom: (
+    <svg width="22" height="18" viewBox="0 0 44 30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="22" r="5"/>
+      <circle cx="36" cy="22" r="5"/>
+      <path d="M15 22 L22 22 L26 15 L32 13 L36 17"/>
+      <path d="M22 22 L24 16 L20 10 L28 9 L32 13"/>
+      <path d="M20 10 L22 6 L24 10"/>
+    </svg>
+  ),
+  bigtrail: (
+    <svg width="22" height="18" viewBox="0 0 44 30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="22" r="6"/>
+      <circle cx="34" cy="22" r="6"/>
+      <path d="M16 22 L21 22 L24 10 L30 8 L34 16"/>
+      <path d="M24 10 L20 6 L26 4 L30 8"/>
+      <path d="M30 8 L33 5"/>
+      <path d="M8 14 L12 12 L16 14"/>
+    </svg>
+  ),
 };
 
 function ModelosMaisBuscados({
