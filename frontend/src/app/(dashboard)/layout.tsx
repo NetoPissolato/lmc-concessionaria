@@ -8,7 +8,7 @@ import {
   Car, Users, ShoppingBag, DollarSign,
   UserCog, LogOut, Search, Bell, FileText, ChevronLeft,
   ChevronRight, Menu, X, Bike, Clock, CheckCircle2, XCircle,
-  ChevronDown, Star, LayoutGrid,
+  ChevronDown, Star,
 } from "lucide-react";
 import { authApi, salesApi } from "@/lib/api";
 import { toast } from "@/lib/toast";
@@ -63,8 +63,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
       { href: "/dashboard/motos",    label: "Motos",     icon: Bike,            color: "#f97316", adminOnly: false },
       { href: "/dashboard/clientes", label: "Clientes",  icon: Users,           color: "#a78bfa", adminOnly: false },
       { href: "/dashboard/leads",      label: "Leads CRM",  icon: ShoppingBag,     color: "#22c55e", adminOnly: false },
-      { href: "/dashboard/avaliacoes",       label: "Avaliacoes",        icon: Star,        color: "#f59e0b", adminOnly: false },
-      { href: "/dashboard/modelos-destaque",  label: "Modelos Destaque",  icon: LayoutGrid,  color: "#a78bfa", adminOnly: true  },
+      { href: "/dashboard/avaliacoes",  label: "Avaliacoes", icon: Star,            color: "#f59e0b", adminOnly: false },
     ],
   },
   {

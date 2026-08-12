@@ -361,6 +361,24 @@ async def list_popular_models(
     Usado na home como automação estilo Webmotors.
     """
     from collections import defaultdict
+    import re
+
+    def _canonical(text: str) -> str:
+        """Title case preservando siglas numéricas (HB20, T-Cross, BMW)."""
+        if not text:
+            return text
+        _CAPS = {"bmw", "byd", "jac", "cvt", "4wd", "4x4", "suv", "amg", "gti", "tdi", "gla", "glb", "glc", "gle"}
+        parts = text.strip().split()
+        out = []
+        for p in parts:
+            lp = p.lower()
+            if lp in _CAPS:
+                out.append(p.upper())
+            elif lp[:2] in {"hb", "gl"} and any(c.isdigit() for c in p):
+                out.append(p.upper())
+            else:
+                out.append(p.capitalize())
+        return " ".join(out)
 
     stmt = (
         select(Vehicle)
@@ -373,13 +391,22 @@ async def list_popular_models(
     result = await db.execute(stmt)
     vehicles = result.scalars().all()
 
+    # Agrupa por (marca_lower, modelo_lower) para ser 100% case-insensitive
+    # Mantém a primeira forma capitalizada correta encontrada para exibição
     groups: dict = defaultdict(list)
+    canonical_name: dict = {}  # lowercase_key -> (marca_canonical, modelo_canonical)
     for v in vehicles:
-        key = (v.marca.strip(), v.modelo.strip())
+        marca_lower  = v.marca.strip().lower()
+        modelo_lower = v.modelo.strip().lower()
+        key = (marca_lower, modelo_lower)
         groups[key].append(v)
+        if key not in canonical_name:
+            # Usa o normalize_modelo do próprio dado do banco (já normalizado pela migration)
+            canonical_name[key] = (_canonical(v.marca.strip()), _canonical(v.modelo.strip()))
 
     out = []
-    for (marca, modelo), vs in groups.items():
+    for key, vs in groups.items():
+        marca, modelo = canonical_name[key]
         total_views = sum(v.visualizacoes or 0 for v in vs)
         prices      = [float(v.valor_anunciado) for v in vs if v.valor_anunciado]
         min_price   = min(prices) if prices else None
