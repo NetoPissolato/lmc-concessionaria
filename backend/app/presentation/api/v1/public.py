@@ -349,6 +349,69 @@ async def list_public_modelos_destaque(db: AsyncSession = Depends(get_db)):
     return out
 
 
+# ─── GET /public/popular-models ───────────────────────────────────────────────
+@router.get("/popular-models", summary="Modelos mais vistos do estoque (automático)")
+async def list_popular_models(
+    limit: int = Query(8, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Agrupa todos os veículos (disponíveis) por marca+modelo,
+    ordena pelo total de visualizações e retorna os top N.
+    Usado na home como automação estilo Webmotors.
+    """
+    from collections import defaultdict
+
+    stmt = (
+        select(Vehicle)
+        .where(
+            Vehicle.status == VehicleStatus.DISPONIVEL,
+            Vehicle.deleted_at.is_(None),
+        )
+        .options(selectinload(Vehicle.photos))
+    )
+    result = await db.execute(stmt)
+    vehicles = result.scalars().all()
+
+    groups: dict = defaultdict(list)
+    for v in vehicles:
+        key = (v.marca.strip(), v.modelo.strip())
+        groups[key].append(v)
+
+    out = []
+    for (marca, modelo), vs in groups.items():
+        total_views = sum(v.visualizacoes or 0 for v in vs)
+        prices      = [float(v.valor_anunciado) for v in vs if v.valor_anunciado]
+        min_price   = min(prices) if prices else None
+        tipos       = [v.tipo.value for v in vs if v.tipo]
+        tipo        = max(set(tipos), key=tipos.count) if tipos else "carro"
+        carrocerias = [v.carroceria for v in vs if v.carroceria]
+        carroceria  = max(set(carrocerias), key=carrocerias.count) if carrocerias else None
+
+        vs_sorted = sorted(vs, key=lambda x: x.visualizacoes or 0, reverse=True)
+        photo_url = None
+        for v in vs_sorted:
+            if v.photos:
+                main = next((p for p in v.photos if p.is_main), v.photos[0] if v.photos else None)
+                if main:
+                    photo_url = main.url
+                    break
+
+        out.append({
+            "marca":             marca,
+            "modelo":            modelo,
+            "tipo":              tipo,
+            "carroceria":        carroceria,
+            "total_disponiveis": len(vs),
+            "min_price":         min_price,
+            "total_views":       total_views,
+            "photo_url":         photo_url,
+        })
+
+    out.sort(key=lambda x: (-(x["total_views"]), -(x["total_disponiveis"])))
+    return out[:limit]
+
+
 # ─── GET /public/stats ─────────────────────────────────────────────────────────
 @router.get("/stats", summary="Estatísticas públicas (site público)")
 async def get_public_stats(db: AsyncSession = Depends(get_db)):

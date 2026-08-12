@@ -143,6 +143,8 @@ export const vehiclesApi = {
     api.put(`/vehicles/${vehicleId}/expenses/${expenseId}`, data).then((r) => r.data),
   deleteExpense: (vehicleId: string, expenseId: string) =>
     api.delete(`/vehicles/${vehicleId}/expenses/${expenseId}`),
+  brandsModels: () => api.get("/vehicles/brands-models").then((r) => r.data) as Promise<{marca:string;modelo:string;tipo:string;carroceria:string|null}[]>,
+
   getAudit: (id: string) => api.get(`/vehicles/${id}/audit`).then((r) => r.data),
   payFines: (id: string) => api.post(`/vehicles/${id}/pay-fines`).then((r) => r.data),
   // ─── Gallery ───────────────────────────────────────────────────────────────

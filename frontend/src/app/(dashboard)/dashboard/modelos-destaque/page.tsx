@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -8,9 +8,11 @@ import {
   ToggleLeft, ToggleRight, ChevronUp, ChevronDown, Star, AlertCircle,
   LayoutGrid,
 } from "lucide-react";
-import { modelosDestaqueApi } from "@/lib/api";
+import { modelosDestaqueApi, vehiclesApi } from "@/lib/api";
 import { ModeloDestaque, CarroceriaType } from "@/types";
 import { toast } from "@/lib/toast";
+
+type BrandModel = { marca: string; modelo: string; tipo: string; carroceria: string | null };
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -245,16 +247,97 @@ function ModeloCard({
 
 // ─── Modal Criar / Editar ─────────────────────────────────────────────────────
 
+// Autocomplete input component
+function AutocompleteField({
+  label,
+  required,
+  value,
+  onChange,
+  suggestions,
+  placeholder,
+  autoFocus,
+}: {
+  label: string;
+  required?: boolean;
+  value: string;
+  onChange: (val: string) => void;
+  suggestions: string[];
+  placeholder?: string;
+  autoFocus?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const filtered = suggestions.filter(s =>
+    s.toLowerCase().includes(value.toLowerCase()) && s !== value
+  );
+  const showList = open && value.length >= 1 && filtered.length > 0;
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", marginBottom: 6 }}>
+        {label} {required && <span style={{ color: "var(--error)" }}>*</span>}
+      </label>
+      <input
+        className="input"
+        placeholder={placeholder}
+        value={value}
+        autoFocus={autoFocus}
+        onChange={e => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        autoComplete="off"
+      />
+      {showList && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+          background: "var(--surface)", border: "1px solid var(--border)",
+          borderRadius: 10, zIndex: 200, maxHeight: 200, overflowY: "auto",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+        }}>
+          {filtered.slice(0, 12).map(s => (
+            <button
+              key={s}
+              onMouseDown={e => { e.preventDefault(); onChange(s); setOpen(false); }}
+              style={{
+                display: "block", width: "100%", textAlign: "left",
+                padding: "9px 14px", background: "none", border: "none",
+                cursor: "pointer", fontSize: 13, color: "var(--text-primary)",
+                fontFamily: "inherit", borderBottom: "1px solid var(--border)",
+                transition: "background 0.1s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "var(--surface-2)"}
+              onMouseLeave={e => e.currentTarget.style.background = "none"}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ModeloModal({
   item,
   onClose,
   onSave,
   saving,
+  stockData,
 }: {
   item: ModeloDestaque | null;
   onClose: () => void;
   onSave: (data: ModeloForm) => void;
   saving: boolean;
+  stockData: { marca: string; modelo: string; tipo: string; carroceria: string | null }[];
 }) {
   const [form, setForm] = useState<ModeloForm>(
     item
@@ -264,6 +347,35 @@ function ModeloModal({
 
   const isEditing = !!item;
   const valid = form.marca.trim() && form.modelo.trim() && form.carroceria;
+
+  // Unique marcas from stock
+  const marcas = [...new Set(stockData.map(d => d.marca))].sort();
+
+  // Models filtered by current marca (or all if marca not set)
+  const modelos = [...new Set(
+    stockData
+      .filter(d => !form.marca || d.marca.toLowerCase() === form.marca.toLowerCase())
+      .map(d => d.modelo)
+  )].sort();
+
+  // When user selects marca from suggestions → clear modelo
+  function handleMarcaChange(val: string) {
+    const exactMatch = stockData.find(d => d.marca.toLowerCase() === val.toLowerCase());
+    setForm(f => ({ ...f, marca: exactMatch ? exactMatch.marca : val, modelo: "" }));
+  }
+
+  // When user selects modelo → auto-fill carroceria if available
+  function handleModeloChange(val: string) {
+    const exactMatch = stockData.find(
+      d => d.modelo.toLowerCase() === val.toLowerCase() &&
+           (!form.marca || d.marca.toLowerCase() === form.marca.toLowerCase())
+    );
+    setForm(f => ({
+      ...f,
+      modelo: exactMatch ? exactMatch.modelo : val,
+      ...(exactMatch?.carroceria ? { carroceria: exactMatch.carroceria } : {}),
+    }));
+  }
 
   return (
     <div
@@ -297,33 +409,34 @@ function ModeloModal({
           </button>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Marca */}
-          <div>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", marginBottom: 6 }}>
-              Marca <span style={{ color: "var(--error)" }}>*</span>
-            </label>
-            <input
-              className="input"
-              placeholder="Ex: Honda, Toyota, Jeep..."
-              value={form.marca}
-              onChange={e => setForm(f => ({ ...f, marca: e.target.value }))}
-              autoFocus
-            />
+        {stockData.length > 0 && (
+          <div style={{ marginBottom: 16, padding: "8px 12px", borderRadius: 8, background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)", fontSize: 12, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 6 }}>
+            <Check size={13} color="#22c55e" />
+            {stockData.length} combinações do estoque disponíveis para autocompletar
           </div>
+        )}
 
-          {/* Modelo */}
-          <div>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", marginBottom: 6 }}>
-              Modelo <span style={{ color: "var(--error)" }}>*</span>
-            </label>
-            <input
-              className="input"
-              placeholder="Ex: HR-V, Compass, Creta..."
-              value={form.modelo}
-              onChange={e => setForm(f => ({ ...f, modelo: e.target.value }))}
-            />
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Marca com autocomplete */}
+          <AutocompleteField
+            label="Marca"
+            required
+            value={form.marca}
+            onChange={handleMarcaChange}
+            suggestions={marcas}
+            placeholder="Ex: Honda, Toyota, Jeep..."
+            autoFocus
+          />
+
+          {/* Modelo com autocomplete */}
+          <AutocompleteField
+            label="Modelo"
+            required
+            value={form.modelo}
+            onChange={handleModeloChange}
+            suggestions={modelos}
+            placeholder="Ex: HR-V, Compass, Creta..."
+          />
 
           {/* Carroceria */}
           <div>
@@ -351,6 +464,13 @@ function ModeloModal({
                 );
               })}
             </div>
+            {form.carroceria && (
+              <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
+                Selecionado: <strong>{CARROCERIA_LABELS[form.carroceria]}</strong>
+                {stockData.some(d => d.modelo.toLowerCase() === form.modelo.toLowerCase() && d.carroceria) &&
+                  " (preenchido automaticamente do estoque)"}
+              </p>
+            )}
           </div>
 
           {/* Ativo */}
@@ -383,6 +503,7 @@ function ModeloModal({
   );
 }
 
+
 // ─── Página Principal ─────────────────────────────────────────────────────────
 
 export default function ModelosDestaquePage() {
@@ -395,6 +516,12 @@ export default function ModelosDestaquePage() {
   const { data: modelos = [], isLoading } = useQuery<ModeloDestaque[]>({
     queryKey: ["modelos-destaque-admin"],
     queryFn: () => modelosDestaqueApi.list(),
+  });
+
+  const { data: stockData = [] } = useQuery<BrandModel[]>({
+    queryKey: ["vehicles-brands-models"],
+    queryFn: () => vehiclesApi.brandsModels(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["modelos-destaque-admin"] });
@@ -559,6 +686,7 @@ export default function ModelosDestaquePage() {
             item={editItem}
             onClose={() => { setShowModal(false); setEditItem(null); }}
             saving={createMut.isPending || updateMut.isPending}
+            stockData={stockData}
             onSave={data => {
               if (editItem) {
                 updateMut.mutate({ id: editItem.id, data });

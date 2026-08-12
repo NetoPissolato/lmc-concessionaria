@@ -48,6 +48,44 @@ async def list_vehicles(
     return vehicles
 
 
+@router.get("/brands-models", summary="Marcas e modelos únicos do estoque (autocomplete)")
+async def list_brands_models(
+    db: AsyncSession = Depends(get_db),
+    _user: dict = Depends(get_current_user_payload),
+):
+    """
+    Retorna todos os pares marca+modelo únicos dos veículos ativos no estoque.
+    Usado para autocomplete no cadastro de Modelos em Destaque.
+    Inclui veículos de qualquer status (exceto deletados).
+    """
+    from app.domain.models.vehicle import Vehicle
+    from sqlalchemy import distinct
+
+    stmt = (
+        select(
+            Vehicle.marca,
+            Vehicle.modelo,
+            Vehicle.tipo,
+            Vehicle.carroceria,
+        )
+        .where(Vehicle.deleted_at.is_(None))
+        .distinct()
+        .order_by(Vehicle.marca.asc(), Vehicle.modelo.asc())
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    return [
+        {
+            "marca":     r.marca,
+            "modelo":    r.modelo,
+            "tipo":      r.tipo.value if r.tipo else "carro",
+            "carroceria": r.carroceria,
+        }
+        for r in rows
+    ]
+
+
 @router.post("", response_model=VehicleResponse, status_code=201)
 async def create_vehicle(
     body: VehicleCreate,
