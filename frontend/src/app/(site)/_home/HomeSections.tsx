@@ -514,7 +514,7 @@ function ModelosMaisBuscados({
                     className="s-modelo-card"
                     style={{
                       position: "relative",
-                      width: 252, height: 164,
+                      width: 300, height: 200,
                       borderRadius: 18,
                       background: "#18191f",
                       border: "1px solid rgba(255,255,255,0.07)",
@@ -524,9 +524,9 @@ function ModelosMaisBuscados({
                     }}
                     onMouseEnter={e => {
                       const el = e.currentTarget as HTMLDivElement;
-                      el.style.transform = "translateY(-5px) scale(1.02)";
-                      el.style.boxShadow = `0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px ${brandColor}44`;
-                      el.style.borderColor = `${brandColor}55`;
+                      el.style.transform = "translateY(-6px) scale(1.02)";
+                      el.style.boxShadow = `0 20px 50px rgba(0,0,0,0.5)`;
+                      el.style.borderColor = `rgba(255,255,255,0.18)`;
                     }}
                     onMouseLeave={e => {
                       const el = e.currentTarget as HTMLDivElement;
@@ -535,14 +535,7 @@ function ModelosMaisBuscados({
                       el.style.borderColor = "rgba(255,255,255,0.07)";
                     }}
                   >
-                    {/* Brand color accent top bar */}
-                    <div style={{
-                      position: "absolute", top: 0, left: 0, right: 0, height: 2,
-                      background: `linear-gradient(90deg, ${brandColor}, transparent)`,
-                      opacity: 0.7,
-                    }} />
-
-                    {/* Vehicle photo — right side, larger */}
+                    {/* Vehicle photo — full card */}
                     {m.photo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -550,96 +543,75 @@ function ModelosMaisBuscados({
                         alt={`${m.marca} ${m.modelo}`}
                         style={{
                           position: "absolute",
-                          right: -12, top: 0,
-                          width: "68%", height: "100%",
+                          inset: 0,
+                          width: "100%", height: "100%",
                           objectFit: "cover",
                           objectPosition: "center",
                         }}
                       />
                     ) : (
                       <div style={{
-                        position: "absolute",
-                        right: 0, top: 0,
-                        width: "60%", height: "100%",
+                        position: "absolute", inset: 0,
+                        background: `linear-gradient(135deg, ${brandColor}22, #18191f)`,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        opacity: 0.25,
                       }}>
-                        <BrandLogoFallback marca={m.marca} size={64} />
+                        <span style={{ fontSize: 52, fontWeight: 900, color: `${brandColor}55`, letterSpacing: -2 }}>
+                          {m.marca.slice(0, 2).toUpperCase()}
+                        </span>
                       </div>
                     )}
 
-                    {/* Left gradient — darker for text legibility */}
+                    {/* Strong bottom gradient for text legibility */}
                     <div style={{
                       position: "absolute", inset: 0,
-                      background: `linear-gradient(100deg, #18191f 30%, rgba(24,25,31,0.92) 52%, rgba(24,25,31,0.2) 75%, transparent 100%)`,
-                    }} />
-                    {/* Bottom gradient */}
-                    <div style={{
-                      position: "absolute", bottom: 0, left: 0, right: 0, height: "55%",
-                      background: "linear-gradient(0deg, rgba(0,0,0,0.55) 0%, transparent 100%)",
+                      background: "linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.75) 70%, rgba(0,0,0,0.92) 100%)",
                     }} />
 
-                    {/* Content layer */}
+                    {/* Top-right: Em Alta badge */}
+                    {!m.is_manual && m.total_views > 0 && (
+                      <div style={{
+                        position: "absolute", top: 12, right: 12,
+                        display: "flex", alignItems: "center", gap: 4,
+                        background: "rgba(244,121,32,0.92)", backdropFilter: "blur(8px)",
+                        borderRadius: 999, padding: "4px 10px",
+                        fontSize: 10, fontWeight: 700, color: "#fff",
+                        boxShadow: "0 2px 12px rgba(244,121,32,0.4)",
+                      }}>
+                        <TrendingUp size={9} /> Em alta
+                      </div>
+                    )}
+
+                    {/* Units top-left */}
+                    {m.total_disponiveis > 0 && (
+                      <div style={{
+                        position: "absolute", top: 12, left: 12,
+                        background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        borderRadius: 999, padding: "4px 10px",
+                        fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.75)",
+                      }}>
+                        {m.total_disponiveis} {m.total_disponiveis === 1 ? "unidade" : "unidades"}
+                      </div>
+                    )}
+
+                    {/* Bottom: model info */}
                     <div style={{
-                      position: "absolute", inset: 0, padding: "13px 14px",
-                      display: "flex", flexDirection: "column", justifyContent: "space-between",
-                      zIndex: 2,
+                      position: "absolute", bottom: 0, left: 0, right: 0,
+                      padding: "0 16px 16px",
                     }}>
-                      {/* Top: brand logo + trending */}
-                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                        <div style={{
-                          width: 36, height: 36, borderRadius: 10,
-                          background: "rgba(0,0,0,0.55)", backdropFilter: "blur(12px)",
-                          border: "1px solid rgba(255,255,255,0.10)",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                        }}>
-                          <BrandLogoFallback marca={m.marca} size={22} />
-                        </div>
-
-                        {!m.is_manual && m.total_views > 0 && (
-                          <div style={{
-                            display: "flex", alignItems: "center", gap: 4,
-                            background: "rgba(244,121,32,0.88)", backdropFilter: "blur(8px)",
-                            borderRadius: 999, padding: "3px 9px",
-                            fontSize: 10, fontWeight: 700, color: "#fff",
-                            boxShadow: "0 2px 8px rgba(244,121,32,0.35)",
-                          }}>
-                            <TrendingUp size={9} />
-                            Em alta
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Bottom: info */}
-                      <div>
-                        <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.38)", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 2 }}>
-                          {m.marca}
+                      <p style={{
+                        fontSize: 22, fontWeight: 900, color: "#fff",
+                        letterSpacing: "-0.6px", lineHeight: 1.1,
+                        marginBottom: m.min_price ? 6 : 0,
+                        textShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                      }}>
+                        {m.marca} {m.modelo}
+                      </p>
+                      {m.min_price != null && (
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#4ade80", letterSpacing: "-0.2px" }}>
+                          A partir de R$ {fmtShortPrice(m.min_price)}
                         </p>
-                        <p style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px", lineHeight: 1.1, marginBottom: 5 }}>
-                          {m.modelo}
-                        </p>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          {m.min_price != null && (
-                            <span style={{
-                              fontSize: 12, fontWeight: 700, color: "#4ade80", letterSpacing: "-0.2px",
-                            }}>
-                              A partir de R$ {fmtShortPrice(m.min_price)}
-                            </span>
-                          )}
-                          {m.total_disponiveis > 0 && (
-                            <span style={{
-                              fontSize: 10, fontWeight: 600,
-                              background: "rgba(255,255,255,0.08)",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                              borderRadius: 999, padding: "2px 8px",
-                              color: "rgba(255,255,255,0.5)",
-                            }}>
-                              {m.total_disponiveis} {m.total_disponiveis === 1 ? "un." : "un."}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </Link>
