@@ -574,18 +574,50 @@ export default function EstoquePage({ initialVehicles }: { initialVehicles: Vehi
                   {[...Array(PAGE_SIZE)].map((_,i) => <SkeletonCard key={i} />)}
                 </div>
               ) : result.length === 0 ? (
-                <div style={{ padding: "48px 24px", background: "var(--s-white)", border: "1px solid var(--s-border)", borderRadius: 16 }}>
-                  <div style={{ textAlign: "center", marginBottom: 32 }}>
-                    <Car size={48} strokeWidth={1} color="var(--s-text-3)" style={{ margin: "0 auto 14px" }} />
-                    <p style={{ fontSize: 18, fontWeight: 700, color: "var(--s-text-1)", marginBottom: 8 }}>Nenhum veiculo encontrado</p>
-                    <p style={{ fontSize: 14, color: "var(--s-text-3)", marginBottom: 20 }}>Tente ajustar ou limpar os filtros</p>
-                    <button onClick={clearFilters} className="s-btn s-btn-primary s-btn-md">Limpar filtros</button>
+                <div style={{
+                  background: "#fff",
+                  border: "1.5px solid #e8ecf0",
+                  borderRadius: 20,
+                  overflow: "hidden",
+                }}>
+                  {/* Empty state hero */}
+                  <div style={{ padding: "52px 32px 40px", textAlign: "center" }}>
+                    <div style={{
+                      width: 72, height: 72, borderRadius: 20,
+                      background: "#f8fafc",
+                      border: "1.5px solid #e8ecf0",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      margin: "0 auto 20px",
+                    }}>
+                      <Car size={32} strokeWidth={1.2} color="#94a3b8" />
+                    </div>
+                    <p style={{ fontSize: 20, fontWeight: 800, color: "var(--s-text-1)", marginBottom: 8, letterSpacing: "-0.4px" }}>
+                      Nenhum veículo encontrado
+                    </p>
+                    <p style={{ fontSize: 14, color: "var(--s-text-3)", marginBottom: 24, lineHeight: 1.6 }}>
+                      Tente ajustar os filtros ou limpe para ver todo o estoque.
+                    </p>
+                    <button
+                      onClick={clearFilters}
+                      className="s-btn s-btn-primary s-btn-md"
+                      style={{ margin: "0 auto" }}
+                    >
+                      Limpar filtros
+                    </button>
                   </div>
-                  <AlerteMe
-                    marca={filters.marca || undefined}
-                    tipo={filters.tipo[0] || undefined}
-                  />
+
+                  {/* Divider */}
+                  <div style={{ height: 1, background: "linear-gradient(90deg, transparent, #e8ecf0 20%, #e8ecf0 80%, transparent)" }} />
+
+                  {/* AlerteMe */}
+                  <div style={{ padding: "24px 32px 32px" }}>
+                    <AlerteMe
+                      marca={filters.marca || undefined}
+                      tipo={filters.tipo[0] || undefined}
+                    />
+                  </div>
                 </div>
+
               ) : viewMode === "grid" ? (
                 <>
                   <div className="s-grid-3">
