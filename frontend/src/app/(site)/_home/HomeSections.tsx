@@ -259,7 +259,7 @@ function AvalieSection({ whatsapp = "" }: { whatsapp?: string }) {
 // ─── Modelos Mais Buscados ────────────────────────────────────────────────────
 
 type ModeloCard = {
-  id: string;         // para key
+  id: string;
   marca: string;
   modelo: string;
   carroceria: string | null;
@@ -267,14 +267,91 @@ type ModeloCard = {
   total_disponiveis: number;
   min_price: number | null;
   total_views: number;
-  is_manual: boolean; // pinado pelo admin?
+  is_manual: boolean;
 };
 
 function fmtShortPrice(v: number) {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${Math.round(v / 1_000)}K`;
+  if (v >= 1_000)     return `${Math.round(v / 1_000)}K`;
   return new Intl.NumberFormat("pt-BR").format(v);
 }
+
+// SVG silhuetas de carroceria
+const CAT_ICONS: Record<string, React.ReactNode> = {
+  suv: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 16 L6 10 L10 6 L34 6 L39 10 L41 16"/>
+      <path d="M1 16 L43 16"/>
+      <circle cx="11" cy="18.5" r="2.5"/>
+      <circle cx="33" cy="18.5" r="2.5"/>
+    </svg>
+  ),
+  hatch: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 16 L8 9 L16 5 L28 5 L36 9 L41 16"/>
+      <path d="M1 16 L43 16"/>
+      <circle cx="11" cy="18.5" r="2.5"/>
+      <circle cx="33" cy="18.5" r="2.5"/>
+    </svg>
+  ),
+  sedan: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 16 L7 10 L13 6 L31 6 L37 10 L42 14 L42 16"/>
+      <path d="M1 16 L43 16"/>
+      <circle cx="11" cy="18.5" r="2.5"/>
+      <circle cx="33" cy="18.5" r="2.5"/>
+    </svg>
+  ),
+  picape: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 16 L5 9 L10 6 L22 6 L22 10 L40 10 L42 16"/>
+      <path d="M22 10 L22 16"/>
+      <path d="M1 16 L43 16"/>
+      <circle cx="11" cy="18.5" r="2.5"/>
+      <circle cx="34" cy="18.5" r="2.5"/>
+    </svg>
+  ),
+  coupe: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 16 L8 10 L14 5 L30 5 L38 9 L42 13 L42 16"/>
+      <path d="M1 16 L43 16"/>
+      <circle cx="11" cy="18.5" r="2.5"/>
+      <circle cx="33" cy="18.5" r="2.5"/>
+    </svg>
+  ),
+  minivan: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 16 L4 5 L38 5 L42 10 L42 16"/>
+      <path d="M1 16 L43 16"/>
+      <circle cx="10" cy="18.5" r="2.5"/>
+      <circle cx="34" cy="18.5" r="2.5"/>
+    </svg>
+  ),
+  van: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="40" height="11" rx="2"/>
+      <circle cx="10" cy="18.5" r="2.5"/>
+      <circle cx="34" cy="18.5" r="2.5"/>
+    </svg>
+  ),
+  perua: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 16 L7 10 L13 6 L38 6 L41 10 L42 16"/>
+      <path d="M1 16 L43 16"/>
+      <circle cx="11" cy="18.5" r="2.5"/>
+      <circle cx="33" cy="18.5" r="2.5"/>
+    </svg>
+  ),
+  conversivel: (
+    <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12 L8 9 L14 9 L30 9 L38 9 L42 12"/>
+      <path d="M1 12 L43 12"/>
+      <path d="M14 9 L18 5 L30 5 L30 9" strokeDasharray="2 1"/>
+      <circle cx="11" cy="14.5" r="2.5"/>
+      <circle cx="33" cy="14.5" r="2.5"/>
+    </svg>
+  ),
+};
 
 function ModelosMaisBuscados({
   modelos,
@@ -283,84 +360,126 @@ function ModelosMaisBuscados({
   modelos: PublicModeloDestaque[];
   popularModels?: PublicPopularModel[];
 }) {
-  const [activeTab, setActiveTab] = useState<string>("todos");
+  const [activeTab, setActiveTab]   = useState<string>("todos");
+  const scrollRef                   = useRef<HTMLDivElement>(null);
+  const [canLeft,  setCanLeft]      = useState(false);
+  const [canRight, setCanRight]     = useState(true);
 
-  // Converte modelos manuais para o formato unificado
+  // Merge manual + auto
   const manuaisCards: ModeloCard[] = modelos.map(m => ({
-    id: m.id,
-    marca: m.marca,
-    modelo: m.modelo,
-    carroceria: m.carroceria,
-    photo_url: m.imagem_url,
-    total_disponiveis: m.total_disponiveis,
-    min_price: null,
-    total_views: 0,
-    is_manual: true,
+    id: m.id, marca: m.marca, modelo: m.modelo, carroceria: m.carroceria,
+    photo_url: m.imagem_url, total_disponiveis: m.total_disponiveis,
+    min_price: null, total_views: 0, is_manual: true,
   }));
-
-  // Auto-complete com populares que não estejam já nos manuais
   const manuaisKeys = new Set(manuaisCards.map(m => `${m.marca}|${m.modelo}`.toLowerCase()));
   const autoCards: ModeloCard[] = popularModels
     .filter(p => !manuaisKeys.has(`${p.marca}|${p.modelo}`.toLowerCase()))
     .map((p, i) => ({
-      id: `auto-${i}`,
-      marca: p.marca,
-      modelo: p.modelo,
-      carroceria: p.carroceria,
-      photo_url: p.photo_url,
-      total_disponiveis: p.total_disponiveis,
-      min_price: p.min_price,
-      total_views: p.total_views,
-      is_manual: false,
+      id: `auto-${i}`, marca: p.marca, modelo: p.modelo, carroceria: p.carroceria,
+      photo_url: p.photo_url, total_disponiveis: p.total_disponiveis,
+      min_price: p.min_price, total_views: p.total_views, is_manual: false,
     }));
+  const merged: ModeloCard[] = [...manuaisCards, ...autoCards].slice(0, 10);
 
-  // Merge: manuais primeiro, depois auto-fill até 8
-  const merged: ModeloCard[] = [...manuaisCards, ...autoCards].slice(0, 8);
-
-  // Tabs por carroceria das combinações existentes
+  // Tabs
   const carroceriaSet = Array.from(new Set(merged.map(m => m.carroceria).filter(Boolean))) as string[];
-  const tabs: { value: string; label: string }[] = [
-    { value: "todos", label: "Todos" },
-    ...carroceriaSet.map(c => ({ value: c, label: CARROCERIA_LABELS[c] ?? c })),
+  const tabs = [
+    { value: "todos", label: "Todos", icon: null },
+    ...carroceriaSet.map(c => ({ value: c, label: CARROCERIA_LABELS[c] ?? c, icon: CAT_ICONS[c] ?? null })),
   ];
   const visible = activeTab === "todos" ? merged : merged.filter(m => m.carroceria === activeTab);
 
   if (merged.length === 0) return null;
 
+  // Scroll navigation
+  function updateArrows() {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 10);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+  }
+
+  function scrollBy(dir: -1 | 1) {
+    scrollRef.current?.scrollBy({ left: dir * 260, behavior: "smooth" });
+    setTimeout(updateArrows, 350);
+  }
+
   return (
-    <section style={{ padding: "64px 0", borderTop: "1px solid var(--s-border)" }} aria-label="Modelos mais buscados">
+    <section
+      style={{ padding: "72px 0", borderTop: "1px solid rgba(255,255,255,0.06)", position: "relative" }}
+      aria-label="Modelos mais buscados"
+    >
       <div className="s-container">
-        {/* Header */}
+        {/* ── Header ── */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2.5, color: "rgba(255,255,255,0.22)", marginBottom: 6 }}>Destaque</p>
-            <h2 style={{ fontSize: "clamp(20px,3vw,26px)", fontWeight: 900, color: "#fff", letterSpacing: "-0.5px", lineHeight: 1 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2.5, color: "rgba(255,255,255,0.22)", marginBottom: 6 }}>
+              Popular no estoque
+            </p>
+            <h2 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, color: "#fff", letterSpacing: "-0.6px", lineHeight: 1 }}>
               Modelos mais <em style={{ color: "var(--s-orange)", fontStyle: "normal" }}>buscados</em>
             </h2>
           </div>
-          <Link href="/estoque" className="s-see-all" style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>
-            Ver estoque <ArrowRight size={14} strokeWidth={2.5} />
-          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Nav arrows */}
+            {[canLeft && -1, canRight && 1].map((dir, i) => dir && (
+              <button
+                key={i}
+                onClick={() => scrollBy(dir as -1|1)}
+                style={{
+                  width: 36, height: 36, borderRadius: 999, border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.05)", backdropFilter: "blur(8px)",
+                  color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.18s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(244,121,32,0.15)"; e.currentTarget.style.borderColor = "rgba(244,121,32,0.4)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  {dir === -1 ? <polyline points="15 18 9 12 15 6"/> : <polyline points="9 18 15 12 9 6"/>}
+                </svg>
+              </button>
+            ))}
+            <Link href="/estoque" style={{
+              display: "flex", alignItems: "center", gap: 5,
+              fontSize: 13, fontWeight: 700, color: "var(--s-orange)",
+              textDecoration: "none", padding: "0 4px",
+              transition: "opacity 0.18s",
+            }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.7"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              Ver todos <ArrowRight size={14} strokeWidth={2.5} />
+            </Link>
+          </div>
         </div>
 
-        {/* Category tabs */}
+        {/* ── Category tabs ── */}
         {tabs.length > 2 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 28 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "nowrap", overflowX: "auto", marginBottom: 28, paddingBottom: 4,
+            scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {tabs.map(t => {
               const active = activeTab === t.value;
               return (
                 <button
                   key={t.value}
-                  onClick={() => setActiveTab(t.value)}
+                  onClick={() => { setActiveTab(t.value); scrollRef.current?.scrollTo({ left: 0, behavior: "smooth" }); }}
                   style={{
-                    height: 34, padding: "0 16px", borderRadius: 999, cursor: "pointer",
+                    flexShrink: 0,
+                    height: 38, padding: t.icon ? "0 14px 0 10px" : "0 16px",
+                    borderRadius: 999, cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: 7,
                     fontSize: 12, fontWeight: active ? 700 : 500,
-                    border: `1px solid ${active ? "var(--s-orange)" : "rgba(255,255,255,0.12)"}`,
-                    background: active ? "rgba(244,121,32,0.15)" : "rgba(255,255,255,0.04)",
-                    color: active ? "var(--s-orange)" : "rgba(255,255,255,0.45)",
+                    border: `1px solid ${active ? "var(--s-orange)" : "rgba(255,255,255,0.10)"}`,
+                    background: active ? "rgba(244,121,32,0.14)" : "rgba(255,255,255,0.03)",
+                    color: active ? "var(--s-orange)" : "rgba(255,255,255,0.40)",
                     transition: "all 0.18s",
+                    whiteSpace: "nowrap",
                   }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; }}}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.40)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}}
                 >
+                  {t.icon && <span style={{ display: "flex", opacity: active ? 1 : 0.5 }}>{t.icon}</span>}
                   {t.label}
                 </button>
               );
@@ -368,106 +487,165 @@ function ModelosMaisBuscados({
           </div>
         )}
 
-        {/* Cards grid */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-          gap: 16,
-        }}>
-          {visible.map((m, i) => (
-            <Link
-              key={m.id}
-              href={`/estoque?modelo=${encodeURIComponent(m.modelo)}&marca=${encodeURIComponent(m.marca)}`}
-              style={{ textDecoration: "none" }}
-            >
-              <div
-                style={{
-                  position: "relative",
-                  borderRadius: 16,
-                  overflow: "hidden",
-                  aspectRatio: "16/10",
-                  background: "#1a1b20",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                  cursor: "pointer",
-                  transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s",
-                  boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px) scale(1.015)";
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 40px rgba(0,0,0,0.35)";
-                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(244,121,32,0.35)";
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLDivElement).style.transform = "";
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(0,0,0,0.18)";
-                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)";
-                }}
-              >
-                {/* Foto do estoque ou logo da marca */}
-                {m.photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={m.photo_url}
-                    alt={`${m.marca} ${m.modelo}`}
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <BrandLogoFallback marca={m.marca} size={52} />
+        {/* ── Cards carousel ── */}
+        <div style={{ position: "relative" }}>
+          <div
+            ref={scrollRef}
+            onScroll={updateArrows}
+            style={{
+              display: "flex", gap: 14,
+              overflowX: "auto", scrollSnapType: "x mandatory",
+              scrollbarWidth: "none", msOverflowStyle: "none",
+              paddingBottom: 8,
+              // fade edges
+              maskImage: "linear-gradient(90deg, transparent 0%, #000 3%, #000 93%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(90deg, transparent 0%, #000 3%, #000 93%, transparent 100%)",
+            }}
+          >
+            {visible.map(m => {
+              const brandColor = (BRAND_COLORS as Record<string,string>)[m.marca] ?? "#444";
+              return (
+                <Link
+                  key={m.id}
+                  href={`/estoque?modelo=${encodeURIComponent(m.modelo)}&marca=${encodeURIComponent(m.marca)}`}
+                  style={{ textDecoration: "none", flexShrink: 0, scrollSnapAlign: "start" }}
+                >
+                  <div
+                    className="s-modelo-card"
+                    style={{
+                      position: "relative",
+                      width: 252, height: 164,
+                      borderRadius: 18,
+                      background: "#18191f",
+                      border: "1px solid rgba(255,255,255,0.07)",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                      transition: "transform 0.28s cubic-bezier(.22,.68,0,1.2), box-shadow 0.28s, border-color 0.28s",
+                    }}
+                    onMouseEnter={e => {
+                      const el = e.currentTarget as HTMLDivElement;
+                      el.style.transform = "translateY(-5px) scale(1.02)";
+                      el.style.boxShadow = `0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px ${brandColor}44`;
+                      el.style.borderColor = `${brandColor}55`;
+                    }}
+                    onMouseLeave={e => {
+                      const el = e.currentTarget as HTMLDivElement;
+                      el.style.transform = "";
+                      el.style.boxShadow = "";
+                      el.style.borderColor = "rgba(255,255,255,0.07)";
+                    }}
+                  >
+                    {/* Brand color accent top bar */}
+                    <div style={{
+                      position: "absolute", top: 0, left: 0, right: 0, height: 2,
+                      background: `linear-gradient(90deg, ${brandColor}, transparent)`,
+                      opacity: 0.7,
+                    }} />
+
+                    {/* Vehicle photo — right side, larger */}
+                    {m.photo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={m.photo_url}
+                        alt={`${m.marca} ${m.modelo}`}
+                        style={{
+                          position: "absolute",
+                          right: -12, top: 0,
+                          width: "68%", height: "100%",
+                          objectFit: "cover",
+                          objectPosition: "center",
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        position: "absolute",
+                        right: 0, top: 0,
+                        width: "60%", height: "100%",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        opacity: 0.25,
+                      }}>
+                        <BrandLogoFallback marca={m.marca} size={64} />
+                      </div>
+                    )}
+
+                    {/* Left gradient — darker for text legibility */}
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: `linear-gradient(100deg, #18191f 30%, rgba(24,25,31,0.92) 52%, rgba(24,25,31,0.2) 75%, transparent 100%)`,
+                    }} />
+                    {/* Bottom gradient */}
+                    <div style={{
+                      position: "absolute", bottom: 0, left: 0, right: 0, height: "55%",
+                      background: "linear-gradient(0deg, rgba(0,0,0,0.55) 0%, transparent 100%)",
+                    }} />
+
+                    {/* Content layer */}
+                    <div style={{
+                      position: "absolute", inset: 0, padding: "13px 14px",
+                      display: "flex", flexDirection: "column", justifyContent: "space-between",
+                      zIndex: 2,
+                    }}>
+                      {/* Top: brand logo + trending */}
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                        <div style={{
+                          width: 36, height: 36, borderRadius: 10,
+                          background: "rgba(0,0,0,0.55)", backdropFilter: "blur(12px)",
+                          border: "1px solid rgba(255,255,255,0.10)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                        }}>
+                          <BrandLogoFallback marca={m.marca} size={22} />
+                        </div>
+
+                        {!m.is_manual && m.total_views > 0 && (
+                          <div style={{
+                            display: "flex", alignItems: "center", gap: 4,
+                            background: "rgba(244,121,32,0.88)", backdropFilter: "blur(8px)",
+                            borderRadius: 999, padding: "3px 9px",
+                            fontSize: 10, fontWeight: 700, color: "#fff",
+                            boxShadow: "0 2px 8px rgba(244,121,32,0.35)",
+                          }}>
+                            <TrendingUp size={9} />
+                            Em alta
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Bottom: info */}
+                      <div>
+                        <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.38)", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 2 }}>
+                          {m.marca}
+                        </p>
+                        <p style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px", lineHeight: 1.1, marginBottom: 5 }}>
+                          {m.modelo}
+                        </p>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          {m.min_price != null && (
+                            <span style={{
+                              fontSize: 12, fontWeight: 700, color: "#4ade80", letterSpacing: "-0.2px",
+                            }}>
+                              A partir de R$ {fmtShortPrice(m.min_price)}
+                            </span>
+                          )}
+                          {m.total_disponiveis > 0 && (
+                            <span style={{
+                              fontSize: 10, fontWeight: 600,
+                              background: "rgba(255,255,255,0.08)",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              borderRadius: 999, padding: "2px 8px",
+                              color: "rgba(255,255,255,0.5)",
+                            }}>
+                              {m.total_disponiveis} {m.total_disponiveis === 1 ? "un." : "un."}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
-
-                {/* Gradient overlay mais forte para legibilidade */}
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05) 20%, rgba(0,0,0,0.88) 100%)" }} />
-
-                {/* Badge: trending se auto-gerado com views, ou unidades */}
-                <div style={{ position: "absolute", top: 10, right: 10, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                  {!m.is_manual && m.total_views > 0 && (
-                    <div style={{
-                      background: "rgba(244,121,32,0.85)", backdropFilter: "blur(8px)",
-                      border: "1px solid rgba(244,121,32,0.4)",
-                      borderRadius: 999, padding: "2px 8px",
-                      fontSize: 10, fontWeight: 700, color: "#fff",
-                      display: "flex", alignItems: "center", gap: 3,
-                    }}>
-                      <TrendingUp size={9} /> Em alta
-                    </div>
-                  )}
-                  {m.total_disponiveis > 0 && (
-                    <div style={{
-                      background: "rgba(14,15,17,0.72)", backdropFilter: "blur(8px)",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      borderRadius: 999, padding: "3px 10px",
-                      fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)",
-                    }}>
-                      {m.total_disponiveis} {m.total_disponiveis === 1 ? "unidade" : "unidades"}
-                    </div>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.45)", marginBottom: 2, letterSpacing: 0.3 }}>
-                    {m.marca}
-                  </p>
-                  <p style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.2, marginBottom: m.min_price ? 4 : 0 }}>
-                    {m.modelo}
-                  </p>
-                  {/* Preço automático */}
-                  {m.min_price != null && (
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", letterSpacing: "-0.2px" }}>
-                      A partir de R$ {fmtShortPrice(m.min_price)}
-                    </p>
-                  )}
-                  {!m.min_price && m.carroceria && (
-                    <span style={{ fontSize: 10, fontWeight: 600, color: "var(--s-orange)", letterSpacing: 0.5, textTransform: "uppercase" }}>
-                      {CARROCERIA_LABELS[m.carroceria] ?? m.carroceria}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Link>
-          ))}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
