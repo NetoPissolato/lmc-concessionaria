@@ -13,6 +13,101 @@ from app.domain.models.financial import EntryType, FinancialCategory
 from app.application.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleResponse
 from app.application.schemas.expense import ExpenseCreate, ExpenseUpdate
 
+# ─── Normalização de marca e modelo ─────────────────────────────────────────────────
+# Garante que "jeep", "JEEP", "Jeep" sejam sempre armazenados como "Jeep".
+# Isso evita que o mesmo modelo/marca vire grupos separados no agrupamento.
+
+# Mapa: entrada lowercase -> forma canônica de armazenamento
+_CANONICAL_MARCA: dict[str, str] = {
+    # Carros
+    "fiat":           "Fiat",
+    "chevrolet":      "Chevrolet",
+    "gm":             "Chevrolet",
+    "volkswagen":     "Volkswagen",
+    "vw":             "Volkswagen",
+    "toyota":         "Toyota",
+    "hyundai":        "Hyundai",
+    "honda":          "Honda",
+    "renault":        "Renault",
+    "jeep":           "Jeep",
+    "ford":           "Ford",
+    "bmw":            "BMW",
+    "nissan":         "Nissan",
+    "mitsubishi":     "Mitsubishi",
+    "kia":            "Kia",
+    "peugeot":        "Peugeot",
+    "citroen":        "Citroën",
+    "citroën":        "Citroën",
+    "mercedes":       "Mercedes-Benz",
+    "mercedes-benz":  "Mercedes-Benz",
+    "mercedesbenz":   "Mercedes-Benz",
+    "audi":           "Audi",
+    "volvo":          "Volvo",
+    "land rover":     "Land Rover",
+    "landrover":      "Land Rover",
+    "subaru":         "Subaru",
+    "porsche":        "Porsche",
+    "ferrari":        "Ferrari",
+    "lamborghini":    "Lamborghini",
+    "dodge":          "Dodge",
+    "ram":            "Ram",
+    "chery":          "Chery",
+    "caoa chery":     "Caoa Chery",
+    "byd":            "BYD",
+    "jac":            "JAC",
+    "effa":           "Effa",
+    "troller":        "Troller",
+    # Motos
+    "yamaha":         "Yamaha",
+    "kawasaki":       "Kawasaki",
+    "suzuki":         "Suzuki",
+    "ducati":         "Ducati",
+    "harley":         "Harley-Davidson",
+    "harley-davidson": "Harley-Davidson",
+    "harleydavidson": "Harley-Davidson",
+    "triumph":        "Triumph",
+    "royalenfield":   "Royal Enfield",
+    "royal enfield":  "Royal Enfield",
+    "bmw moto":       "BMW",
+    "honda moto":     "Honda",
+    "dafra":          "Dafra",
+    "shineray":       "Shineray",
+}
+
+# Siglas que devem ficar em CAPS mesmo no meio de modelo
+_MODEL_CAPS = {"hb", "gla", "glb", "glc", "gle", "amg", "tdi", "gti", "sdrive", "xdrive", "suv", "4wd", "4x4", "cvt"}
+
+
+def normalize_marca(value: str) -> str:
+    """Retorna a forma canônica da marca. Ex: 'bmw' -> 'BMW', 'vw' -> 'Volkswagen'."""
+    if not value:
+        return value
+    key = value.strip().lower()
+    return _CANONICAL_MARCA.get(key, value.strip().title())
+
+
+def normalize_modelo(value: str) -> str:
+    """
+    Title Case inteligente para modelo.
+    Preserva siglas, números e hifens conhecidos.
+    Ex: 'hb20 s' -> 'HB20 S', 't-cross' -> 'T-Cross', 'civic' -> 'Civic'.
+    """
+    if not value:
+        return value
+    parts = value.strip().split()
+    result = []
+    for part in parts:
+        lower = part.lower()
+        if lower in _MODEL_CAPS:
+            result.append(part.upper())
+        elif lower[:2] in _MODEL_CAPS and any(c.isdigit() for c in part):
+            # Ex: "hb20" -> "HB20"
+            result.append(part.upper())
+        else:
+            result.append(part.capitalize())
+    return " ".join(result)
+
+
 
 class VehicleService:
     """
@@ -52,6 +147,10 @@ class VehicleService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Chassi '{data.chassi}' já está cadastrado no sistema.",
             )
+
+        # Normaliza marca e modelo antes de salvar (garante consistência no banco)
+        data.marca  = normalize_marca(data.marca)
+        data.modelo = normalize_modelo(data.modelo)
 
         vehicle = await self.vehicle_repo.create(
             **data.model_dump(),
@@ -108,6 +207,11 @@ class VehicleService:
         }
 
         update_data = data.model_dump(exclude_none=True)
+        # Normaliza marca/modelo se estiverem sendo atualizados
+        if "marca" in update_data:
+            update_data["marca"] = normalize_marca(update_data["marca"])
+        if "modelo" in update_data:
+            update_data["modelo"] = normalize_modelo(update_data["modelo"])
         updated = await self.vehicle_repo.update(vehicle, **update_data)
 
         # Sync financial entry if valor_compra changed
