@@ -21,23 +21,30 @@ depends_on = None
 
 
 def upgrade():
-    # Converter carroceria para VARCHAR — preserva todos os dados existentes
+    # 1. Remover o server_default que referencia o tipo enum
+    op.execute("ALTER TABLE vehicles ALTER COLUMN condicao DROP DEFAULT")
+
+    # 2. Converter carroceria de enum para VARCHAR
     op.execute("""
         ALTER TABLE vehicles
         ALTER COLUMN carroceria TYPE VARCHAR(30)
         USING carroceria::text
     """)
 
-    # Converter condicao para VARCHAR — preserva todos os dados existentes
+    # 3. Converter condicao de enum para VARCHAR
     op.execute("""
         ALTER TABLE vehicles
         ALTER COLUMN condicao TYPE VARCHAR(20)
         USING condicao::text
     """)
 
-    # Remover tipos enum nativos do PostgreSQL (não são mais usados)
-    op.execute("DROP TYPE IF EXISTS carroceria_type")
-    op.execute("DROP TYPE IF EXISTS condicao_type")
+    # 4. Restaurar o default como string simples
+    op.execute("ALTER TABLE vehicles ALTER COLUMN condicao SET DEFAULT 'usado'")
+
+    # 5. Agora podemos dropar os tipos enum (sem dependências)
+    op.execute("DROP TYPE IF EXISTS carroceria_type CASCADE")
+    op.execute("DROP TYPE IF EXISTS condicao_type CASCADE")
+
 
 
 def downgrade():
