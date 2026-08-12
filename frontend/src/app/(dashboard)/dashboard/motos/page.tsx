@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import {
   Bike, Plus, Search, Eye, Edit, Trash2, X,
   Clock, TrendingUp, Gauge, CheckCircle2, AlertCircle, AlertTriangle,
-  Wrench, Receipt, Zap, Package, SlidersHorizontal, Camera,
+  Wrench, Receipt, Zap, Package, SlidersHorizontal, Camera, Star,
 } from "lucide-react";
 import { vehiclesApi } from "@/lib/api";
 import { Vehicle, VehicleStatus, VEHICLE_STATUS_LABELS, FUEL_LABELS, TRANSMISSION_LABELS } from "@/types";
@@ -24,8 +24,8 @@ import { useBreakpoint } from "@/hooks/useBreakpoint";
 
 
 // Moto Card
-function MotoCard({ v, onView, onEdit, onDelete, onExpenses, delay }: {
-  v: Vehicle; onView: () => void; onEdit: () => void; onDelete: () => void; onExpenses: () => void; delay: number;
+function MotoCard({ v, onView, onEdit, onDelete, onExpenses, onToggleDestaque, delay }: {
+  v: Vehicle; onView: () => void; onEdit: () => void; onDelete: () => void; onExpenses: () => void; onToggleDestaque: () => void; delay: number;
 }) {
   const days   = daysInStock(v.data_compra);
   const margin = v.margem_percentual ?? 0;
@@ -58,6 +58,12 @@ function MotoCard({ v, onView, onEdit, onDelete, onExpenses, delay }: {
         {v.photos && v.photos.length > 0 && (
           <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#fff", display: "flex", alignItems: "center", gap: 5 }}>
             <Camera size={11} /> {v.photos.length} foto{v.photos.length !== 1 ? "s" : ""}
+          </div>
+        )}
+        {/* Destaque badge */}
+        {v.destaque && (
+          <div style={{ position: "absolute", bottom: 10, right: 10, background: "rgba(245,166,35,0.20)", border: "1px solid rgba(245,166,35,0.50)", backdropFilter: "blur(8px)", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#F5A623", display: "flex", alignItems: "center", gap: 5 }}>
+            <Star size={10} fill="#F5A623" /> Destaque
           </div>
         )}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "3px", background: "linear-gradient(90deg, #f9731600, #f97316, #f9731600)" }} />
@@ -107,15 +113,16 @@ function MotoCard({ v, onView, onEdit, onDelete, onExpenses, delay }: {
       </div>
 
       <div style={{ display: "flex", borderTop: "1px solid var(--border)", background: "var(--surface-2)" }} onClick={e => e.stopPropagation()}>
-        {[{ Icon: Eye,     label: "Ver",      action: onView,     color: "#f97316"               },
-          { Icon: Receipt, label: "Despesas", action: onExpenses, color: "#a78bfa"               },
-          { Icon: Edit,    label: "Editar",   action: onEdit,     color: "var(--text-secondary)"  }]
+        {[{ Icon: Eye,     label: "Ver",      action: onView,             color: "#f97316"               },
+          { Icon: Receipt, label: "Despesas", action: onExpenses,          color: "#a78bfa"               },
+          { Icon: Edit,    label: "Editar",   action: onEdit,              color: "var(--text-secondary)"  },
+          { Icon: Star,    label: v.destaque ? "Remover destaque" : "Destacar", action: onToggleDestaque, color: v.destaque ? "#F5A623" : "var(--text-muted)" }]
           .map(({ Icon, label, action, color }, i) => (
             <button key={label} onClick={action} title={label}
-              style={{ flex: 1, height: "44px", display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color, borderRight: i < 2 ? "1px solid var(--border)" : "none", transition: "background 0.15s" }}
+              style={{ flex: 1, height: "44px", display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color, borderRight: i < 3 ? "1px solid var(--border)" : "none", transition: "background 0.15s" }}
               onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
               onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-              <Icon size={18} strokeWidth={1.8} />
+              <Icon size={18} strokeWidth={1.8} fill={label !== "Remover destaque" ? "none" : "#F5A623"} />
             </button>
           ))}
       </div>
@@ -158,6 +165,15 @@ export default function MotosPage() {
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
     },
     onError: () => toast.error("Erro ao excluir moto"),
+  });
+
+  const toggleDestaqueMutation = useMutation({
+    mutationFn: (v: Vehicle) => vehiclesApi.update(v.id, { destaque: !v.destaque }),
+    onSuccess: (_, v) => {
+      toast.success(v.destaque ? "Removido dos destaques" : "Adicionado aos destaques da semana!");
+      queryClient.invalidateQueries({ queryKey: ["vehicles", "motos-all"] });
+    },
+    onError: () => toast.error("Erro ao atualizar destaque"),
   });
 
   const allActive  = useMemo(() => motos.filter(v => v.status !== "vendido"), [motos]);
@@ -599,6 +615,7 @@ export default function MotosPage() {
                   onView={() => router.push(`/dashboard/motos/${v.id}`)}
                   onEdit={() => router.push(`/dashboard/motos/${v.id}/editar`)}
                   onExpenses={() => router.push(`/dashboard/motos/${v.id}?tab=despesas`)}
+                  onToggleDestaque={() => toggleDestaqueMutation.mutate(v)}
                   onDelete={() => setDeleteTarget(v)} />
               ))}
             </motion.div>
