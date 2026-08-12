@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import HomeSections from "../_home/HomeSections";
-import { getPublicVehicles, getPublicStats, getPublicSettings, getPublicModelosDestaque } from "@/lib/publicApi";
+import { getPublicVehicles, getPublicStats, getPublicSettings, getPublicModelosDestaque, getPublicPopularModels } from "@/lib/publicApi";
 
 export const metadata: Metadata = {
   title: "LMC Veículos — Concessionária com os melhores veículos",
@@ -16,12 +16,13 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   // Busca dados reais em paralelo — se o backend cair, retorna fallback vazio
-  const [featuredVehicles, recentVehicles, stats, settings, modelosDestaque] = await Promise.all([
+  const [featuredVehicles, recentVehicles, stats, settings, modelosDestaque, popularModels] = await Promise.all([
     getPublicVehicles({ destaque: true, limit: 6 }),
     getPublicVehicles({ limit: 8 }),
     getPublicStats(),
     getPublicSettings(),
     getPublicModelosDestaque(),
+    getPublicPopularModels(8),
   ]);
 
   return (
@@ -32,6 +33,7 @@ export default async function HomePage() {
         stats={stats}
         settings={settings}
         modelosDestaque={modelosDestaque}
+        popularModels={popularModels}
       />
     </Suspense>
   );

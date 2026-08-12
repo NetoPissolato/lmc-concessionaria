@@ -75,6 +75,18 @@ export interface PublicModeloDestaque {
   ordem: number;
 }
 
+/** Modelo auto-gerado pelo endpoint /popular-models (sem necessidade de cadastro manual). */
+export interface PublicPopularModel {
+  marca:             string;
+  modelo:            string;
+  tipo:              string;
+  carroceria:        string | null;
+  total_disponiveis: number;
+  min_price:         number | null;
+  total_views:       number;
+  photo_url:         string | null;
+}
+
 export interface PublicStats {
   total_veiculos: number;
   total_marcas: number;
@@ -227,6 +239,19 @@ export async function getPublicModelosDestaque(): Promise<PublicModeloDestaque[]
   return data.map(m => ({
     ...m,
     imagem_url: m.imagem_url ? resolvePhotoUrl(m.imagem_url) : null,
+  }));
+}
+
+/**
+ * Retorna os modelos mais vistos do estoque (100% automático).
+ * Usado como automação tipo Webmotors — sem necessidade de cadastro manual.
+ * Fotos, preço e contagem vêm direto do estoque em tempo real.
+ */
+export async function getPublicPopularModels(limit = 8): Promise<PublicPopularModel[]> {
+  const data = (await fetchPublic<PublicPopularModel[]>("/popular-models", { limit })) ?? [];
+  return data.map(m => ({
+    ...m,
+    photo_url: m.photo_url ? resolvePhotoUrl(m.photo_url) : null,
   }));
 }
 

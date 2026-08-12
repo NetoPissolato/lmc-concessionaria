@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ArrowRight, ShieldCheck, FileCheck, CreditCard, Handshake, ChevronRight, Car } from "lucide-react";
-import type { PublicVehicle, PublicStats, PublicSettings, PublicModeloDestaque } from "@/lib/publicApi";
+import { Search, ArrowRight, ShieldCheck, FileCheck, CreditCard, Handshake, ChevronRight, Car, TrendingUp } from "lucide-react";
+import type { PublicVehicle, PublicStats, PublicSettings, PublicModeloDestaque, PublicPopularModel } from "@/lib/publicApi";
 import { FUEL_LABELS, CAMBIO_LABELS, CARROCERIA_LABELS } from "@/lib/publicApi";
 import { vehicleSlug } from "@/components/vehicle/shared";
 import ReviewsSection from "../sobre/_ReviewsSection";
@@ -257,17 +257,75 @@ function AvalieSection({ whatsapp = "" }: { whatsapp?: string }) {
 }
 
 // ─── Modelos Mais Buscados ────────────────────────────────────────────────────
-function ModelosMaisBuscados({ modelos }: { modelos: PublicModeloDestaque[] }) {
+
+type ModeloCard = {
+  id: string;         // para key
+  marca: string;
+  modelo: string;
+  carroceria: string | null;
+  photo_url: string | null;
+  total_disponiveis: number;
+  min_price: number | null;
+  total_views: number;
+  is_manual: boolean; // pinado pelo admin?
+};
+
+function fmtShortPrice(v: number) {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `${Math.round(v / 1_000)}K`;
+  return new Intl.NumberFormat("pt-BR").format(v);
+}
+
+function ModelosMaisBuscados({
+  modelos,
+  popularModels = [],
+}: {
+  modelos: PublicModeloDestaque[];
+  popularModels?: PublicPopularModel[];
+}) {
   const [activeTab, setActiveTab] = useState<string>("todos");
 
-  // Compute tabs: "todos" + any distinct carroceria in use
-  const carroceriaSet = Array.from(new Set(modelos.map(m => m.carroceria)));
+  // Converte modelos manuais para o formato unificado
+  const manuaisCards: ModeloCard[] = modelos.map(m => ({
+    id: m.id,
+    marca: m.marca,
+    modelo: m.modelo,
+    carroceria: m.carroceria,
+    photo_url: m.imagem_url,
+    total_disponiveis: m.total_disponiveis,
+    min_price: null,
+    total_views: 0,
+    is_manual: true,
+  }));
+
+  // Auto-complete com populares que não estejam já nos manuais
+  const manuaisKeys = new Set(manuaisCards.map(m => `${m.marca}|${m.modelo}`.toLowerCase()));
+  const autoCards: ModeloCard[] = popularModels
+    .filter(p => !manuaisKeys.has(`${p.marca}|${p.modelo}`.toLowerCase()))
+    .map((p, i) => ({
+      id: `auto-${i}`,
+      marca: p.marca,
+      modelo: p.modelo,
+      carroceria: p.carroceria,
+      photo_url: p.photo_url,
+      total_disponiveis: p.total_disponiveis,
+      min_price: p.min_price,
+      total_views: p.total_views,
+      is_manual: false,
+    }));
+
+  // Merge: manuais primeiro, depois auto-fill até 8
+  const merged: ModeloCard[] = [...manuaisCards, ...autoCards].slice(0, 8);
+
+  // Tabs por carroceria das combinações existentes
+  const carroceriaSet = Array.from(new Set(merged.map(m => m.carroceria).filter(Boolean))) as string[];
   const tabs: { value: string; label: string }[] = [
     { value: "todos", label: "Todos" },
     ...carroceriaSet.map(c => ({ value: c, label: CARROCERIA_LABELS[c] ?? c })),
   ];
+  const visible = activeTab === "todos" ? merged : merged.filter(m => m.carroceria === activeTab);
 
-  const visible = activeTab === "todos" ? modelos : modelos.filter(m => m.carroceria === activeTab);
+  if (merged.length === 0) return null;
 
   return (
     <section style={{ padding: "64px 0", borderTop: "1px solid var(--s-border)" }} aria-label="Modelos mais buscados">
@@ -320,7 +378,7 @@ function ModelosMaisBuscados({ modelos }: { modelos: PublicModeloDestaque[] }) {
             <Link
               key={m.id}
               href={`/estoque?modelo=${encodeURIComponent(m.modelo)}&marca=${encodeURIComponent(m.marca)}`}
-              style={{ textDecoration: "none", transitionDelay: `${i * 35}ms` }}
+              style={{ textDecoration: "none" }}
             >
               <div
                 style={{
@@ -345,11 +403,11 @@ function ModelosMaisBuscados({ modelos }: { modelos: PublicModeloDestaque[] }) {
                   (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)";
                 }}
               >
-                {/* Imagem */}
-                {m.imagem_url ? (
+                {/* Foto do estoque ou logo da marca */}
+                {m.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={m.imagem_url}
+                    src={m.photo_url}
                     alt={`${m.marca} ${m.modelo}`}
                     style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                   />
@@ -359,42 +417,53 @@ function ModelosMaisBuscados({ modelos }: { modelos: PublicModeloDestaque[] }) {
                   </div>
                 )}
 
-                {/* Gradient overlay */}
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.82) 100%)" }} />
+                {/* Gradient overlay mais forte para legibilidade */}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05) 20%, rgba(0,0,0,0.88) 100%)" }} />
 
-                {/* Count badge */}
-                {m.total_disponiveis > 0 && (
-                  <div style={{
-                    position: "absolute", top: 10, right: 10,
-                    background: "rgba(14,15,17,0.72)", backdropFilter: "blur(8px)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    borderRadius: 999, padding: "3px 10px",
-                    fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)",
-                  }}>
-                    {m.total_disponiveis} {m.total_disponiveis === 1 ? "unidade" : "unidades"}
-                  </div>
-                )}
+                {/* Badge: trending se auto-gerado com views, ou unidades */}
+                <div style={{ position: "absolute", top: 10, right: 10, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                  {!m.is_manual && m.total_views > 0 && (
+                    <div style={{
+                      background: "rgba(244,121,32,0.85)", backdropFilter: "blur(8px)",
+                      border: "1px solid rgba(244,121,32,0.4)",
+                      borderRadius: 999, padding: "2px 8px",
+                      fontSize: 10, fontWeight: 700, color: "#fff",
+                      display: "flex", alignItems: "center", gap: 3,
+                    }}>
+                      <TrendingUp size={9} /> Em alta
+                    </div>
+                  )}
+                  {m.total_disponiveis > 0 && (
+                    <div style={{
+                      background: "rgba(14,15,17,0.72)", backdropFilter: "blur(8px)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: 999, padding: "3px 10px",
+                      fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)",
+                    }}>
+                      {m.total_disponiveis} {m.total_disponiveis === 1 ? "unidade" : "unidades"}
+                    </div>
+                  )}
+                </div>
 
                 {/* Info */}
                 <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
                   <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.45)", marginBottom: 2, letterSpacing: 0.3 }}>
                     {m.marca}
                   </p>
-                  <p style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
+                  <p style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.2, marginBottom: m.min_price ? 4 : 0 }}>
                     {m.modelo}
                   </p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6 }}>
+                  {/* Preço automático */}
+                  {m.min_price != null && (
+                    <p style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", letterSpacing: "-0.2px" }}>
+                      A partir de R$ {fmtShortPrice(m.min_price)}
+                    </p>
+                  )}
+                  {!m.min_price && m.carroceria && (
                     <span style={{ fontSize: 10, fontWeight: 600, color: "var(--s-orange)", letterSpacing: 0.5, textTransform: "uppercase" }}>
                       {CARROCERIA_LABELS[m.carroceria] ?? m.carroceria}
                     </span>
-                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>·</span>
-                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", display: "flex", alignItems: "center", gap: 3 }}>
-                      Ver ofertas
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 18 15 12 9 6"/>
-                      </svg>
-                    </span>
-                  </div>
+                  )}
                 </div>
               </div>
             </Link>
@@ -412,6 +481,7 @@ interface HomeSectionsProps {
   stats?: PublicStats;
   settings?: PublicSettings;
   modelosDestaque?: PublicModeloDestaque[];
+  popularModels?: PublicPopularModel[];
 }
 
 const DEFAULT_SETTINGS: PublicSettings = {
@@ -426,7 +496,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
   ga_id: "", pixel_id: "",
 };
 
-export default function HomeSections({ featuredVehicles = [], recentVehicles = [], stats, settings = DEFAULT_SETTINGS, modelosDestaque = [] }: HomeSectionsProps) {
+export default function HomeSections({ featuredVehicles = [], recentVehicles = [], stats, settings = DEFAULT_SETTINGS, modelosDestaque = [], popularModels = [] }: HomeSectionsProps) {
   const [tab, setTab]               = useState<"carro" | "moto">("carro");
   const [marca, setMarca]           = useState("");
   const [modelo, setModelo]         = useState("");
@@ -713,9 +783,7 @@ export default function HomeSections({ featuredVehicles = [], recentVehicles = [
       </section>
 
       {/* ============== MODELOS MAIS BUSCADOS ============== */}
-      {modelosDestaque.length > 0 && (
-        <ModelosMaisBuscados modelos={modelosDestaque} />
-      )}
+      <ModelosMaisBuscados modelos={modelosDestaque} popularModels={popularModels} />
 
       {/* ============== DESTAQUES DA SEMANA ============== */}
       <section className="s-section" aria-label="Destaques da semana">
