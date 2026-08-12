@@ -96,14 +96,14 @@ class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
     tipo_moto: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)      # Sport, Naked, Trail...
 
     # Carroceria / condição / portas
-    carroceria: Mapped[Optional[CarroceriaType]] = mapped_column(
-        SAEnum(CarroceriaType, name="carroceria_type"),
+    carroceria: Mapped[Optional[str]] = mapped_column(
+        String(30),
         nullable=True,
         index=True,
     )
-    condicao: Mapped[CondicaoType] = mapped_column(
-        SAEnum(CondicaoType, name="condicao_type"),
-        default=CondicaoType.USADO,
+    condicao: Mapped[str] = mapped_column(
+        String(20),
+        default="usado",
         nullable=False,
         server_default="usado",
     )
