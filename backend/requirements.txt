@@ -1,40 +1,34 @@
+# Dependências de PRODUÇÃO (a imagem Docker instala só este arquivo).
+# Testes e ferramentas de desenvolvimento: requirements-dev.txt
+# Atualizado em 2026-10 (auditoria): Starlette e python-multipart tinham CVEs
+# conhecidas; WeasyPrint, openpyxl, Jinja2, Babel, aiofiles e python-dateutil
+# não eram usados por nenhum código e saíram.
+
 # ─── Core Framework ───────────────────────────────────────────────────────────
-fastapi==0.115.5
-uvicorn[standard]==0.32.1
-python-multipart==0.0.12
+fastapi==0.142.2
+starlette==1.7.0
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
 
 # ─── Database ─────────────────────────────────────────────────────────────────
-sqlalchemy[asyncio]==2.0.36
-asyncpg==0.30.0
-alembic==1.14.0
+sqlalchemy[asyncio]==2.1.3
+asyncpg==0.31.0
+alembic==1.20.0
 
 # ─── Security ─────────────────────────────────────────────────────────────────
-python-jose[cryptography]==3.3.0
-argon2-cffi==23.1.0
-python-dotenv==1.0.1
+python-jose[cryptography]==3.5.0
+argon2-cffi==25.1.0
+python-dotenv==1.2.4
 
 # ─── Validation ───────────────────────────────────────────────────────────────
-pydantic==2.10.3
-pydantic-settings==2.6.1
-email-validator==2.2.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+email-validator==2.3.0
 
 # ─── Cache / Rate Limiting ────────────────────────────────────────────────────
-redis==5.2.1
-slowapi==0.1.9
+redis==8.1.0
+slowapi==0.1.10
 
-# ─── Reports ──────────────────────────────────────────────────────────────────
-weasyprint==62.3
-openpyxl==3.1.5
-jinja2==3.1.4
-
-# ─── Utilities ────────────────────────────────────────────────────────────────
-httpx==0.28.1
-aiofiles==24.1.0
-pillow==11.0.0
-python-dateutil==2.9.0
-babel==2.16.0
-
-# ─── Development ──────────────────────────────────────────────────────────────
-pytest==8.3.4
-pytest-asyncio==0.24.0
-httpx==0.28.1
+# ─── Imagens / datas ──────────────────────────────────────────────────────────
+pillow==12.3.0
+tzdata==2026.4   # fuso America/Sao_Paulo mesmo em imagem slim/Windows
