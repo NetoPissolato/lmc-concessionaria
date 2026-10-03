@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "@/components/providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,24 +7,23 @@ const inter = Inter({
   display: "swap",
 });
 
+// Zoom com dois dedos liberado: travar o zoom tira a leitura de quem enxerga menos.
+// (O "zoom ao focar campo" do iPhone é evitado com fonte de 16px nos campos.)
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
+  themeColor: "#0b0b0c",
 };
 
 export const metadata: Metadata = {
+  // As páginas passam só o próprio nome; o " | LMC Veículos" vem daqui (antes saía duplicado)
   title: {
-    default: "LMC Veículos - ERP",
+    default: "LMC Veículos",
     template: "%s | LMC Veículos",
   },
-  description:
-    "Sistema ERP completo para gestão da concessionária LMC Veículos. Controle de estoque, vendas, clientes e financeiro.",
-  keywords: ["concessionária", "ERP", "veículos", "gestão", "LMC"],
-  robots: "noindex, nofollow", // Internal system - no SEO indexing
+  description: "Carros e motos seminovos com procedência na LMC Veículos.",
+  robots: "noindex, nofollow", // o site público libera a indexação no próprio layout
 };
 
 export default function RootLayout({
@@ -37,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={inter.variable}>
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );

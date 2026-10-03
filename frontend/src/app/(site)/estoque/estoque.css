@@ -1,0 +1,78 @@
+/* Estoque · LMC Veículos. Usa só tokens do site.css. */
+
+.e-topo { padding-block: 28px 24px; border-bottom: 1px solid var(--border); }
+@media (min-width: 1024px) { .e-topo { padding-block: 40px 28px; } }
+.e-topo h1 { margin-bottom: 6px; }
+
+.e-layout { display: grid; gap: 24px; padding-block: 24px 64px; align-items: start; }
+@media (min-width: 1024px) { .e-layout { grid-template-columns: 280px minmax(0, 1fr); gap: 32px; padding-block: 32px 96px; } }
+
+/* Filtros: barra lateral no desktop, folha de baixo no celular */
+.e-filtros { display: none; }
+@media (min-width: 1024px) {
+  .e-filtros {
+    display: grid; gap: 20px; position: sticky; top: calc(var(--header-h) + 20px);
+    max-height: calc(100dvh - var(--header-h) - 40px); overflow-y: auto;
+    padding: 20px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--border);
+    scrollbar-width: thin;
+  }
+}
+.e-grupo { display: grid; gap: 8px; }
+.e-grupo > .s-label { font-size: 0.8125rem; color: var(--fg-muted); font-weight: 600; }
+.e-par { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.e-opcoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.e-filtros .s-input, .e-filtros .s-select, .e-sheet .s-input, .e-sheet .s-select { min-height: 42px; font-size: 0.9375rem; }
+
+.e-barra {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 16px;
+}
+.e-barra__esq { display: flex; gap: 8px; align-items: center; flex: 1 1 260px; min-width: 0; }
+.e-barra__dir { display: flex; gap: 8px; align-items: center; }
+.e-busca { position: relative; flex: 1; min-width: 0; }
+.e-busca svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--fg-subtle); pointer-events: none; }
+.e-busca .s-input { padding-left: 42px; }
+.e-btn-filtros { flex-shrink: 0; }
+@media (min-width: 1024px) { .e-btn-filtros { display: none; } }
+.e-ordem { width: auto; min-width: 190px; }
+
+.e-ativos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; align-items: center; }
+.e-ativos .s-chip { background: var(--surface); border: 1px solid var(--border-strong); color: var(--fg); }
+.e-ativos .s-chip svg { color: var(--fg-muted); }
+.e-total { color: var(--fg-muted); font-size: 0.9375rem; }
+.e-total b { color: var(--fg); font-weight: 600; }
+
+.e-mais { display: flex; justify-content: center; margin-top: 32px; }
+
+/* Folha de filtros (celular) */
+.e-sheet-fundo { position: fixed; inset: 0; z-index: var(--z-sheet); background: var(--scrim); animation: e-fade var(--t) ease; }
+.e-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-sheet) + 1);
+  max-height: 88dvh; display: grid; grid-template-rows: auto 1fr auto;
+  border-radius: var(--r-panel) var(--r-panel) 0 0; background: var(--bg);
+  animation: e-sobe var(--t) var(--ease);
+}
+.e-sheet__topo { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+.e-sheet__corpo { overflow-y: auto; padding: 16px; display: grid; gap: 20px; align-content: start; }
+.e-sheet__rodape { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--surface); }
+@keyframes e-sobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes e-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Barra de comparação */
+.e-comparar {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: max(16px, env(safe-area-inset-bottom)); z-index: var(--z-float);
+  width: min(560px, calc(100% - 32px));
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 10px 10px 18px; border-radius: var(--r-pill);
+  background: var(--fg); color: var(--bg); box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  animation: e-sobe var(--t) var(--ease);
+}
+.e-comparar p { font-weight: 600; font-size: 0.9375rem; }
+.e-comparar .s-btn--ghost { --btn-fg: var(--bg); }
+.site-root:has(.e-comparar) .s-wa-float { bottom: 88px; }
+
+/* Avise-me */
+.e-aviso { margin-top: 24px; display: grid; gap: 14px; padding: 24px; border-radius: var(--r-panel); }
+@media (min-width: 640px) { .e-aviso { padding: 32px; } }
+.e-aviso form { display: grid; gap: 12px; }
+@media (min-width: 640px) { .e-aviso form { grid-template-columns: 1fr 1fr auto; align-items: end; } }

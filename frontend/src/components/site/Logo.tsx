@@ -1,0 +1,60 @@
+/**
+ * Logo LMC Veículos em vetor (recriado a partir do LogoLMC.png original, sem o fundo
+ * borrado). `tom="escuro"` = para fundo escuro (L e C claros); `tom="claro"` = para
+ * fundo claro (L e C grafite). M, barra e "VEÍCULOS" ficam sempre no laranja da marca.
+ */
+export default function Logo({
+  tom = "escuro",
+  comTexto = true,
+  className,
+  titulo = "LMC Veículos",
+}: {
+  tom?: "escuro" | "claro";
+  comTexto?: boolean;
+  className?: string;
+  titulo?: string;
+}) {
+  const neutro = tom === "escuro" ? "#F5F5F4" : "#2B2E33";
+  const laranja = "#F47920";
+  return (
+    <svg
+      viewBox={comTexto ? "125 243 1272 476" : "125 243 1272 347"}
+      className={className}
+      role="img"
+      aria-label={titulo}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <clipPath id={`lmc-faixa-${tom}`}>
+          <rect x="0" y="253" width="2000" height="328" />
+        </clipPath>
+      </defs>
+      <path d="M133 253H175V538H518V581H133Z" fill={neutro} />
+      <path d="M455 253H497V497L455 508Z" fill={laranja} />
+      <g clipPath={`url(#lmc-faixa-${tom})`} stroke={laranja} strokeWidth="42" fill="none">
+        <path d="M471 236L745 521" />
+        <path d="M737 457L933 336" />
+        <path d="M933 253V581" />
+      </g>
+      <path
+        d="M1390 250H1156.5A166.5 166.5 0 0 0 1156.5 583H1295L1283 538H1156.5A121.5 121.5 0 0 1 1156.5 295H1390Z"
+        fill={neutro}
+      />
+      <rect x="1182" y="485" width="205" height="35" fill={laranja} />
+      {comTexto && (
+        <text
+          x="133"
+          y="708"
+          fill={laranja}
+          fontFamily="var(--font-sora), 'Segoe UI', Arial, sans-serif"
+          fontWeight={600}
+          fontSize={62}
+          textLength={1254}
+          lengthAdjust="spacing"
+        >
+          VEÍCULOS
+        </text>
+      )}
+    </svg>
+  );
+}

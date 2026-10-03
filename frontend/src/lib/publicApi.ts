@@ -1,39 +1,36 @@
 /**
- * publicApi.ts — Funções de acesso à API pública do backend.
+ * Acesso à API pública do backend (site da loja, sem autenticação).
  *
- * ✅ Sem autenticação — usadas pelo site público (não pelo dashboard).
- * ✅ Dados sensíveis NUNCA chegam aqui (filtrados no backend).
- * ✅ Fallback seguro: retorna array/null em caso de erro para o site não quebrar.
+ * - Dados sensíveis nunca chegam aqui: o backend filtra (custo, placa, observações).
+ * - No servidor, as respostas ficam em cache por REVALIDAR segundos: um pico de
+ *   visitas não vira um pico de consultas no banco, e carro novo aparece em até 30s.
+ * - Falha do backend é diferente de "não existe": getPublicVehicleResult devolve
+ *   `erro: true` para a página mostrar "tente de novo" em vez de um 404 que o Google
+ *   indexaria como página morta.
  */
+import { CAMBIO, COMBUSTIVEL, CARROCERIA, CATEGORIA_MOTO, CONDICAO } from "@/lib/site/labels";
 
-// No servidor (SSR/ISR), usa a URL interna Docker para evitar hairpinning no VPS.
-// No browser (client), usa a URL pública.
 const isServer = typeof window === "undefined";
 
 const API_BASE = isServer
   ? (process.env.BACKEND_INTERNAL_URL ?? "http://localhost:8000") + "/api/v1/public"
   : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1") + "/public";
 
-/**
- * Converte URL relativa de foto (/uploads/...) para uso no browser.
- * Mantemos como relativa: o nginx de AMBOS os domínios já roteia /uploads/ -> backend.
- * Isso evita cross-domain e problemas de hairpinning.
- */
+/** Segundos de cache das respostas no servidor. */
+const REVALIDAR = 30;
+
+/** URLs de foto ficam relativas: o nginx dos dois domínios roteia /uploads/ para o backend. */
 export function resolvePhotoUrl(url: string | null | undefined): string {
-  if (!url) return "";
-  // URLs já absolutas: manter como estão
-  if (url.startsWith("http")) return url;
-  // URLs relativas (/uploads/...): manter relativas
-  // O nginx roteia /uploads/ -> backend tanto no site quanto no dashboard
-  return url;
+  return url ?? "";
 }
 
-
-// ─── Tipos públicos ────────────────────────────────────────────────────────────
+// ─── Tipos ─────────────────────────────────────────────────────────────────────
 
 export interface PublicPhoto {
   id: string;
   url: string;
+  /** Miniatura (~640px) para cards. Fotos antigas podem não ter. */
+  thumb_url?: string | null;
   is_main: boolean;
   ordem: number;
 }
@@ -58,7 +55,6 @@ export interface PublicVehicle {
   valor_anunciado: number | null;
   status: "disponivel";
   destaque: boolean;
-  observacoes: string | null;
   video_url: string | null;
   photos: PublicPhoto[];
   visualizacoes: number;
@@ -75,16 +71,16 @@ export interface PublicModeloDestaque {
   ordem: number;
 }
 
-/** Modelo auto-gerado pelo endpoint /popular-models (sem necessidade de cadastro manual). */
+/** Gerado automaticamente pelo /popular-models (mais vistos do estoque). */
 export interface PublicPopularModel {
-  marca:             string;
-  modelo:            string;
-  tipo:              string;
-  carroceria:        string | null;
+  marca: string;
+  modelo: string;
+  tipo: string;
+  carroceria: string | null;
   total_disponiveis: number;
-  min_price:         number | null;
-  total_views:       number;
-  photo_url:         string | null;
+  min_price: number | null;
+  total_views: number;
+  photo_url: string | null;
 }
 
 export interface PublicStats {
@@ -92,14 +88,79 @@ export interface PublicStats {
   total_marcas: number;
   total_carros: number;
   total_motos: number;
-  satisfacao: number;
+  /** Média das avaliações aprovadas (null sem avaliações). */
+  avaliacao_media: number | null;
+  total_avaliacoes: number;
 }
 
-export interface PublicMarcas {
-  marcas: string[];
+export interface PublicReview {
+  id: string;
+  nome: string;
+  nota: number;
+  texto: string;
+  foto_url: string | null;
+  cidade: string | null;
+  created_at: string | null;
 }
 
-// ─── Filtros aceitos na listagem ───────────────────────────────────────────────
+export interface PublicTeamMember {
+  id: string;
+  nome: string;
+  cargo: string;
+  foto: string | null;
+  data_contratacao: string | null;
+}
+
+/** Campo vazio = null: o site esconde o item em vez de mostrar dado de exemplo. */
+export interface PublicSettings {
+  nome_loja: string;
+  slogan: string | null;
+  whatsapp: string | null;
+  telefone: string | null;
+  email_contato: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  youtube: string | null;
+  endereco: string | null;
+  cidade: string | null;
+  estado: string | null;
+  cep: string | null;
+  cnpj: string | null;
+  horario: string | null;
+  hero_titulo: string | null;
+  hero_subtitulo: string | null;
+  stat_clientes: number | null;
+  stat_anos: number | null;
+  stat_satisfacao: number | null;
+  modo_manutencao: boolean;
+  ga_id: string | null;
+  pixel_id: string | null;
+}
+
+export const DEFAULT_SETTINGS: PublicSettings = {
+  nome_loja: "LMC Veículos",
+  slogan: null,
+  whatsapp: null,
+  telefone: null,
+  email_contato: null,
+  instagram: null,
+  facebook: null,
+  youtube: null,
+  endereco: null,
+  cidade: null,
+  estado: null,
+  cep: null,
+  cnpj: null,
+  horario: null,
+  hero_titulo: null,
+  hero_subtitulo: null,
+  stat_clientes: null,
+  stat_anos: null,
+  stat_satisfacao: null,
+  modo_manutencao: false,
+  ga_id: null,
+  pixel_id: null,
+};
 
 export interface VehicleFilters {
   tipo?: "carro" | "moto";
@@ -120,244 +181,136 @@ export interface VehicleFilters {
   limit?: number;
 }
 
-// ─── Mapeamentos de display ───────────────────────────────────────────────────
-// O banco usa minúsculas sem acento — mapeamos para exibição amigável no site.
+// Compatibilidade com código antigo que importava os rótulos daqui
+export const FUEL_LABELS = COMBUSTIVEL;
+export const CAMBIO_LABELS = CAMBIO;
+export const CARROCERIA_LABELS: Record<string, string> = { ...CARROCERIA, ...CATEGORIA_MOTO };
+export const CONDICAO_LABELS = CONDICAO;
 
-export const FUEL_LABELS: Record<string, string> = {
-  flex:      "Flex",
-  gasolina:  "Gasolina",
-  etanol:    "Etanol",
-  diesel:    "Diesel",
-  eletrico:  "Elétrico",
-  hibrido:   "Híbrido",
-  gnv:       "GNV",
-};
+// ─── Núcleo ────────────────────────────────────────────────────────────────────
 
-export const CAMBIO_LABELS: Record<string, string> = {
-  manual:       "Manual",
-  automatico:   "Automático",
-  automatizado: "Automatizado",
-  cvt:          "CVT",
-};
+type Resposta<T> = { dados: T | null; status: number | "erro" };
 
-export const CARROCERIA_LABELS: Record<string, string> = {
-  // Carros
-  suv:         "SUV",
-  hatch:       "Hatch",
-  sedan:       "Sedã",
-  picape:      "Picape",
-  coupe:       "Cupê",
-  minivan:     "Minivan",
-  conversivel: "Conversível",
-  perua:       "Perua / SW",
-  van:         "Van / Utilitário",
-  // Motos
-  naked:       "Naked",
-  sport:       "Sport",
-  trail:       "Trail",
-  scooter:     "Scooter",
-  touring:     "Touring",
-  custom:      "Custom",
-  bigtrail:    "Big Trail",
-  enduro:      "Enduro",
-  motocross:   "Motocross",
-  chopper:     "Chopper",
-};
-
-export const CONDICAO_LABELS: Record<string, string> = {
-  novo:     "Novo",
-  seminovo: "Seminovo",
-  usado:    "Usado",
-};
-
-// ─── Helper interno ────────────────────────────────────────────────────────────
-
-async function fetchPublic<T>(
-  path: string,
-  params?: Record<string, string | number | boolean>
-): Promise<T | null> {
+async function chamar<T>(path: string, params?: Record<string, string | number | boolean | undefined>): Promise<Resposta<T>> {
   try {
-    const url = new URL(`${API_BASE}${path}`);
-    if (params) {
-      Object.entries(params).forEach(([k, v]) => {
-        if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
-      });
+    const url = new URL(`${API_BASE}${path}`, isServer ? undefined : window.location.origin);
+    for (const [k, v] of Object.entries(params ?? {})) {
+      if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
     }
-
-    // Timeout de 8s: evita travar o docker build quando o backend não está
-    // acessível na rede de build (ex: http://backend:8000 só existe em runtime).
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8_000);
-
     const res = await fetch(url.toString(), {
-      cache: "no-store", // Sem cache — veiculos aparecem no site imediatamente apos adicionar
       signal: controller.signal,
+      ...(isServer ? { next: { revalidate: REVALIDAR } } : { cache: "no-store" as const }),
     });
     clearTimeout(timer);
-
-    if (!res.ok) return null;
-    return (await res.json()) as T;
+    if (!res.ok) return { dados: null, status: res.status };
+    return { dados: (await res.json()) as T, status: res.status };
   } catch {
-    // Falha silenciosa — inclui timeout — site nunca quebra se o backend cair
-    return null;
+    // Backend fora do ar ou lento: o site continua de pé (com aviso onde fizer sentido)
+    return { dados: null, status: "erro" };
   }
 }
 
-// ─── Funções públicas ──────────────────────────────────────────────────────────
-
-/** Lista veículos disponíveis com filtros opcionais. */
-export async function getPublicVehicles(
-  filters: VehicleFilters = {}
-): Promise<PublicVehicle[]> {
-  const params: Record<string, string | number | boolean> = {};
-  if (filters.tipo)        params.tipo        = filters.tipo;
-  if (filters.marca)       params.marca       = filters.marca;
-  if (filters.modelo)      params.modelo      = filters.modelo;
-  if (filters.cambio)      params.cambio      = filters.cambio;
-  if (filters.combustivel) params.combustivel = filters.combustivel;
-  if (filters.carroceria)  params.carroceria  = filters.carroceria;
-  if (filters.condicao)    params.condicao    = filters.condicao;
-  if (filters.ano_min)     params.ano_min     = filters.ano_min;
-  if (filters.ano_max)     params.ano_max     = filters.ano_max;
-  if (filters.preco_min)   params.preco_min   = filters.preco_min;
-  if (filters.preco_max)   params.preco_max   = filters.preco_max;
-  if (filters.km_max)      params.km_max      = filters.km_max;
-  if (filters.destaque !== undefined) params.destaque = filters.destaque;
-  if (filters.q)           params.q           = filters.q;
-  if (filters.skip)        params.skip        = filters.skip;
-  if (filters.limit)       params.limit       = filters.limit;
-
-  const data = (await fetchPublic<PublicVehicle[]>("/vehicles", params)) ?? [];
-  // Corrige URLs relativas de fotos para URLs absolutas
-  return data.map(v => ({
-    ...v,
-    photos: v.photos.map(p => ({ ...p, url: resolvePhotoUrl(p.url) })),
-  }));
+function comFotosOrdenadas(v: PublicVehicle): PublicVehicle {
+  const photos = [...(v.photos ?? [])].sort((a, b) => Number(b.is_main) - Number(a.is_main) || a.ordem - b.ordem);
+  return { ...v, photos, opcionais: Array.isArray(v.opcionais) ? v.opcionais : [] };
 }
 
-/** Busca detalhe de um veículo pelo ID. Retorna null se não encontrado. */
+// ─── Veículos ──────────────────────────────────────────────────────────────────
+
+export async function getPublicVehicles(filters: VehicleFilters = {}): Promise<PublicVehicle[]> {
+  const { dados } = await chamar<PublicVehicle[]>("/vehicles", { ...filters });
+  return (dados ?? []).map(comFotosOrdenadas);
+}
+
+/** Todo o estoque disponível (o backend aceita até 500 por página). */
+export async function getAllPublicVehicles(): Promise<{ veiculos: PublicVehicle[]; erro: boolean }> {
+  const { dados, status } = await chamar<PublicVehicle[]>("/vehicles", { limit: 500 });
+  return { veiculos: (dados ?? []).map(comFotosOrdenadas), erro: status === "erro" || (typeof status === "number" && status >= 500) };
+}
+
+export async function getPublicVehicleResult(id: string): Promise<{ veiculo: PublicVehicle | null; erro: boolean }> {
+  const { dados, status } = await chamar<PublicVehicle>(`/vehicles/${encodeURIComponent(id)}`);
+  if (dados) return { veiculo: comFotosOrdenadas(dados), erro: false };
+  return { veiculo: null, erro: status !== 404 && status !== 422 };
+}
+
 export async function getPublicVehicle(id: string): Promise<PublicVehicle | null> {
-  const data = await fetchPublic<PublicVehicle>(`/vehicles/${id}`);
-  if (!data) return null;
-  return {
-    ...data,
-    photos: data.photos.map(p => ({ ...p, url: resolvePhotoUrl(p.url) })),
-  };
+  return (await getPublicVehicleResult(id)).veiculo;
 }
 
-/** Retorna a lista de modelos configurados como destaque pelo admin. */
 export async function getPublicModelosDestaque(): Promise<PublicModeloDestaque[]> {
-  const data = (await fetchPublic<PublicModeloDestaque[]>("/modelos-destaque")) ?? [];
-  return data.map(m => ({
-    ...m,
-    imagem_url: m.imagem_url ? resolvePhotoUrl(m.imagem_url) : null,
-  }));
+  return (await chamar<PublicModeloDestaque[]>("/modelos-destaque")).dados ?? [];
 }
 
-/**
- * Retorna os modelos mais vistos do estoque (100% automático).
- * Usado como automação tipo Webmotors — sem necessidade de cadastro manual.
- * Fotos, preço e contagem vêm direto do estoque em tempo real.
- */
 export async function getPublicPopularModels(limit = 8): Promise<PublicPopularModel[]> {
-  const data = (await fetchPublic<PublicPopularModel[]>("/popular-models", { limit })) ?? [];
-  return data.map(m => ({
-    ...m,
-    photo_url: m.photo_url ? resolvePhotoUrl(m.photo_url) : null,
-  }));
+  return (await chamar<PublicPopularModel[]>("/popular-models", { limit })).dados ?? [];
 }
 
-/**
- * Incrementa o contador de visualizações de um veículo.
- * Chamado no client-side (useEffect) na página de detalhe do veículo.
- * Falha silenciosamente.
- */
+/** Conta uma visualização (o backend ignora repetição do mesmo IP por 6h). */
 export function trackVehicleView(vehicleId: string): void {
-  const clientBase = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1") + "/public";
-  fetch(`${clientBase}/vehicles/${vehicleId}/view`, { method: "POST" }).catch(() => {});
+  const base = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1") + "/public";
+  fetch(`${base}/vehicles/${encodeURIComponent(vehicleId)}/view`, { method: "POST", keepalive: true }).catch(() => {});
 }
 
-/** Retorna estatísticas para o hero do site (total veículos, marcas, satisfação). */
 export async function getPublicStats(): Promise<PublicStats> {
-  return (await fetchPublic<PublicStats>("/stats")) ?? {
-    total_veiculos: 0,
-    total_marcas: 0,
-    total_carros: 0,
-    total_motos: 0,
-    satisfacao: 98,
+  return (await chamar<PublicStats>("/stats")).dados ?? {
+    total_veiculos: 0, total_marcas: 0, total_carros: 0, total_motos: 0,
+    avaliacao_media: null, total_avaliacoes: 0,
   };
 }
 
-/** Lista marcas que têm veículos disponíveis no estoque. */
 export async function getPublicMarcas(tipo?: "carro" | "moto"): Promise<string[]> {
-  const params = tipo ? { tipo } : undefined;
-  const result = await fetchPublic<PublicMarcas>("/marcas", params);
-  return result?.marcas ?? [];
+  return (await chamar<{ marcas: string[] }>("/marcas", { tipo })).dados?.marcas ?? [];
 }
 
-// ─── Configurações públicas da loja ───────────────────────────────────────────
-
-export interface PublicSettings {
-  whatsapp:       string;
-  telefone:       string;
-  email_contato:  string;
-  instagram:      string;
-  facebook:       string;
-  youtube:        string;
-  nome_loja:      string;
-  slogan:         string;
-  endereco:       string;
-  cidade:         string;
-  estado:         string;
-  horario:        string;
-  hero_titulo:    string;
-  hero_subtitulo: string;
-  stat_clientes:  number;
-  stat_anos:      number;
-  stat_satisfacao: number;
-  modo_manutencao: boolean;
-  ga_id:          string;
-  pixel_id:       string;
+export async function getPublicReviews(limit = 12): Promise<PublicReview[]> {
+  return (await chamar<PublicReview[]>("/reviews", { limit })).dados ?? [];
 }
 
-const DEFAULT_SETTINGS: PublicSettings = {
-  whatsapp:        "",
-  telefone:        "",
-  email_contato:   "",
-  instagram:       "",
-  facebook:        "",
-  youtube:         "",
-  nome_loja:       "LMC Veículos",
-  slogan:          "Seu próximo veículo está aqui",
-  endereco:        "",
-  cidade:          "",
-  estado:          "",
-  horario:         "Seg–Sex: 8h–18h | Sáb: 8h–13h",
-  hero_titulo:     "Encontre seu próximo veículo",
-  hero_subtitulo:  "Carros e motos selecionados com qualidade e transparência",
-  stat_clientes:   0,
-  stat_anos:       0,
-  stat_satisfacao: 98,
-  modo_manutencao: false,
-  ga_id:           "",
-  pixel_id:        "",
-};
+export async function getPublicTeam(): Promise<PublicTeamMember[]> {
+  return (await chamar<PublicTeamMember[]>("/team")).dados ?? [];
+}
 
-/** Retorna configurações públicas da loja — SEMPRE fresco (sem cache). */
 export async function getPublicSettings(): Promise<PublicSettings> {
+  const { dados } = await chamar<Partial<PublicSettings>>("/settings");
+  return { ...DEFAULT_SETTINGS, ...(dados ?? {}) };
+}
+
+// ─── Envio de formulários (navegador) ──────────────────────────────────────────
+
+export interface EnvioResultado { ok: boolean; mensagem: string }
+
+async function enviar(path: string, corpo: Record<string, unknown>): Promise<EnvioResultado> {
   try {
-    const url = `${API_BASE}/settings`;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8_000);
-    const res = await fetch(url, {
-      cache: "no-store", // Sem cache — mudanças no painel aparecem imediatamente
-      signal: controller.signal,
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo),
     });
-    clearTimeout(timer);
-    if (!res.ok) return DEFAULT_SETTINGS;
-    const data = await res.json();
-    return { ...DEFAULT_SETTINGS, ...data };
+    if (res.status === 429) return { ok: false, mensagem: "Muitos envios seguidos. Aguarde um minuto e tente de novo." };
+    if (!res.ok) {
+      const erro = await res.json().catch(() => null);
+      const detalhe = Array.isArray(erro?.detail) ? erro.detail[0]?.msg : erro?.detail;
+      return { ok: false, mensagem: detalhe ? `Não foi possível enviar: ${detalhe}` : "Não foi possível enviar. Tente de novo ou fale pelo WhatsApp." };
+    }
+    const dados = await res.json().catch(() => ({}));
+    return { ok: true, mensagem: dados?.message ?? "Recebido! Entraremos em contato em breve." };
   } catch {
-    return DEFAULT_SETTINGS;
+    return { ok: false, mensagem: "Sem conexão com a loja agora. Tente de novo ou fale pelo WhatsApp." };
   }
 }
+
+export const enviarLead = (corpo: {
+  nome: string; telefone: string; email?: string; mensagem?: string;
+  veiculo_id?: string; veiculo_descricao?: string; origem?: string; website?: string;
+}) => enviar("/leads", corpo);
+
+export const enviarAvaliacao = (corpo: { nome: string; nota: number; texto: string; cidade?: string; website?: string }) =>
+  enviar("/reviews", corpo);
+
+export const enviarAlerta = (corpo: {
+  email: string; nome?: string; marca?: string; modelo?: string; tipo?: string;
+  ano_min?: number; preco_max?: number; website?: string;
+}) => enviar("/availability-alerts", corpo);

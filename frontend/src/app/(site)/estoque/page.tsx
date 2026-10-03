@@ -1,25 +1,23 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import EstoquePage from "./_EstoquePage";
-import { getPublicVehicles } from "@/lib/publicApi";
+import { getAllPublicVehicles, getPublicSettings } from "@/lib/publicApi";
+import EstoqueCliente from "./EstoqueCliente";
+import "./estoque.css";
 
 export const metadata: Metadata = {
-  title: "Estoque de Veículos | LMC Veículos",
-  description:
-    "Confira nosso estoque completo de carros e motos. Filtre por marca, modelo, preço, câmbio, combustível e muito mais.",
-  robots: "index, follow",
+  title: "Estoque de carros e motos",
+  description: "Veja todo o estoque da LMC Veículos: carros e motos seminovos com fotos reais, preço, quilometragem e financiamento.",
+  alternates: { canonical: "/estoque" },
 };
 
-// SSR dinâmico — sem cache de build; dados sempre frescos do backend
 export const dynamic = "force-dynamic";
 
-export default async function Estoque() {
-  // Busca TODOS os disponíveis no servidor (ISR 60s)
-  const vehicles = await getPublicVehicles({ limit: 100 });
-
+export default async function EstoquePage() {
+  // Todo o estoque de uma vez: a filtragem é instantânea no navegador (sem esqueleto falso)
+  const [{ veiculos, erro }, s] = await Promise.all([getAllPublicVehicles(), getPublicSettings()]);
   return (
     <Suspense>
-      <EstoquePage initialVehicles={vehicles} />
+      <EstoqueCliente veiculos={veiculos} whatsapp={s.whatsapp} agora={Date.now()} erro={erro} />
     </Suspense>
   );
 }

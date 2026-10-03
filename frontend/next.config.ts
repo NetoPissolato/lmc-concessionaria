@@ -8,15 +8,17 @@ const BACKEND_INTERNAL_URL =
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
+  // Permite um build separado (ex.: NEXT_DIST_DIR=.next-build) sem atrapalhar o `next dev` aberto
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // Pula a checagem de tipos no servidor (já verificamos localmente com tsc --noEmit)
   // Economiza 10-15 min de build na VPS com pouca CPU
   typescript: { ignoreBuildErrors: true },
   // Aumenta o timeout de geração de páginas estáticas para VPS com recursos limitados
   // Padrão é 60s — VPS lenta pode demorar mais
   staticPageGenerationTimeout: 300,
+  // As fotos já chegam otimizadas do backend (WebP 1600px + miniatura 640px)
   images: {
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     unoptimized: true,
   },
   async rewrites() {

@@ -1,0 +1,123 @@
+/* Página do veículo · LMC Veículos. Usa só tokens do site.css. */
+
+.v-pagina { padding-block: 16px 120px; }
+@media (min-width: 1024px) { .v-pagina { padding-block: 24px 96px; } }
+
+.v-trilha { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.875rem; color: var(--fg-subtle); margin-bottom: 16px; list-style: none; padding: 0; }
+.v-trilha a { color: var(--fg-muted); }
+.v-trilha a:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+.v-trilha li[aria-current] { color: var(--fg); font-weight: 500; }
+
+/* Celular: galeria → preço/contato → ficha. Desktop: preço/contato fixo à direita. */
+.v-grid { display: grid; gap: 24px; align-items: start; grid-template-areas: "galeria" "compra" "conteudo"; }
+.v-area-galeria { grid-area: galeria; min-width: 0; }
+.v-area-compra { grid-area: compra; }
+.v-area-conteudo { grid-area: conteudo; min-width: 0; }
+.v-area-conteudo > .v-bloco:first-child { padding-top: 8px; }
+@media (min-width: 1024px) {
+  .v-grid { grid-template-columns: minmax(0, 1fr) 380px; gap: 0 40px; grid-template-areas: "galeria compra" "conteudo compra"; }
+  .v-area-compra { align-self: start; }
+  .v-area-conteudo > .v-bloco:first-child { padding-top: 32px; }
+}
+
+/* Galeria */
+.v-gal { display: grid; gap: 10px; }
+.v-gal__palco { position: relative; border-radius: var(--r-panel); overflow: hidden; background: var(--surface-2); }
+@media (max-width: 639px) { .v-gal__palco { border-radius: var(--r-card); margin-inline: calc(var(--gutter) * -1); border-radius: 0; } }
+.v-gal__trilho {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 100%;
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+  aspect-ratio: 4 / 3;
+}
+@media (min-width: 1024px) { .v-gal__trilho { aspect-ratio: 16 / 10; } }
+.v-gal__trilho::-webkit-scrollbar { display: none; }
+.v-gal__trilho > button { scroll-snap-align: center; border: 0; padding: 0; background: none; cursor: zoom-in; display: block; width: 100%; height: 100%; }
+.v-gal__trilho img { width: 100%; height: 100%; object-fit: cover; }
+.v-gal__seta {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 1;
+  width: 44px; height: 44px; border-radius: 50%; display: none; place-items: center;
+  border: 1px solid rgba(255,255,255,0.2); background: rgba(11,11,12,0.62); color: #f4f4f5; cursor: pointer;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.v-gal__seta:hover { background: rgba(11,11,12,0.85); }
+.v-gal__seta--esq { left: 14px; }
+.v-gal__seta--dir { right: 14px; }
+@media (hover: hover) and (min-width: 640px) { .v-gal__seta { display: grid; } }
+.v-gal__contador { position: absolute; right: 14px; bottom: 14px; z-index: 1; }
+.v-gal__ampliar { position: absolute; left: 14px; bottom: 14px; z-index: 1; }
+.v-gal__miniaturas { display: grid; grid-auto-flow: column; grid-auto-columns: 92px; gap: 8px; overflow-x: auto; scrollbar-width: thin; padding-bottom: 4px; }
+.v-gal__miniaturas button {
+  aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; padding: 0; cursor: pointer;
+  border: 2px solid transparent; background: var(--surface-2); opacity: 0.72; transition: opacity var(--t-fast), border-color var(--t-fast);
+}
+.v-gal__miniaturas button:hover { opacity: 1; }
+.v-gal__miniaturas button[aria-current="true"] { border-color: var(--brand); opacity: 1; }
+.v-gal__miniaturas img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Tela cheia */
+.v-lightbox { position: fixed; inset: 0; z-index: var(--z-modal); background: rgba(5,5,6,0.96); display: grid; grid-template-rows: auto 1fr; }
+.v-lightbox__topo { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; color: #f4f4f5; }
+.v-lightbox__trilho { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.v-lightbox__trilho::-webkit-scrollbar { display: none; }
+.v-lightbox__trilho figure { margin: 0; scroll-snap-align: center; display: grid; place-items: center; padding: 0 12px 24px; min-height: 0; }
+.v-lightbox__trilho img { max-width: 100%; max-height: calc(100dvh - 90px); object-fit: contain; }
+
+/* Coluna de compra */
+.v-compra { display: grid; gap: 16px; }
+@media (min-width: 1024px) { .v-compra { position: sticky; top: calc(var(--header-h) + 20px); } }
+.v-cartao { padding: 22px; border-radius: var(--r-panel); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-card); display: grid; gap: 16px; }
+.v-titulo { display: grid; gap: 6px; }
+.v-titulo .s-eyebrow { color: var(--fg-subtle); }
+.v-preco { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.9rem, 1.5rem + 1.2vw, 2.4rem); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
+.v-acoes { display: grid; gap: 10px; }
+.v-acoes__par { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.v-garantias { list-style: none; margin: 0; padding: 14px 0 0; border-top: 1px solid var(--border); display: grid; gap: 10px; font-size: 0.9rem; color: var(--fg-muted); }
+.v-garantias li { display: flex; gap: 10px; align-items: flex-start; }
+.v-garantias svg { color: var(--ok); flex-shrink: 0; margin-top: 2px; }
+
+/* Blocos de conteúdo */
+.v-bloco { padding-top: 32px; display: grid; gap: 16px; }
+.v-bloco + .v-bloco { border-top: 1px solid var(--border); margin-top: 32px; }
+.v-ficha { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; list-style: none; margin: 0; padding: 0; }
+.v-ficha li { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; padding: 14px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--border); }
+.v-ficha svg { grid-row: span 2; color: var(--fg-subtle); }
+.v-ficha span { font-size: 0.8125rem; color: var(--fg-subtle); }
+.v-ficha strong { font-weight: 600; color: var(--fg); font-size: 0.975rem; }
+.v-opcionais { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px 20px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.v-opcionais li { display: flex; gap: 10px; align-items: flex-start; color: var(--fg-muted); font-size: 0.9375rem; }
+.v-opcionais svg { color: var(--ok); flex-shrink: 0; margin-top: 3px; }
+.v-video { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r-card); overflow: hidden; background: #000; }
+.v-video button { position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; display: grid; place-items: center; background: none; }
+.v-video button img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+.v-video button span { position: relative; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: var(--brand-ink); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.v-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* Simulador e agendamento */
+.v-form { display: grid; gap: 12px; }
+.v-bloco .v-painel form { grid-template-columns: 1fr; }
+@media (min-width: 720px) {
+  .v-bloco .v-painel form { grid-template-columns: 1fr 1fr; align-items: end; }
+  .v-bloco .v-painel form .s-alert, .v-bloco .v-painel form button[type="submit"] { grid-column: 1 / -1; }
+}
+.v-painel { padding: 20px; border-radius: var(--r-panel); background: var(--surface); border: 1px solid var(--border); display: grid; gap: 14px; }
+.v-painel h2 { font-size: 1.1rem; }
+.v-sim__linha { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.v-sim__resultado { padding: 14px 16px; border-radius: var(--r-field); background: var(--surface-2); display: grid; gap: 2px; }
+.v-sim__resultado strong { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+/* Barra fixa do celular */
+.v-barra {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-float);
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px max(10px, env(safe-area-inset-bottom));
+  background: var(--surface); border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
+}
+.v-barra__preco { flex: 1; min-width: 0; }
+.v-barra__preco strong { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.v-barra__preco span { display: block; font-size: 0.75rem; color: var(--fg-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 1024px) { .v-barra { display: none; } }
+/* Com a barra fixa, o botão flutuante de WhatsApp sai no celular */
+@media (max-width: 1023px) { .site-root:has(.v-barra) .s-wa-float { display: none; } }
+
+.v-erro { padding-block: 80px; }
