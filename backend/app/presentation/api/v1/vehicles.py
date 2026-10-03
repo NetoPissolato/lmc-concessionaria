@@ -18,7 +18,7 @@ from app.application.schemas.vehicle import (
 )
 from app.application.schemas.vehicle_photo import VehiclePhotoResponse
 from app.application.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse
-from app.application.services.vehicle_service import VehicleService, CATEGORIA_CAIXA
+from app.application.services.vehicle_service import VehicleService, CATEGORIA_CAIXA, ROTULO_DESPESA
 from app.application.services import financeiro_service
 from app.application.services.upload_service import processar_foto_veiculo
 from app.core.tempo import hoje_loja
@@ -294,7 +294,7 @@ async def update_expense(
         db.add(FinancialEntry(
             tipo=EntryType.SAIDA,
             categoria=CATEGORIA_CAIXA.get(updated.categoria, FinancialCategory.OUTROS_SAIDA),
-            descricao=f"Despesa {updated.categoria.value} — {vehicle.marca} {vehicle.modelo} ({vehicle.placa}): {updated.descricao}"[:255],
+            descricao=f"Despesa de {ROTULO_DESPESA.get(updated.categoria, updated.categoria.value)}: {vehicle.marca} {vehicle.modelo} ({vehicle.placa}) - {updated.descricao}"[:255],
             valor=updated.valor,
             data=updated.data,
             vehicle_id=vehicle_id,

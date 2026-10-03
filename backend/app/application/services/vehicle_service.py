@@ -16,6 +16,17 @@ from app.application.services import financeiro_service
 from app.domain.models.financial import FinancialEntry
 from sqlalchemy.exc import IntegrityError
 
+# Nome da categoria como aparece no caixa e no painel
+ROTULO_DESPESA: dict[ExpenseCategory, str] = {
+    ExpenseCategory.MECANICA: "mecânica", ExpenseCategory.FUNILARIA: "funilaria",
+    ExpenseCategory.PINTURA: "pintura", ExpenseCategory.LAVAGEM: "lavagem",
+    ExpenseCategory.DOCUMENTACAO: "documentação", ExpenseCategory.PNEUS: "pneus",
+    ExpenseCategory.ELETRICA: "elétrica", ExpenseCategory.COMBUSTIVEL: "combustível",
+    ExpenseCategory.ACESSORIOS: "acessórios", ExpenseCategory.GUINCHO: "guincho",
+    ExpenseCategory.IPVA: "IPVA", ExpenseCategory.LICENCIAMENTO: "licenciamento",
+    ExpenseCategory.COMISSAO: "comissão", ExpenseCategory.OUTROS: "outros",
+}
+
 # Categoria da despesa do veículo → categoria no caixa.
 # Chave é o ENUM (antes era str(enum), que no Python 3.12 vira "ExpenseCategory.MECANICA"
 # e nunca casava: toda despesa caía em "outros").
@@ -268,7 +279,7 @@ class VehicleService:
         await self.financial_repo.create(
             tipo=EntryType.SAIDA,
             categoria=fin_categoria,
-            descricao=f"Despesa {data.categoria.value} — {vehicle.marca} {vehicle.modelo} ({vehicle.placa}): {data.descricao}",
+            descricao=f"Despesa de {ROTULO_DESPESA.get(data.categoria, data.categoria.value)}: {vehicle.marca} {vehicle.modelo} ({vehicle.placa}) - {data.descricao}"[:255],
             valor=data.valor,
             data=data.data,
             vehicle_id=vehicle_id,
