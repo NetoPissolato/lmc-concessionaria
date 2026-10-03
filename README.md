@@ -1,6 +1,6 @@
 # 🚗 LMC Veículos — Sistema ERP
 
-Sistema de gestão completo para concessionária. Desenvolvido com **FastAPI** (backend), **Next.js** (frontend), **PostgreSQL** e **Redis**, orquestrado com **Docker Compose**.
+Sistema de gestão para concessionária (painel) e site público da loja. **FastAPI** (backend), **Next.js** (painel e site), **PostgreSQL** e **Redis**, orquestrados com **Docker Compose**.
 
 ---
 
@@ -8,149 +8,158 @@ Sistema de gestão completo para concessionária. Desenvolvido com **FastAPI** (
 
 ```
 nginx (porta 80/443)
-├── /api/v1/*     → FastAPI (porta 8000)
-└── /*            → Next.js (porta 3000)
+├── lcm.<dominio>   /api/v1/* → FastAPI (backend:8000)
+│                   /*        → Next.js painel (frontend:3000)
+└── site.<dominio>  /*        → Next.js site da loja (frontend_site:3001)
 
-PostgreSQL (banco de dados)
-Redis (cache / sessões)
+PostgreSQL (dados) · Redis (sessões, bloqueio de login, rate limit)
 ```
+
+O site e o painel são o mesmo código Next.js; o `proxy.ts` decide pelo domínio. Hosts que começam com `site.` vão para a loja. Para usar um domínio próprio na loja, defina `SITE_HOST=lmcveiculos.com.br` no serviço `frontend_site` e `NEXT_PUBLIC_SITE_URL=https://lmcveiculos.com.br` (usado em links, sitemap e compartilhamento).
 
 ---
 
-## 🚀 Deploy em Nova VPS (Hostinger / qualquer Ubuntu 22+)
+## 🚀 Deploy em Nova VPS (Ubuntu 22+)
 
 ### Pré-requisitos
-- VPS com Ubuntu 22.04
-- DNS apontando para o IP da VPS
-- Porta 80 e 443 liberadas no firewall da Hostinger
+- DNS de `lcm.` e `site.` apontando para o IP da VPS
+- Portas 80 e 443 liberadas
 
-### 1. Acesse a VPS via SSH
-```bash
-ssh root@IP_DA_VPS
-```
-
-### 2. Instale o Docker (se não tiver)
+### 1. Docker e repositório
 ```bash
 curl -fsSL https://get.docker.com | sh
 systemctl enable docker --now
-```
-
-### 3. Clone o repositório
-```bash
 git clone https://github.com/SEU_USUARIO/SEU_REPO.git /opt/lmc
 cd /opt/lmc
 ```
 
-### 4. Configure as variáveis de ambiente
+### 2. Senhas do banco e do Redis — `/opt/lmc/.env`
+O `docker-compose.prod.yml` não sobe sem elas (não há mais senha padrão no arquivo).
+```bash
+cat > /opt/lmc/.env <<EOF
+DB_PASSWORD=$(openssl rand -base64 32 | tr -d '/+=')
+REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d '/+=')
+EOF
+chmod 600 /opt/lmc/.env
+```
+> ⚠️ **Servidor que já está no ar:** use as senhas que o banco e o Redis **já usam hoje**. Senha nova num volume de banco existente = backend sem conexão.
+
+### 3. Variáveis do backend — `backend/.env.production`
 ```bash
 cp backend/.env.example backend/.env.production
-nano backend/.env.production
-# Preencha: POSTGRES_PASSWORD, SECRET_KEY, CORS_ORIGINS (com seu domínio)
+nano backend/.env.production   # JWT_SECRET_KEY, ALLOWED_ORIGINS, FRONTEND_URL
 ```
 
-### 5. Suba os containers
+### 4. Primeiro deploy
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+bash deploy.sh --first
 ```
+Cria as tabelas (`scripts/instalar_banco.py`), agenda o backup diário e sobe tudo.
 
-### 6. Inicialize o banco de dados (somente no PRIMEIRO deploy)
+### 5. Administrador
+Não existe mais senha padrão. Crie o admin informando o e-mail; a senha aleatória aparece **uma vez** no terminal:
 ```bash
-docker compose -f docker-compose.prod.yml exec backend python scripts/setup_db.py
-docker compose -f docker-compose.prod.yml exec backend python scripts/create_admin.py
+docker compose -f docker-compose.prod.yml run --rm -e ADMIN_EMAIL=dono@loja.com backend python scripts/create_admin.py
 ```
+(`-e ADMIN_SENHA=...` define a senha em vez de gerar.)
 
-### 7. Configure o SSL (Certbot)
+### 6. SSL (Certbot)
 ```bash
 docker run --rm \
   -v /opt/lmc/certbot/conf:/etc/letsencrypt \
   -v /opt/lmc/certbot/www:/var/www/certbot \
   certbot/certbot certonly --webroot \
   --webroot-path=/var/www/certbot \
-  --email SEU_EMAIL \
-  --agree-tos --no-eff-email \
-  -d SEU_SUBDOMINIO.seudominio.com
-```
-
-### 8. Reconfigure o nginx para HTTPS
-Edite `nginx/nginx.conf` habilitando o bloco SSL e reinicie:
-```bash
+  --email SEU_EMAIL --agree-tos --no-eff-email \
+  -d lcm.seudominio.com -d site.seudominio.com
 docker compose -f docker-compose.prod.yml restart nginx
 ```
+O container `certbot` renova sozinho e o nginx recarrega os certificados.
 
 ---
 
-## 🔄 Atualizar Deploy (após git push)
+## 🔄 Atualizar (após git push)
 
-Na VPS, execute:
 ```bash
 cd /opt/lmc
-git pull origin main
-docker compose -f docker-compose.prod.yml build --no-cache frontend backend
-docker compose -f docker-compose.prod.yml up -d
+bash update.sh                 # backup → build → migrations → sobe → health check
+bash update.sh --rollback      # volta para o deploy anterior
 ```
-
-Ou use o script automático:
-```bash
-bash deploy.sh
-```
+- O `update.sh` faz backup antes e roda `alembic upgrade head`. Se o backend não responder em 90s, ele para e mostra os logs; aí é `bash update.sh --rollback`.
+- Repositório privado: use uma deploy key SSH na VPS ou `GITHUB_TOKEN=xxxx bash update.sh`. **Nunca** grave token no script.
+- Depois do primeiro deploy desta versão, gere as miniaturas das fotos antigas (o site fica bem mais leve):
+  ```bash
+  docker compose -f docker-compose.prod.yml exec backend python scripts/gerar_miniaturas.py
+  ```
 
 ---
 
-## 🔑 Credenciais Iniciais (trocar após primeiro acesso)
+## 💾 Backup e restauração
 
-| Campo  | Valor                  |
-|--------|------------------------|
-| Email  | `admin@lmcveiculos.com` |
-| Senha  | `Admin@123`            |
-
-> ⚠️ **Troque a senha imediatamente após o primeiro login!**
+```bash
+bash backup.sh                   # banco + fotos agora (em /opt/lmc/backups)
+bash backup.sh --instalar-cron   # todo dia às 3h (o deploy --first já faz)
+bash restore.sh backups/lmc_backup_AAAAMMDD_HHMMSS.sql.gz [backups/lmc_uploads_AAAAMMDD_HHMMSS.tar.gz]
+```
+Backup que fica só na VPS morre junto com ela. Configure uma cópia externa com `rclone config` (Google Drive, Backblaze, S3…) e defina em `/opt/lmc/.backup.env`:
+```bash
+RCLONE_REMOTE="gdrive:lmc-backups"
+```
+Teste a restauração de vez em quando — backup nunca restaurado não é backup.
 
 ---
 
-## 🐳 Comandos Docker Úteis
+## 🧪 Desenvolvimento e testes
 
 ```bash
-# Ver status dos containers
+# backend (precisa de um PostgreSQL de teste; o Redis é simulado)
+cd backend
+pip install -r requirements-dev.txt
+TEST_DATABASE_URL=postgresql+asyncpg://usuario:senha@localhost:5432/lmc_test pytest
+
+# frontend
+cd frontend
+npm install && npm run dev      # painel em http://localhost:3000, site em http://site.localhost:3000
+```
+Mudou modelo do banco? Gere a migration (`alembic revision --autogenerate -m "..."`), revise o arquivo e commite junto.
+
+---
+
+## 🐳 Comandos Docker úteis
+
+```bash
 docker compose -f docker-compose.prod.yml ps
-
-# Ver logs em tempo real
-docker compose -f docker-compose.prod.yml logs -f
-
-# Logs de um serviço específico
 docker compose -f docker-compose.prod.yml logs -f backend
-
-# Reiniciar um serviço
 docker compose -f docker-compose.prod.yml restart nginx
-
-# Acessar terminal do backend
 docker compose -f docker-compose.prod.yml exec backend bash
 ```
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📁 Estrutura
 
 ```
-├── backend/           # FastAPI (Python)
-│   ├── app/
-│   ├── scripts/       # setup_db.py, create_admin.py
-│   ├── Dockerfile
-│   └── .env.example   # Modelo das variáveis (NÃO commitar .env.production)
-├── frontend/          # Next.js (React)
-│   ├── src/
-│   └── Dockerfile
-├── nginx/
-│   └── nginx.conf     # Config do proxy reverso + SSL
-├── docker-compose.prod.yml  # Produção
-├── docker-compose.yml       # Desenvolvimento local
-└── deploy.sh          # Script de deploy automatizado
+├── backend/                 # FastAPI
+│   ├── app/                 # domain / application / infrastructure / presentation
+│   ├── alembic/             # migrations (rodam no update.sh)
+│   ├── scripts/             # instalar_banco.py, create_admin.py, gerar_miniaturas.py
+│   └── tests/               # pytest (vendas, caixa, autenticação)
+├── frontend/                # Next.js
+│   └── src/app/
+│       ├── (dashboard)/     # painel
+│       ├── (auth)/          # login
+│       └── (site)/          # site da loja
+├── nginx/nginx.conf         # proxy reverso, SSL, limites de requisição
+├── docker-compose.prod.yml  # produção
+├── deploy.sh · update.sh    # primeiro deploy · atualizações
+└── backup.sh · restore.sh   # backup diário · restauração
 ```
 
 ---
 
 ## 🔒 Segurança
 
-- Nunca commitar arquivos `.env.production` no git
-- Trocar a senha do admin no primeiro acesso
-- Manter o `SECRET_KEY` único e seguro (min 64 chars aleatórios)
-- O certificado SSL é renovado automaticamente pelo Certbot
+- `.env`, `.env.production` e backups nunca vão para o git (nem para pacotes `.tar.gz` de deploy)
+- Sessão revogável: trocar senha, desativar usuário ou mudar o papel derruba os logins abertos dele
+- Token de acesso curto (30 min) com refresh rotativo; 5 senhas erradas bloqueiam o login por 15 min
+- Funcionário não vê caixa, relatórios nem usuários; desfazer venda e apagar despesa são só do administrador
