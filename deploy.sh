@@ -92,25 +92,38 @@ cd "$APP_DIR"
 if [ "$BUILD_ONLY" = false ]; then
   step "Atualizando código via Git"
   git fetch origin
-  git pull origin main --rebase || git pull origin master --rebase
+  git pull --ff-only origin main
   log "Código atualizado!"
 fi
 
-step "Buildando e subindo containers"
-docker compose -f "$COMPOSE_FILE" build --no-cache frontend backend
+step "Buildando os containers"
+docker compose -f "$COMPOSE_FILE" build backend frontend frontend_site
+
+step "Banco de dados"
+docker compose -f "$COMPOSE_FILE" up -d postgres redis
+if [ "$FIRST_DEPLOY" = true ]; then
+  # Banco novo: cria as tabelas pelo estado atual dos models, marca o Alembic como
+  # atualizado e cria o admin com senha aleatória (mostrada uma única vez).
+  docker compose -f "$COMPOSE_FILE" run --rm backend python scripts/instalar_banco.py
+  bash "$APP_DIR/backup.sh" --instalar-cron
+else
+  bash "$APP_DIR/backup.sh"
+  docker compose -f "$COMPOSE_FILE" run --rm backend alembic upgrade head
+fi
+docker compose -f "$COMPOSE_FILE" run --rm --no-deps --user root --entrypoint "" backend chown -R 1001:1001 /app/uploads
+
+step "Subindo containers"
 docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 
-step "Verificando saúde dos containers"
-sleep 5
+step "Verificando saúde"
+ESPERA=0
+until docker compose -f "$COMPOSE_FILE" exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" >/dev/null 2>&1; do
+  ESPERA=$((ESPERA + 5))
+  [ "$ESPERA" -ge 90 ] && err "Backend não respondeu em 90s: docker compose -f $COMPOSE_FILE logs --tail=100 backend"
+  sleep 5
+done
+log "Backend OK"
 docker compose -f "$COMPOSE_FILE" ps
-
-# Verifica se backend responde
-step "Testando API"
-if curl -sf http://localhost:8000/health >/dev/null 2>&1; then
-  log "Backend OK"
-else
-  warn "Backend ainda iniciando..."
-fi
 
 echo ""
 echo -e "${BOLD}${GREEN}══════════════════════════════════════════${NC}"

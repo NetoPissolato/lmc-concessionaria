@@ -4,6 +4,8 @@ backend/__pycache__/
 backend/**/__pycache__/
 backend/**/*.pyc
 backend/**/*.pyo
+/.env
+.backup.env
 backend/.env
 backend/.env.production
 backend/.env.local
@@ -33,6 +35,10 @@ certbot/
 *.key
 *.crt
 *.p12
+
+# ─── Estado de deploy / backups na VPS ─────────────────────────────────────────
+.deploy_anterior
+backups/
 
 # ─── Logs ──────────────────────────────────────────────────────────────────────
 *.log

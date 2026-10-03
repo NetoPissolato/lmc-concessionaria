@@ -21,10 +21,16 @@ lib64/
 venv/
 env/
 .venv/
-.env/
 ENV/
 
+# Segredos: NUNCA dentro da imagem (o compose injeta via env_file em tempo de execução)
+.env
+.env.*
+!.env.example
+
 # Tests
+tests/
+pytest.ini
 .pytest_cache/
 .tox/
 .coverage
@@ -49,9 +55,8 @@ uploads/
 # Alembic versions (incluídas)
 # alembic/versions/  <- não ignorar, precisamos das migrations
 
-# Scripts de setup local
-scripts/setup_db.py
-scripts/check_db.py
+# Scripts de manutenção local (os de backend/scripts/ vão para a imagem: o
+# README manda rodá-los com `docker compose exec backend python scripts/...`)
 delete_user.py
 list_users.py
 fix_enum.py

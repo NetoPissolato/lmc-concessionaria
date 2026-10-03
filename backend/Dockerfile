@@ -3,19 +3,13 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Instalar dependências do sistema necessárias (WeasyPrint, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf-xlib-2.0-0 \
     libffi-dev \
-    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar e instalar dependências Python
+# Só as dependências de produção (pytest e afins ficam em requirements-dev.txt)
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
@@ -25,32 +19,29 @@ FROM python:3.12-slim AS runtime
 
 WORKDIR /app
 
-# Instalar apenas libs de runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf-xlib-2.0-0 \
-    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar pacotes Python do builder
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copiar código da aplicação
-COPY . .
+# Usuário sem privilégios: uma falha na API não vira acesso root no container
+RUN useradd --system --uid 1001 --home-dir /app lmc
 
-# Criar diretório de uploads
-RUN mkdir -p /app/uploads
+COPY --chown=lmc:lmc . .
 
-# Expor porta da API
+RUN mkdir -p /app/uploads && chown -R lmc:lmc /app/uploads
+
+USER lmc
+
 EXPOSE 8000
 
-# Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-# Comando de inicialização
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# --proxy-headers: atrás do nginx, o IP real do cliente vem no X-Forwarded-For.
+# Sem isso o rate limit e o audit log enxergam todo mundo como o IP do nginx.
+# 1 worker de propósito: o gerenciador de WebSocket guarda as conexões em memória.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", \
+     "--proxy-headers", "--forwarded-allow-ips", "*"]
