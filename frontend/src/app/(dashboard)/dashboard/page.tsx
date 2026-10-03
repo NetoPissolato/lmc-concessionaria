@@ -342,6 +342,8 @@ export default function DashboardPage() {
           border: "1px solid var(--border)",
           borderRadius: "16px",
           overflow: "hidden",
+          // Funcionário vê 3 indicadores: ocupa a largura toda em vez de deixar 2 colunas vazias
+          ...(isAdmin ? {} : { gridTemplateColumns: "repeat(3, 1fr)" }),
         }}
       >
         {([
