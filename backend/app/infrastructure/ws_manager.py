@@ -15,6 +15,10 @@ class WebSocketManager:
 
     async def connect(self, ws: WebSocket) -> None:
         await ws.accept()
+        self.register(ws)
+
+    def register(self, ws: WebSocket) -> None:
+        """Passa a receber eventos (conexão já aceita e autenticada)."""
         self._connections.append(ws)
         logger.info(f"WS connect — total: {len(self._connections)}")
 

@@ -90,7 +90,8 @@ api.interceptors.response.use(
           refresh_token: refreshToken,
         });
         const newToken = data.access_token;
-        TokenStorage.setTokens(newToken, refreshToken);
+        // O refresh é rotativo: cada uso devolve um novo e o antigo deixa de valer
+        TokenStorage.setTokens(newToken, data.refresh_token ?? refreshToken);
         processQueue(null, newToken);
         if (originalRequest.headers) originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
@@ -130,6 +131,9 @@ export const authApi = {
 // ─── Vehicles API ─────────────────────────────────────────────────────────────
 export const vehiclesApi = {
   list: (params?: Record<string, unknown>) => api.get("/vehicles", { params }).then((r) => r.data),
+  /** Lista + total (paginação, filtros e ordenação no servidor) */
+  listPaged: (params?: Record<string, unknown>) =>
+    api.get("/vehicles", { params }).then((r) => ({ items: r.data, total: totalDoCabecalho(r.headers, r.data) })),
   get: (id: string) => api.get(`/vehicles/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post("/vehicles", data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/vehicles/${id}`, data).then((r) => r.data),
@@ -165,6 +169,8 @@ export const vehiclesApi = {
 // ─── Customers API ────────────────────────────────────────────────────────────
 export const customersApi = {
   list: (params?: Record<string, unknown>) => api.get("/customers", { params }).then((r) => r.data),
+  listPaged: (params?: Record<string, unknown>) =>
+    api.get("/customers", { params }).then((r) => ({ items: r.data, total: totalDoCabecalho(r.headers, r.data) })),
   get: (id: string) => api.get(`/customers/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post("/customers", data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/customers/${id}`, data).then((r) => r.data),
@@ -186,9 +192,53 @@ export const salesApi = {
 // ─── Financial API ────────────────────────────────────────────────────────────
 export const financialApi = {
   list: (params?: Record<string, unknown>) => api.get("/financial", { params }).then((r) => r.data),
+  /** Lista + total sem paginação (cabeçalho X-Total-Count) */
+  listPaged: (params?: Record<string, unknown>) =>
+    api.get("/financial", { params }).then((r) => ({ items: r.data, total: totalDoCabecalho(r.headers, r.data) })),
   getSummary: (year: number, month: number) =>
     api.get("/financial/summary", { params: { year, month } }).then((r) => r.data),
+  /** Série dos 12 meses agregada no servidor */
+  getAnnual: (year: number) =>
+    api.get("/financial/summary", { params: { year } }).then((r) => r.data),
 };
+
+// ─── Leads / avaliações / alertas / configurações ─────────────────────────────
+// Passam pelo mesmo cliente (renovação automática do token). Antes essas telas usavam
+// fetch próprio e quebravam em silêncio quando o token vencia.
+export const leadsApi = {
+  list: (params?: Record<string, unknown>) => api.get("/leads", { params }).then((r) => r.data),
+  update: (id: string, data: { status?: string; observacoes?: string }) =>
+    api.patch(`/leads/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/leads/${id}`).then((r) => r.data),
+};
+
+export const reviewsApi = {
+  list: (params?: Record<string, unknown>) => api.get("/reviews", { params }).then((r) => r.data),
+  update: (id: string, data: { aprovado?: boolean; texto?: string; nota?: number }) =>
+    api.patch(`/reviews/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/reviews/${id}`).then((r) => r.data),
+};
+
+export const alertsApi = {
+  list: (params?: Record<string, unknown>) =>
+    api.get("/availability-alerts", { params }).then((r) => ({ items: r.data, total: totalDoCabecalho(r.headers, r.data) })),
+  update: (id: string, status: "pendente" | "atendido") =>
+    api.patch(`/availability-alerts/${id}`, { status }).then((r) => r.data),
+  delete: (id: string) => api.delete(`/availability-alerts/${id}`).then((r) => r.data),
+};
+
+export const settingsApi = {
+  get: () => api.get("/settings").then((r) => r.data),
+  update: (data: Record<string, unknown>) => api.put("/settings", data).then((r) => r.data),
+};
+
+/** Total sem paginação mandado pelo backend; sem o cabeçalho, usa o tamanho da página. */
+export function totalDoCabecalho(headers: unknown, data: unknown): number {
+  const h = headers as Record<string, string | undefined> | undefined;
+  const bruto = h?.["x-total-count"];
+  const n = bruto != null ? Number(bruto) : NaN;
+  return Number.isFinite(n) ? n : Array.isArray(data) ? data.length : 0;
+}
 
 // ─── Users API ────────────────────────────────────────────────────────────────
 export const usersApi = {

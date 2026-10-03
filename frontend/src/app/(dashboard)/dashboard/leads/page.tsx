@@ -8,7 +8,8 @@ import {
   ChevronLeft, ChevronRight,
 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
+import { leadsApi } from "@/lib/api";
+
 const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "");
 const PAGE_SIZE = 20;
 
@@ -86,8 +87,7 @@ function StatusDropdown({ lead, token, onChange }: { lead: Lead; token: string; 
     if (status === lead.status) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/leads/${lead.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ status }) });
-      if (res.ok) onChange(await res.json());
+      onChange(await leadsApi.update(lead.id, { status }));
     } finally { setLoading(false); }
   }
 
@@ -144,13 +144,9 @@ export default function LeadsPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const url = filterStatus ? `${API}/leads?status=${filterStatus}&limit=200` : `${API}/leads?limit=200`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        setLeads(data.items ?? []);
-        setCounts(data.counts ?? {});
-      }
+      const data = await leadsApi.list(filterStatus ? { status: filterStatus, limit: 200 } : { limit: 200 });
+      setLeads(data.items ?? []);
+      setCounts(data.counts ?? {});
     } finally { setLoading(false); }
   }, [token, filterStatus]);
 
@@ -161,7 +157,7 @@ export default function LeadsPage() {
   async function doDeleteLead(id: string) {
     setConfirmDeleteId(null); setDeletingId(id);
     try {
-      await fetch(`${API}/leads/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      await leadsApi.delete(id);
       setLeads(prev => {
         const next = prev.filter(x => x.id !== id);
         const newCounts: Record<string, number> = {};
@@ -177,8 +173,8 @@ export default function LeadsPage() {
     const obs = notes[lead.id] ?? lead.observacoes ?? "";
     setSavingNotes(s => ({ ...s, [lead.id]: true }));
     try {
-      const res = await fetch(`${API}/leads/${lead.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ observacoes: obs }) });
-      if (res.ok) { const updated: Lead = await res.json(); setLeads(l => l.map(x => x.id === updated.id ? updated : x)); }
+      const updated: Lead = await leadsApi.update(lead.id, { observacoes: obs });
+      setLeads(l => l.map(x => x.id === updated.id ? updated : x));
     } finally { setSavingNotes(s => ({ ...s, [lead.id]: false })); }
   }
 

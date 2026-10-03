@@ -4,8 +4,9 @@ Expoe apenas veiculos com status=disponivel.
 NUNCA expoe dados financeiros internos (custo, margem, placa completa, chassi, etc).
 """
 
-from fastapi import APIRouter, Query, Path as FPath, HTTPException
-from fastapi.responses import JSONResponse
+import re
+import time
+from fastapi import APIRouter, Query, Path as FPath, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, update
 from sqlalchemy.orm import selectinload
@@ -13,7 +14,7 @@ from fastapi import Depends
 from typing import Optional, List
 from decimal import Decimal
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, Field, field_validator
 import json
 
 from app.core.database import get_db
@@ -62,32 +63,54 @@ async def get_team(db: AsyncSession = Depends(get_db)):
 
 
 # ─── Public Settings (safe fields only) ───────────────────────────────────────
+_GA_ID = re.compile(r"^G-[A-Z0-9]{4,16}$")
+_PIXEL_ID = re.compile(r"^\d{5,20}$")
+
+
+def _ou_none(v):
+    """Campo vazio vira null: o site esconde o que não foi configurado (nunca inventa)."""
+    if v is None:
+        return None
+    if isinstance(v, str):
+        v = v.strip()
+        return v or None
+    return v
+
 
 @router.get("/settings", summary="Configuracoes publicas da loja")
 async def get_public_settings(db: AsyncSession = Depends(get_db)):
-    """Retorna apenas campos seguros para o site publico (sem dados administrativos)."""
-    result = await db.execute(select(StoreSettings).limit(1))
-    s = result.scalar_one_or_none()
+    """
+    Campos seguros para o site público. Vazio = null (o site não mostra o item).
+    ga_id/pixel_id só saem se tiverem o formato válido: vão para um <script> no site.
+    """
+    s = (await db.execute(select(StoreSettings).limit(1))).scalar_one_or_none()
     if not s:
-        return {}
+        return {"nome_loja": "LMC Veículos", "modo_manutencao": False}
+    ga = (s.ga_id or "").strip().upper()
+    pixel = (s.pixel_id or "").strip()
     return {
-        "nome_loja":     s.nome_loja,
-        "slogan":        s.slogan,
-        "whatsapp":      s.whatsapp,
-        "telefone":      s.telefone,
-        "email_contato": s.email_contato,
-        "instagram":     s.instagram,
-        "facebook":      s.facebook,
-        "youtube":       s.youtube,
-        "endereco":      s.endereco,
-        "cidade":        s.cidade,
-        "estado":        s.estado,
-        "horario":       s.horario,
-        "stat_clientes": s.stat_clientes,
-        "stat_anos":     s.stat_anos,
-        "stat_satisfacao": s.stat_satisfacao,
-        "ga_id":         s.ga_id or "",
-        "pixel_id":      s.pixel_id or "",
+        "nome_loja":       _ou_none(s.nome_loja) or "LMC Veículos",
+        "slogan":          _ou_none(s.slogan),
+        "whatsapp":        _ou_none(re.sub(r"\D", "", s.whatsapp or "")),
+        "telefone":        _ou_none(s.telefone),
+        "email_contato":   _ou_none(s.email_contato),
+        "instagram":       _ou_none(s.instagram),
+        "facebook":        _ou_none(s.facebook),
+        "youtube":         _ou_none(s.youtube),
+        "endereco":        _ou_none(s.endereco),
+        "cidade":          _ou_none(s.cidade),
+        "estado":          _ou_none(s.estado),
+        "cep":             _ou_none(s.cep),
+        "cnpj":            _ou_none(s.cnpj),
+        "horario":         _ou_none(s.horario),
+        "hero_titulo":     _ou_none(s.hero_titulo),
+        "hero_subtitulo":  _ou_none(s.hero_subtitulo),
+        "stat_clientes":   s.stat_clientes or None,
+        "stat_anos":       s.stat_anos or None,
+        "stat_satisfacao": s.stat_satisfacao or None,
+        "modo_manutencao": bool(s.modo_manutencao),
+        "ga_id":           ga if _GA_ID.match(ga) else None,
+        "pixel_id":        pixel if _PIXEL_ID.match(pixel) else None,
     }
 
 
@@ -97,7 +120,8 @@ def _to_public(v: Vehicle) -> dict:
     Converte um Vehicle para dict seguro para o site público.
     Remove: valor_compra, valor_multas, custo_total, lucro_bruto,
             margem_percentual, placa, chassi, renavam,
-            vendedor_nome, vendedor_telefone.
+            vendedor_nome, vendedor_telefone e observacoes (anotação interna do
+            ERP: "dono pediu X", "aceita até Y" — nunca vai para o site).
     """
     photos = []
     if v.photos:
@@ -105,6 +129,7 @@ def _to_public(v: Vehicle) -> dict:
             photos.append({
                 "id": p.id,
                 "url": p.url,
+                "thumb_url": p.thumb_url,
                 "is_main": p.is_main,
                 "ordem": p.ordem,
             })
@@ -137,7 +162,6 @@ def _to_public(v: Vehicle) -> dict:
         "valor_anunciado": float(v.valor_anunciado) if v.valor_anunciado else None,
         "status": v.status.value,
         "destaque": v.destaque,
-        "observacoes": v.observacoes,
         "photos": photos,
         "video_url": v.video_url,
         "visualizacoes": v.visualizacoes or 0,
@@ -163,11 +187,12 @@ async def list_public_vehicles(
     destaque: Optional[bool] = Query(None, description="Filtrar apenas destaques"),
     q: Optional[str] = Query(None, description="Busca livre por marca/modelo"),
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(50, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Retorna veículos disponíveis para o site público.
+    Retorna veículos disponíveis para o site público (até 500 por página: o estoque e
+    o sitemap trazem tudo de uma vez).
     Apenas status=disponivel é retornado — nunca reservado, vendido, etc.
     Dados sensíveis (custo, margem, placa, chassi) são omitidos.
     """
@@ -268,15 +293,29 @@ async def get_public_vehicle(
 
 
 # ─── POST /public/vehicles/{id}/view ───────────────────────────────────
+# Em memória (1 worker): sobrevive o suficiente para barrar F5 repetido e scripts simples.
+_ULTIMA_VISUALIZACAO: dict[tuple[str, str], float] = {}
+_JANELA_VISUALIZACAO = 6 * 3600
+
 @router.post("/vehicles/{vehicle_id}/view", summary="Incrementar contador de visualizações")
 async def increment_vehicle_views(
+    request: Request,
     vehicle_id: str = FPath(...),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Chamado pelo site quando um usuário abre a página de um veículo.
-    Incrementa o contador de visualizações de forma assíncrona.
+    Conta no máximo 1 visualização por IP por veículo a cada 6 horas: sem isso, um
+    F5 repetido (ou um script) colocava qualquer carro no topo de "mais buscados".
     """
+    ip = request.client.host if request.client else "?"
+    agora = time.monotonic()
+    chave = (ip, vehicle_id)
+    if agora - _ULTIMA_VISUALIZACAO.get(chave, -1e9) < _JANELA_VISUALIZACAO:
+        return {"ok": True}
+    if len(_ULTIMA_VISUALIZACAO) > 50_000:  # limpeza simples para não crescer sem limite
+        _ULTIMA_VISUALIZACAO.clear()
+    _ULTIMA_VISUALIZACAO[chave] = agora
     await db.execute(
         update(Vehicle)
         .where(Vehicle.id == vehicle_id, Vehicle.deleted_at.is_(None))
@@ -361,24 +400,6 @@ async def list_popular_models(
     Usado na home como automação estilo Webmotors.
     """
     from collections import defaultdict
-    import re
-
-    def _canonical(text: str) -> str:
-        """Title case preservando siglas numéricas (HB20, T-Cross, BMW)."""
-        if not text:
-            return text
-        _CAPS = {"bmw", "byd", "jac", "cvt", "4wd", "4x4", "suv", "amg", "gti", "tdi", "gla", "glb", "glc", "gle"}
-        parts = text.strip().split()
-        out = []
-        for p in parts:
-            lp = p.lower()
-            if lp in _CAPS:
-                out.append(p.upper())
-            elif lp[:2] in {"hb", "gl"} and any(c.isdigit() for c in p):
-                out.append(p.upper())
-            else:
-                out.append(p.capitalize())
-        return " ".join(out)
 
     stmt = (
         select(Vehicle)
@@ -401,8 +422,8 @@ async def list_popular_models(
         key = (marca_lower, modelo_lower)
         groups[key].append(v)
         if key not in canonical_name:
-            # Usa o normalize_modelo do próprio dado do banco (já normalizado pela migration)
-            canonical_name[key] = (_canonical(v.marca.strip()), _canonical(v.modelo.strip()))
+            # O nome no banco já sai do normalizador único (app/domain/normalizacao.py)
+            canonical_name[key] = (v.marca.strip(), v.modelo.strip())
 
     out = []
     for key, vs in groups.items():
@@ -421,7 +442,7 @@ async def list_popular_models(
             if v.photos:
                 main = next((p for p in v.photos if p.is_main), v.photos[0] if v.photos else None)
                 if main:
-                    photo_url = main.url
+                    photo_url = main.thumb_url or main.url
                     break
 
         out.append({
@@ -446,7 +467,7 @@ async def get_public_stats(db: AsyncSession = Depends(get_db)):
     Retorna contadores para o site público:
     - total_veiculos: quantos disponíveis no estoque
     - total_marcas: quantas marcas distintas
-    - satisfacao: fixo 98 (valor de marketing)
+    - avaliacao_media / total_avaliacoes: das avaliações reais aprovadas
     """
     # Total disponíveis
     count_q = await db.execute(
@@ -486,12 +507,17 @@ async def get_public_stats(db: AsyncSession = Depends(get_db)):
     )
     total_motos = motos_q.scalar_one()
 
+    media, qtd = (await db.execute(
+        select(func.avg(Review.nota), func.count(Review.id)).where(Review.aprovado == True)  # noqa: E712
+    )).one()
+
     return {
         "total_veiculos": total_veiculos,
         "total_marcas": total_marcas,
         "total_carros": total_carros,
         "total_motos": total_motos,
-        "satisfacao": 98,
+        "avaliacao_media": round(float(media), 1) if media else None,
+        "total_avaliacoes": qtd or 0,
     }
 
 
@@ -525,111 +551,57 @@ async def get_public_marcas(
     return {"marcas": marcas}
 
 
-# ─── GET /public/settings ─────────────────────────────────────────────────────
-@router.get("/settings", summary="Configurações públicas da loja (site público)")
-async def get_public_settings(db: AsyncSession = Depends(get_db)):
-    """
-    Retorna apenas os dados públicos da loja:
-    contato, redes sociais, stats, hero text.
-    Nunca expõe CNPJ, horário interno, sistema, etc.
-    """
-    from app.domain.models.store_settings import StoreSettings
-    result = await db.execute(select(StoreSettings).limit(1))
-    s = result.scalar_one_or_none()
-
-    if not s:
-        # Defaults quando a tabela ainda está vazia
-        return {
-            "whatsapp":       "",
-            "instagram":      "",
-            "facebook":       "",
-            "youtube":        "",
-            "telefone":       "",
-            "email_contato":  "",
-            "nome_loja":      "LMC Veículos",
-            "slogan":         "Seu próximo veículo está aqui",
-            "endereco":       "",
-            "cidade":         "",
-            "estado":         "",
-            "horario":        "Seg–Sex: 8h–18h | Sáb: 8h–13h",
-            "hero_titulo":    "Encontre seu próximo veículo",
-            "hero_subtitulo": "Carros e motos selecionados com qualidade e transparência",
-            "stat_clientes":  0,
-            "stat_anos":      0,
-            "stat_satisfacao": 98,
-            "modo_manutencao": False,
-        }
-
-    return {
-        "whatsapp":       s.whatsapp,
-        "instagram":      s.instagram,
-        "facebook":       s.facebook,
-        "youtube":        s.youtube,
-        "telefone":       s.telefone,
-        "email_contato":  s.email_contato,
-        "nome_loja":      s.nome_loja,
-        "slogan":         s.slogan,
-        "endereco":       s.endereco,
-        "cidade":         s.cidade,
-        "estado":         s.estado,
-        "horario":        s.horario,
-        "hero_titulo":    s.hero_titulo,
-        "hero_subtitulo": s.hero_subtitulo,
-        "stat_clientes":  s.stat_clientes,
-        "stat_anos":      s.stat_anos,
-        "stat_satisfacao": s.stat_satisfacao,
-        "modo_manutencao": s.modo_manutencao,
-    }
-
-
 # ============================================================
-# LEADS - Formulario de contato
+# FORMULÁRIOS PÚBLICOS (lead, avaliação, alerta)
 # ============================================================
+# Anti-spam em duas camadas: o nginx limita POSTs por IP (6/min) e todo formulário tem
+# um campo "website" escondido no site. Gente não vê e não preenche; robô preenche tudo.
+# Quando vem preenchido, respondemos "ok" e descartamos (o robô não aprende a contornar).
 
-class LeadCreateSchema(BaseModel):
-    nome: str
-    telefone: str
-    email: Optional[str] = None
-    mensagem: Optional[str] = None
-    veiculo_id: Optional[str] = None
-    veiculo_descricao: Optional[str] = None
-    origem: str = "contato"
+def _robo(website: Optional[str]) -> bool:
+    return bool(website and website.strip())
 
 
-@router.post("/leads", status_code=201, summary="Enviar lead de contato")
-async def create_lead(
-    body: LeadCreateSchema,
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Recebe lead do formulario de contato do site.
-    Salva no banco com status=novo para o admin acompanhar.
-    """
+class LeadPublicSchema(BaseModel):
+    nome: str = Field(min_length=2, max_length=120)
+    telefone: str = Field("não informado", max_length=30)
+    email: Optional[str] = Field(None, max_length=120)
+    mensagem: Optional[str] = Field(None, max_length=2000)
+    veiculo_id: Optional[str] = Field(None, max_length=36)
+    veiculo_descricao: Optional[str] = Field(None, max_length=200)
+    origem: str = Field("contato", max_length=30)
+    website: Optional[str] = None  # honeypot
+
+
+@router.post("/leads", status_code=201, summary="Salvar lead do formulario de contato")
+async def create_public_lead(body: LeadPublicSchema, db: AsyncSession = Depends(get_db)):
+    """Formulário de contato/interesse do site → lead no CRM (status novo)."""
+    if _robo(body.website):
+        return {"ok": True, "message": "Mensagem recebida! Entraremos em contato em breve."}
+    veiculo_id = body.veiculo_id
+    if veiculo_id and not await db.get(Vehicle, veiculo_id):
+        veiculo_id = None  # id inválido não derruba o lead (a FK recusaria)
     lead = Lead(
         nome=body.nome.strip(),
-        telefone=body.telefone.strip(),
-        email=body.email,
-        mensagem=body.mensagem,
-        veiculo_id=body.veiculo_id,
+        telefone=(body.telefone or "não informado").strip(),
+        email=body.email.strip() if body.email else None,
+        mensagem=body.mensagem.strip() if body.mensagem else None,
+        veiculo_id=veiculo_id,
         veiculo_descricao=body.veiculo_descricao,
-        origem=body.origem,
         status=LeadStatus.NOVO,
+        origem=body.origem,
     )
     db.add(lead)
     await db.commit()
-    await db.refresh(lead)
-    return {"ok": True, "id": lead.id, "message": "Mensagem recebida! Entraremos em contato em breve."}
+    return {"ok": True, "message": "Mensagem recebida! Entraremos em contato em breve."}
 
-
-# ============================================================
-# REVIEWS - Avaliacoes de clientes
-# ============================================================
 
 class ReviewCreateSchema(BaseModel):
-    nome: str
-    nota: int
-    texto: str
-    cidade: Optional[str] = None
+    nome: str = Field(min_length=2, max_length=120)
+    nota: int = Field(ge=1, le=5)
+    texto: str = Field(min_length=10, max_length=1500)
+    cidade: Optional[str] = Field(None, max_length=80)
+    website: Optional[str] = None  # honeypot
 
 
 @router.get("/reviews", summary="Listar avaliacoes aprovadas")
@@ -638,16 +610,14 @@ async def list_public_reviews(
     limit: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
-    """Retorna apenas reviews aprovadas pelo admin."""
-    stmt = (
+    """Retorna apenas avaliações aprovadas pelo admin."""
+    reviews = (await db.execute(
         select(Review)
         .where(Review.aprovado == True)  # noqa: E712
         .order_by(desc(Review.created_at))
         .offset(skip)
         .limit(limit)
-    )
-    result = await db.execute(stmt)
-    reviews = result.scalars().all()
+    )).scalars().all()
     return [
         {
             "id": r.id,
@@ -663,98 +633,52 @@ async def list_public_reviews(
 
 
 @router.post("/reviews", status_code=201, summary="Enviar avaliacao (fica pendente de aprovacao)")
-async def create_review(
-    body: ReviewCreateSchema,
-    db: AsyncSession = Depends(get_db),
-):
-    if not (1 <= body.nota <= 5):
-        raise HTTPException(status_code=422, detail="Nota deve ser entre 1 e 5")
-    if len(body.texto.strip()) < 10:
-        raise HTTPException(status_code=422, detail="Texto muito curto (minimo 10 caracteres)")
+async def create_review(body: ReviewCreateSchema, db: AsyncSession = Depends(get_db)):
+    if not _robo(body.website):
+        db.add(Review(
+            nome=body.nome.strip(),
+            nota=body.nota,
+            texto=body.texto.strip(),
+            cidade=body.cidade.strip() if body.cidade else None,
+            aprovado=False,  # fica pendente até o admin aprovar
+        ))
+        await db.commit()
+    return {"ok": True, "message": "Avaliação recebida! Será publicada após revisão."}
 
-    review = Review(
-        nome=body.nome.strip(),
-        nota=body.nota,
-        texto=body.texto.strip(),
-        cidade=body.cidade,
-        aprovado=False,  # Fica pendente ate admin aprovar
-    )
-    db.add(review)
-    await db.commit()
-    return {"ok": True, "message": "Avaliacao recebida! Sera publicada apos revisao."}
-
-
-# ============================================================
-# ALERTAS DE DISPONIBILIDADE
-# ============================================================
 
 class AlertCreateSchema(BaseModel):
-    email: str
-    nome: Optional[str] = None
-    marca: Optional[str] = None
-    modelo: Optional[str] = None
-    tipo: Optional[str] = None
-    ano_min: Optional[int] = None
-    ano_max: Optional[int] = None
-    preco_max: Optional[float] = None
+    email: str = Field(min_length=5, max_length=120)
+    nome: Optional[str] = Field(None, max_length=120)
+    marca: Optional[str] = Field(None, max_length=80)
+    modelo: Optional[str] = Field(None, max_length=80)
+    tipo: Optional[str] = Field(None, max_length=20)
+    ano_min: Optional[int] = Field(None, ge=1950, le=2100)
+    ano_max: Optional[int] = Field(None, ge=1950, le=2100)
+    preco_max: Optional[float] = Field(None, ge=0, le=100_000_000)
+    website: Optional[str] = None  # honeypot
+
+    @field_validator("email")
+    @classmethod
+    def email_valido(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", v):
+            raise ValueError("E-mail inválido")
+        return v
 
 
 @router.post("/availability-alerts", status_code=201, summary="Cadastrar alerta de disponibilidade")
-async def create_availability_alert(
-    body: AlertCreateSchema,
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Visitante quer ser notificado quando um veiculo especifico entrar no estoque.
-    """
-    alert = AvailabilityAlert(
-        email=body.email.strip().lower(),
-        nome=body.nome,
-        marca=body.marca,
-        modelo=body.modelo,
-        tipo=body.tipo,
-        ano_min=body.ano_min,
-        ano_max=body.ano_max,
-        preco_max=Decimal(str(body.preco_max)) if body.preco_max else None,
-    )
-    db.add(alert)
-    await db.commit()
-    return {"ok": True, "message": "Perfeito! Voce sera notificado quando o veiculo estiver disponivel."}
-
-
-# ─── POST /public/leads — Formulário de contato público ───────────────────────
-
-class LeadPublicSchema(BaseModel):
-    nome: str
-    telefone: str = "nao informado"
-    email: Optional[str] = None
-    mensagem: Optional[str] = None
-    veiculo_id: Optional[str] = None
-    veiculo_descricao: Optional[str] = None
-    origem: str = "contato"
-
-
-@router.post("/leads", status_code=201, summary="Salvar lead do formulario de contato")
-async def create_public_lead(
-    body: LeadPublicSchema,
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Recebe o formulario de contato do site publico e salva como lead no CRM.
-    Nao requer autenticacao.
-    """
-    import uuid
-    lead = Lead(
-        id=str(uuid.uuid4()),
-        nome=body.nome.strip(),
-        telefone=body.telefone.strip(),
-        email=body.email.strip() if body.email else None,
-        mensagem=body.mensagem,
-        veiculo_id=body.veiculo_id,
-        veiculo_descricao=body.veiculo_descricao,
-        status=LeadStatus.novo,
-        origem=body.origem,
-    )
-    db.add(lead)
-    await db.commit()
-    return {"ok": True, "message": "Mensagem recebida! Entraremos em contato em breve."}
+async def create_availability_alert(body: AlertCreateSchema, db: AsyncSession = Depends(get_db)):
+    """Visitante quer ser avisado quando um veículo assim entrar no estoque."""
+    if not _robo(body.website):
+        db.add(AvailabilityAlert(
+            email=body.email,
+            nome=body.nome,
+            marca=body.marca,
+            modelo=body.modelo,
+            tipo=body.tipo,
+            ano_min=body.ano_min,
+            ano_max=body.ano_max,
+            preco_max=Decimal(str(body.preco_max)) if body.preco_max else None,
+        ))
+        await db.commit()
+    return {"ok": True, "message": "Pronto! Avisaremos você quando um veículo assim chegar."}

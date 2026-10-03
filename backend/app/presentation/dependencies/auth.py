@@ -3,15 +3,19 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError
 from typing import Optional
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
 from app.core.security import decode_token
-from app.core.redis import get_redis, RedisKeys
-from app.domain.models.user import UserRole
+from app.domain.models.user import User, UserRole
 
 security = HTTPBearer()
 
 
 async def get_current_user_payload(
     credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
 ) -> dict:
     """
     JWT Authentication dependency.
@@ -40,6 +44,24 @@ async def get_current_user_payload(
             detail="Token inválido",
         )
 
+    # Uma consulta por chave primária a cada requisição: é o preço de poder derrubar a
+    # sessão de quem foi desativado, demitido ou trocou a senha — na hora, não daqui a um ano.
+    row = (await db.execute(
+        select(User.ativo, User.is_deleted, User.sessao_versao, User.role).where(User.id == payload.get("sub"))
+    )).one_or_none()
+    if (
+        not row
+        or not row.ativo
+        or row.is_deleted
+        or int(payload.get("sv", 0)) != (row.sessao_versao or 0)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sessão encerrada. Faça login novamente.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    # O papel vale o que está no banco agora (rebaixar um admin vale imediatamente)
+    payload["role"] = row.role.value
     return payload
 
 

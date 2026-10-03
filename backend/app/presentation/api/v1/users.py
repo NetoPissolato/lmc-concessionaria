@@ -120,7 +120,12 @@ async def update_user(
         raise HTTPException(status_code=409, detail="Nome de usuário já em uso")
 
     dados_antes = {"nome": user.nome, "ativo": user.ativo, "usuario": user.usuario, "cargo": user.cargo}
-    updated = await repo.update(user, **body.model_dump(exclude_unset=True))
+    mudancas = body.model_dump(exclude_unset=True)
+    if mudancas.get("ativo") is False and user.ativo:
+        if user.id == admin["sub"]:
+            raise HTTPException(status_code=400, detail="Você não pode desativar o próprio usuário.")
+        mudancas["sessao_versao"] = (user.sessao_versao or 0) + 1  # desativado sai na hora
+    updated = await repo.update(user, **mudancas)
 
     # Audit
     audit = AuditRepository(db)
@@ -152,7 +157,7 @@ async def change_role(
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     dados_antes = {"role": user.role.value}
-    updated = await repo.update(user, role=role)
+    updated = await repo.update(user, role=role, sessao_versao=(user.sessao_versao or 0) + 1)
     audit = AuditRepository(db)
     await audit.log(
         usuario_id=admin["sub"],
@@ -164,6 +169,37 @@ async def change_role(
         descricao=f"Role alterada para {role.value}: {user.nome}",
     )
     return updated
+
+
+# ─── User changes own password ────────────────────────────────────────────────
+@router.post("/me/change-password", status_code=204)
+async def change_my_password(
+    body: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db),
+    payload: dict = Depends(get_current_user_payload),
+):
+    """Authenticated user changes their own password. Requires current password."""
+    repo = UserRepository(db)
+    user = await repo.get_by_id(payload["sub"])
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    if not verify_password(body.senha_atual, user.senha_hash):
+        # 400 e não 401: 401 faria o painel achar que a sessão caiu e deslogar
+        raise HTTPException(status_code=400, detail="Senha atual incorreta")
+
+    new_hash = hash_password(body.nova_senha)
+    # Derruba as outras sessões (outro navegador, celular perdido). O painel pede login de novo.
+    await repo.update(user, senha_hash=new_hash, sessao_versao=(user.sessao_versao or 0) + 1)
+
+    audit = AuditRepository(db)
+    await audit.log(
+        usuario_id=payload["sub"],
+        acao="PASSWORD_CHANGE",
+        entidade="users",
+        entidade_id=payload["sub"],
+        descricao="Usuário alterou a própria senha",
+    )
 
 
 # ─── Admin changes any user's password ───────────────────────────────────────
@@ -181,7 +217,7 @@ async def admin_change_password(
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
     new_hash = hash_password(body.nova_senha)
-    await repo.update(user, senha_hash=new_hash)
+    await repo.update(user, senha_hash=new_hash, sessao_versao=(user.sessao_versao or 0) + 1)
 
     audit = AuditRepository(db)
     await audit.log(
@@ -190,35 +226,6 @@ async def admin_change_password(
         entidade="users",
         entidade_id=user_id,
         descricao=f"Senha alterada pelo administrador para: {user.nome}",
-    )
-
-
-# ─── User changes own password ────────────────────────────────────────────────
-@router.post("/me/change-password", status_code=204)
-async def change_my_password(
-    body: ChangePasswordRequest,
-    db: AsyncSession = Depends(get_db),
-    payload: dict = Depends(get_current_user_payload),
-):
-    """Authenticated user changes their own password. Requires current password."""
-    repo = UserRepository(db)
-    user = await repo.get_by_id(payload["sub"])
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
-    if not verify_password(body.senha_atual, user.senha_hash):
-        raise HTTPException(status_code=401, detail="Senha atual incorreta")
-
-    new_hash = hash_password(body.nova_senha)
-    await repo.update(user, senha_hash=new_hash)
-
-    audit = AuditRepository(db)
-    await audit.log(
-        usuario_id=payload["sub"],
-        acao="PASSWORD_CHANGE",
-        entidade="users",
-        entidade_id=payload["sub"],
-        descricao="Usuário alterou a própria senha",
     )
 
 
@@ -288,7 +295,8 @@ async def delete_user(
     # Free email and username so they can be reused after deletion
     freed_email   = f"{target.email}__deleted_{user_id[:8]}"
     freed_usuario = f"{target.usuario}__deleted_{user_id[:8]}" if target.usuario else None
-    await repo.update(target, email=freed_email, usuario=freed_usuario)
+    await repo.update(target, email=freed_email, usuario=freed_usuario,
+                      sessao_versao=(target.sessao_versao or 0) + 1)
 
     await repo.soft_delete(target, deleted_by=admin["sub"])
 

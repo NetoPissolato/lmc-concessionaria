@@ -66,7 +66,8 @@ export function useWebSocket(): { status: WSStatus } {
 
     setStatus("connecting");
 
-    const wsUrl = `${getWsUrl()}/ws?token=${token}`;
+    // O token vai na primeira mensagem, não na URL (URL fica gravada em log de proxy)
+    const wsUrl = `${getWsUrl()}/ws`;
     let ws: WebSocket;
 
     try {
@@ -80,6 +81,9 @@ export function useWebSocket(): { status: WSStatus } {
 
     ws.onopen = () => {
       if (!mountedRef.current) return;
+      // Lê de novo: o token pode ter sido renovado enquanto a conexão abria
+      const atual = localStorage.getItem("lmc_access_token") ?? token;
+      ws.send(JSON.stringify({ type: "auth", token: atual }));
       setStatus("connected");
       retryCount.current = 0;
 

@@ -5,6 +5,7 @@ Backend FastAPI com Clean Architecture
 
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -13,11 +14,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.core.config import settings
+from app.core import contexto
+from app.core.rate_limit import limiter
 from app.core.database import engine
 from app.core.redis import get_redis, close_redis
 from app.domain.models import *  # Import all models so Alembic can discover them
@@ -29,7 +32,7 @@ from app.presentation.api.v1 import modelos_destaque as modelos_destaque_router
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
-    level=logging.INFO if not settings.DEBUG else logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("lmc-erp")
@@ -71,10 +74,6 @@ async def lifespan(app: FastAPI):
     logger.info("👋 Backend encerrado")
 
 
-# ─── Rate Limiter ─────────────────────────────────────────────────────────────
-limiter = Limiter(key_func=get_remote_address, default_limits=[f"{settings.RATE_LIMIT_PER_MINUTE}/minute"])
-
-
 # ─── Application ──────────────────────────────────────────────────────────────
 app = FastAPI(
     title="LMC Veículos ERP",
@@ -82,11 +81,14 @@ app = FastAPI(
     version=settings.APP_VERSION,
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
+    # Sem DEBUG, nem o mapa da API (openapi.json) fica público
+    openapi_url="/openapi.json" if settings.DEBUG else None,
     lifespan=lifespan,
 )
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 
 # ─── Middleware ───────────────────────────────────────────────────────────────
@@ -96,6 +98,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Total-Count"],  # o painel pagina pelo total do cabeçalho
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
@@ -117,10 +120,14 @@ async def security_headers(request: Request, call_next):
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """Log all requests for monitoring."""
-    logger.info(f"{request.method} {request.url.path}")
+    """Uma linha por requisição (sem o healthcheck) e IP/navegador para o audit log."""
+    contexto.ip_cliente.set(request.client.host if request.client else None)
+    contexto.user_agent.set(request.headers.get("user-agent"))
+    inicio = time.perf_counter()
     response = await call_next(request)
-    logger.info(f"{request.method} {request.url.path} → {response.status_code}")
+    if request.url.path != "/health":
+        logger.info("%s %s → %s (%.0f ms)", request.method, request.url.path,
+                    response.status_code, (time.perf_counter() - inicio) * 1000)
     return response
 
 
@@ -148,6 +155,7 @@ app.include_router(ws.router)  # WebSocket — sem prefix, rota fica em /ws
 app.include_router(public.router, prefix=PREFIX)  # Rotas publicas — sem JWT
 app.include_router(settings_router_module.router, prefix=PREFIX)
 app.include_router(leads_router_module.router, prefix=PREFIX)    # CRM: leads
+app.include_router(leads_router_module.alerts_router, prefix=PREFIX)  # CRM: "me avise quando chegar"
 app.include_router(reviews_router_module.router, prefix=PREFIX)  # Reviews de clientes
 app.include_router(modelos_destaque_router.router, prefix=PREFIX)  # Modelos em destaque (home)
 

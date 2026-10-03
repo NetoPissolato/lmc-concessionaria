@@ -122,30 +122,28 @@ async def upload_modelo_imagem(
     if len(content) > 8 * 1024 * 1024:
         raise HTTPException(status_code=422, detail="Imagem muito grande (máx. 8MB)")
 
-    # Detect extension from filename or content-type
-    ext = "jpg"
-    if file.filename and "." in file.filename:
-        ext = file.filename.rsplit(".", 1)[-1].lower()
-
-    # Resize with Pillow and save
+    # Valida o conteúdo, descarta EXIF e grava em WebP
     try:
-        from PIL import Image
-        img = Image.open(io.BytesIO(content))
-        img = img.convert("RGB")
+        from PIL import Image, ImageOps
+        Image.open(io.BytesIO(content)).verify()
+        img = ImageOps.exif_transpose(Image.open(io.BytesIO(content))).convert("RGB")
         img.thumbnail((1200, 800), Image.LANCZOS)
         out = io.BytesIO()
-        fmt = "JPEG" if ext in ("jpg", "jpeg") else ext.upper()
-        img.save(out, format=fmt, quality=88, optimize=True)
+        img.save(out, format="WEBP", quality=84, method=5)
         final_bytes = out.getvalue()
     except Exception:
         raise HTTPException(status_code=422, detail="Imagem inválida ou corrompida")
 
-    # Save to uploads/modelos/
+    # Nome novo a cada envio: o nginx cacheia /uploads por 30 dias, então reaproveitar
+    # o mesmo nome fazia a imagem trocada nunca aparecer para quem já tinha visitado.
     modelos_dir = Path(settings.UPLOAD_DIR) / "modelos"
     modelos_dir.mkdir(parents=True, exist_ok=True)
-    filename = f"{modelo_id}.{ext}"
-    dest = modelos_dir / filename
-    dest.write_bytes(final_bytes)
+    filename = f"{modelo_id}-{uuid.uuid4().hex[:8]}.webp"
+    (modelos_dir / filename).write_bytes(final_bytes)
+    if modelo.imagem_url and modelo.imagem_url.startswith("/uploads/modelos/"):
+        antigo = modelos_dir / Path(modelo.imagem_url).name
+        if antigo.exists():
+            antigo.unlink()
 
     modelo.imagem_url = f"/uploads/modelos/{filename}"
     await db.commit()

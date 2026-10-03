@@ -11,7 +11,7 @@ from typing import Optional
 from datetime import date
 
 from app.core.database import get_db
-from app.presentation.dependencies.auth import get_current_user_payload
+from app.presentation.dependencies.auth import require_admin
 from app.domain.models.vehicle import Vehicle, VehicleType
 from app.domain.models.vehicle_expense import VehicleExpense
 from app.domain.models.sale import Sale
@@ -19,6 +19,8 @@ from app.infrastructure.repositories.sale_customer_repository import (
     SaleRepository, CustomerRepository,
 )
 
+# Relatórios trazem custo, margem, comissão e dados pessoais de clientes (CPF, endereço):
+# todos restritos ao administrador.
 router = APIRouter(prefix="/reports", tags=["Relatórios"])
 
 
@@ -72,7 +74,7 @@ async def report_vendas(
     data_inicio: Optional[str] = Query(None),
     data_fim:    Optional[str] = Query(None),
     db:  AsyncSession  = Depends(get_db),
-    _u:  dict          = Depends(get_current_user_payload),
+    _u:  dict          = Depends(require_admin),
 ):
     di, df = _resolve_period(data_inicio, data_fim)
     repo  = SaleRepository(db)
@@ -203,7 +205,7 @@ async def report_vendas(
 @router.get("/estoque")
 async def report_estoque(
     db: AsyncSession = Depends(get_db),
-    _u: dict         = Depends(get_current_user_payload),
+    _u: dict         = Depends(require_admin),
 ):
     result = await db.execute(
         select(Vehicle)
@@ -288,34 +290,35 @@ async def report_financeiro(
     data_inicio: Optional[str] = Query(None),
     data_fim:    Optional[str] = Query(None),
     db:  AsyncSession  = Depends(get_db),
-    _u:  dict          = Depends(get_current_user_payload),
+    _u:  dict          = Depends(require_admin),
 ):
     di, df = _resolve_period(data_inicio, data_fim)
-    from app.infrastructure.repositories.financial_repository import FinancialRepository
-    repo    = FinancialRepository(db)
-    entries = await repo.get_all(limit=10000)
+    from app.domain.models.financial import FinancialEntry
+
+    # Filtra no banco (antes: baixava até 10.000 lançamentos e cortava o resto em silêncio)
+    stmt = select(FinancialEntry).order_by(FinancialEntry.data.asc(), FinancialEntry.created_at.asc())
+    if di:
+        stmt = stmt.where(FinancialEntry.data >= di)
+    if df:
+        stmt = stmt.where(FinancialEntry.data <= df)
+    entries = (await db.execute(stmt)).scalars().all()
 
     MESES_PT = ["","Janeiro","Fevereiro","Março","Abril","Maio","Junho",
                 "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]
-    meses = {m: {"entradas": 0.0, "saidas": 0.0} for m in range(1, 13)}
+    # Chave (ano, mês): antes era só o mês, e março/2025 somava com março/2026
+    meses: dict = {}
     categorias: dict = {}
     rows = []
 
     for e in entries:
         dt = e.data
-        if isinstance(dt, str):
-            dt = date.fromisoformat(dt[:10])
-        if not _in_period(dt, di, df):
-            continue
         v        = _m(e.valor)
-        m        = dt.month
+        chave    = (dt.year, dt.month)
         tipo_val = e.tipo if isinstance(e.tipo, str) else e.tipo.value
-        cat      = e.categoria or "outros"
+        cat      = e.categoria.value if hasattr(e.categoria, "value") else (e.categoria or "outros")
 
-        if tipo_val == "entrada":
-            meses[m]["entradas"] += v
-        else:
-            meses[m]["saidas"] += v
+        meses.setdefault(chave, {"entradas": 0.0, "saidas": 0.0})
+        meses[chave]["entradas" if tipo_val == "entrada" else "saidas"] += v
 
         categorias.setdefault(cat, {"entradas": 0.0, "saidas": 0.0, "total": 0})
         categorias[cat]["entradas" if tipo_val == "entrada" else "saidas"] += v
@@ -323,24 +326,25 @@ async def report_financeiro(
 
         rows.append({
             "data":      _fmt_date(dt),
-            "mes":       m,
-            "nome_mes":  MESES_PT[m],
+            "mes":       dt.month,
+            "nome_mes":  MESES_PT[dt.month],
             "ano":       dt.year,
             "tipo":      tipo_val,
             "categoria": cat,
             "descricao": e.descricao or "",
             "valor":     round(v, 2),
+            "estorno":   bool(e.estorno_de_id),
             "observacoes": getattr(e, "observacoes", "") or "",
         })
 
     mensal = [
         {
-            "mes": m, "nome_mes": MESES_PT[m],
-            "entradas": round(meses[m]["entradas"], 2),
-            "saidas":   round(meses[m]["saidas"],   2),
-            "lucro":    round(meses[m]["entradas"] - meses[m]["saidas"], 2),
+            "mes": m, "ano": a, "nome_mes": f"{MESES_PT[m]}/{a}",
+            "entradas": round(v["entradas"], 2),
+            "saidas":   round(v["saidas"],   2),
+            "lucro":    round(v["entradas"] - v["saidas"], 2),
         }
-        for m in range(1, 13)
+        for (a, m), v in sorted(meses.items())
     ]
     total_e = sum(x["entradas"] for x in mensal)
     total_s = sum(x["saidas"]   for x in mensal)
@@ -374,7 +378,7 @@ async def report_financeiro(
 @router.get("/clientes")
 async def report_clientes(
     db: AsyncSession = Depends(get_db),
-    _u: dict         = Depends(get_current_user_payload),
+    _u: dict         = Depends(require_admin),
 ):
     c_repo    = CustomerRepository(db)
     s_repo    = SaleRepository(db)
@@ -439,7 +443,7 @@ async def report_lucratividade(
     data_inicio: Optional[str] = Query(None),
     data_fim:    Optional[str] = Query(None),
     db:  AsyncSession  = Depends(get_db),
-    _u:  dict          = Depends(get_current_user_payload),
+    _u:  dict          = Depends(require_admin),
 ):
     di, df = _resolve_period(data_inicio, data_fim)
     result = await db.execute(
@@ -555,7 +559,7 @@ async def report_comissoes(
     data_inicio: Optional[str] = Query(None),
     data_fim:    Optional[str] = Query(None),
     db:  AsyncSession  = Depends(get_db),
-    _u:  dict          = Depends(get_current_user_payload),
+    _u:  dict          = Depends(require_admin),
 ):
     di, df = _resolve_period(data_inicio, data_fim)
     repo  = SaleRepository(db)

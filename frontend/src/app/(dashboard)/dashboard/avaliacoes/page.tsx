@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Star, CheckCircle, XCircle, Trash2, RefreshCw, MessageSquare, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
+import { reviewsApi } from "@/lib/api";
+
 const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "");
 const PAGE_SIZE = 20;
 
@@ -82,15 +83,12 @@ export default function ReviewsPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const url =
-        filter === "pendente" ? `${API}/reviews?aprovado=false&limit=200`
-        : filter === "aprovado" ? `${API}/reviews?aprovado=true&limit=200`
-        : `${API}/reviews?limit=200`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        setReviews(data.items ?? data);
-      }
+      const params =
+        filter === "pendente" ? { aprovado: false, limit: 200 }
+        : filter === "aprovado" ? { aprovado: true, limit: 200 }
+        : { limit: 200 };
+      const data = await reviewsApi.list(params);
+      setReviews(data.items ?? data);
     } finally { setLoading(false); }
   }, [token, filter]);
 
@@ -99,16 +97,16 @@ export default function ReviewsPage() {
   async function approve(id: string) {
     setActing(id);
     try {
-      const res = await fetch(`${API}/reviews/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ aprovado: true }) });
-      if (res.ok) setReviews(r => r.map(x => x.id === id ? { ...x, aprovado: true } : x));
+      await reviewsApi.update(id, { aprovado: true });
+      setReviews(r => r.map(x => x.id === id ? { ...x, aprovado: true } : x));
     } finally { setActing(null); }
   }
 
   async function reject(id: string) {
     setActing(id);
     try {
-      const res = await fetch(`${API}/reviews/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ aprovado: false }) });
-      if (res.ok) setReviews(r => r.map(x => x.id === id ? { ...x, aprovado: false } : x));
+      await reviewsApi.update(id, { aprovado: false });
+      setReviews(r => r.map(x => x.id === id ? { ...x, aprovado: false } : x));
     } finally { setActing(null); }
   }
 
@@ -116,7 +114,7 @@ export default function ReviewsPage() {
   async function doDelete(id: string) {
     setConfirmDelete(null); setActing(id);
     try {
-      await fetch(`${API}/reviews/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      await reviewsApi.delete(id);
       setReviews(r => r.filter(x => x.id !== id));
     } finally { setActing(null); }
   }

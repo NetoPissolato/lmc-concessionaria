@@ -8,11 +8,13 @@ from app.application.schemas.auth import (
     RefreshRequest,
 )
 from app.application.services.auth_service import AuthService
+from app.core.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
 
 @router.post("/login", response_model=dict)
+@limiter.limit("10/minute")
 async def login(
     request: Request,
     body: LoginRequest,
@@ -22,8 +24,8 @@ async def login(
     Authenticate and receive JWT tokens.
 
     Returns:
-    - access_token: short-lived (30 min), use in Authorization header
-    - refresh_token: long-lived (7 days), use to get new access token
+    - access_token: curto (30 min), vai no header Authorization
+    - refresh_token: rotativo; cada uso devolve um novo (o antigo deixa de valer)
     """
     ip = request.client.host if request.client else "unknown"
     service = AuthService(db)
@@ -43,11 +45,13 @@ async def login(
 
 
 @router.post("/refresh", response_model=dict)
+@limiter.limit("30/minute")
 async def refresh_token(
+    request: Request,
     body: RefreshRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Exchange a refresh token for a new access token."""
+    """Troca o refresh por um par novo (access + refresh). O refresh enviado é queimado."""
     service = AuthService(db)
     return await service.refresh(body.refresh_token)
 

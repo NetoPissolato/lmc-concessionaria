@@ -2,18 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 
-const API = (process.env.NEXT_PUBLIC_API_URL ?? "") + "/settings";
+import { settingsApi } from "@/lib/api";
 
-async function loadSettings(token: string) {
-  const res = await fetch(API, { headers: { Authorization: "Bearer " + token } });
-  if (!res.ok) throw new Error("Falha ao carregar");
-  return res.json();
-}
-async function saveSettings(token: string, data: object) {
-  const res = await fetch(API, { method: "PUT", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify(data) });
-  if (!res.ok) throw new Error("Falha ao salvar");
-  return res.json();
-}
+// Pelo cliente da API: renova o token sozinho (o fetch próprio quebrava ao vencer)
+const loadSettings = (_token: string) => settingsApi.get();
+const saveSettings = (_token: string, data: object) => settingsApi.update(data as Record<string, unknown>);
 
 interface FormState {
   whatsapp: string; telefone: string; email_contato: string;

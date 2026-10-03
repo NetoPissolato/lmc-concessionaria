@@ -32,13 +32,16 @@ class Settings(BaseSettings):
     # JWT
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 525960   # ~1 ano
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 3650       # ~10 anos
+    # O access token é curto; o painel renova sozinho com o refresh (rotativo). Quem usa
+    # o sistema todo dia não percebe; quem tem o token roubado perde o acesso rápido.
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # Security
     MAX_LOGIN_ATTEMPTS: int = 5
     LOCKOUT_DURATION_MINUTES: int = 15
     RATE_LIMIT_PER_MINUTE: int = 60
+    RATE_LIMIT_ENABLED: bool = True
 
     # Upload
     UPLOAD_DIR: str = "./uploads"
@@ -66,6 +69,18 @@ class Settings(BaseSettings):
     @property
     def max_upload_size_bytes(self) -> int:
         return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
+    @field_validator("JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+    @classmethod
+    def limitar_access_token(cls, v: int) -> int:
+        # O .env de produção chegou a ter ~1 ano aqui: token vazado valia um ano e
+        # funcionário demitido continuava logado. Teto de 2h, venha o que vier no .env.
+        return max(5, min(v, 120))
+
+    @field_validator("JWT_REFRESH_TOKEN_EXPIRE_DAYS")
+    @classmethod
+    def limitar_refresh_token(cls, v: int) -> int:
+        return max(1, min(v, 60))
 
     @field_validator("DATABASE_URL")
     @classmethod

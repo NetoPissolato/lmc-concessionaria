@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 from jose import JWTError, jwt
@@ -55,6 +56,7 @@ def create_access_token(
     email: str,
     role: str,
     extra_data: Optional[dict] = None,
+    sessao_versao: int = 0,
 ) -> str:
     """
     Create a short-lived JWT access token.
@@ -70,6 +72,7 @@ def create_access_token(
         "email": email,
         "role": role,
         "type": "access",
+        "sv": sessao_versao,  # versão de sessão: muda quando a senha/papel/status muda
     }
     if extra_data:
         payload.update(extra_data)
@@ -80,7 +83,7 @@ def create_access_token(
     )
 
 
-def create_refresh_token(user_id: str) -> str:
+def create_refresh_token(user_id: str, sessao_versao: int = 0) -> str:
     """
     Create a long-lived JWT refresh token.
 
@@ -92,7 +95,8 @@ def create_refresh_token(user_id: str) -> str:
     - Invalidated on logout (stored in Redis blacklist)
     """
     return _create_token(
-        {"sub": user_id, "type": "refresh"},
+        # jti identifica ESTE refresh: ao ser usado, ele é queimado (rotação)
+        {"sub": user_id, "type": "refresh", "sv": sessao_versao, "jti": uuid.uuid4().hex},
         timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS),
     )
 
@@ -126,3 +130,16 @@ def create_password_reset_token(email: str) -> str:
         {"sub": email, "type": "password_reset"},
         timedelta(hours=1),
     )
+
+
+# Hash de uma senha qualquer: quando o usuário não existe, o login verifica contra este
+# hash para gastar o mesmo tempo. Sem isso, a resposta rápida denunciava quais e-mails
+# existem no sistema.
+_HASH_FALSO = _ph.hash("senha-que-nao-existe-" + uuid.uuid4().hex)
+
+
+def verify_password_ou_falso(plain_password: str, hashed_password: Optional[str]) -> bool:
+    if not hashed_password:
+        verify_password(plain_password, _HASH_FALSO)
+        return False
+    return verify_password(plain_password, hashed_password)

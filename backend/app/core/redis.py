@@ -1,5 +1,8 @@
+import logging
 from typing import Any, Optional
 from app.core.config import settings
+
+logger = logging.getLogger("lmc-redis")
 
 
 class _NoOpRedis:
@@ -50,7 +53,13 @@ async def get_redis() -> Any:
         )
         await client.ping()
         _redis_client = client
-    except Exception:
+    except Exception as e:
+        # Sem Redis: bloqueio por tentativas e revogação de token ficam DESLIGADOS.
+        # O nginx ainda limita tentativas por IP, mas isto precisa aparecer no log.
+        logger.error(
+            "Redis indisponível (%s): bloqueio de login e revogação de sessão DESATIVADOS "
+            "até o backend reiniciar com o Redis no ar.", e.__class__.__name__,
+        )
         _redis_client = _NoOpRedis()
 
     return _redis_client
@@ -78,6 +87,10 @@ class RedisKeys:
     @staticmethod
     def refresh_token_blacklist(jti: str) -> str:
         return f"blacklist:refresh:{jti}"
+
+    @staticmethod
+    def is_noop(client: Any) -> bool:
+        return isinstance(client, _NoOpRedis)
 
     @staticmethod
     def password_reset(email: str) -> str:
