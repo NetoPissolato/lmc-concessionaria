@@ -76,13 +76,13 @@ function MotoCard({ v, onView, onEdit, onDelete, onExpenses, onToggleDestaque, d
         </div>
         <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
           {v.cilindrada && (
-            <span style={{ display: "flex", alignItems: "center", gap: "3px", fontSize: "10px", fontWeight: "700", color: "#f97316", background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)", padding: "2px 8px", borderRadius: "4px" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: "3px", fontSize: "11.5px", fontWeight: "700", color: "#f97316", background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)", padding: "2px 8px", borderRadius: "4px" }}>
               <Zap size={9} />{v.cilindrada}cc
             </span>
           )}
-          {v.combustivel && <span style={{ fontSize: "10px", fontWeight: "600", color: "var(--text-secondary)", background: "var(--surface-2)", border: "1px solid var(--border)", padding: "2px 7px", borderRadius: "4px" }}>{FUEL_LABELS[v.combustivel] || v.combustivel}</span>}
+          {v.combustivel && <span style={{ fontSize: "11.5px", fontWeight: "600", color: "var(--text-secondary)", background: "var(--surface-2)", border: "1px solid var(--border)", padding: "2px 7px", borderRadius: "4px" }}>{FUEL_LABELS[v.combustivel] || v.combustivel}</span>}
           {v.cor && (
-            <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: "600", color: "var(--text-secondary)", background: "var(--surface-2)", border: "1px solid var(--border)", padding: "2px 7px", borderRadius: "4px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11.5px", fontWeight: "600", color: "var(--text-secondary)", background: "var(--surface-2)", border: "1px solid var(--border)", padding: "2px 7px", borderRadius: "4px" }}>
               <ColorDot cor={v.cor} />{v.cor}
             </div>
           )}
@@ -90,23 +90,23 @@ function MotoCard({ v, onView, onEdit, onDelete, onExpenses, onToggleDestaque, d
         <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
           <Gauge size={11} color="var(--text-muted)" />
           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{fmtKm(v.quilometragem)}</span>
-          {v.placa && <><span style={{ color: "var(--border)", fontSize: "10px" }}>•</span><span style={{ fontSize: "11px", color: "var(--text-muted)", fontFamily: "monospace" }}>{v.placa}</span></>}
+          {v.placa && <><span style={{ color: "var(--border)", fontSize: "11.5px" }}>•</span><span style={{ fontSize: "11px", color: "var(--text-muted)", fontFamily: "monospace" }}>{v.placa}</span></>}
         </div>
         {margin > 0 && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-              <span style={{ fontSize: "10px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}><TrendingUp size={10} /> Margem estimada</span>
+              <span style={{ fontSize: "11.5px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}><TrendingUp size={10} /> Margem estimada</span>
             </div>
             <MarginBar pct={margin} />
           </div>
         )}
         <div style={{ marginTop: "auto", paddingTop: "8px", borderTop: "1px solid var(--border)" }}>
           <p style={{ fontSize: "20px", fontWeight: "900", color: "#f97316", letterSpacing: "-0.8px", lineHeight: 1 }}>{fmt(v.valor_anunciado)}</p>
-          {v.valor_compra && <p style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: "2px" }}>Compra: {fmt(v.valor_compra)}</p>}
+          {v.valor_compra && <p style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "2px" }}>Compra: {fmt(v.valor_compra)}</p>}
           {(v.valor_multas ?? 0) > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "5px", marginTop: "6px", padding: "4px 8px", borderRadius: "6px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
               <AlertTriangle size={11} color="#ef4444" />
-              <span style={{ fontSize: "10px", fontWeight: "600", color: "#ef4444" }}>Multa: {fmt(v.valor_multas)}</span>
+              <span style={{ fontSize: "11.5px", fontWeight: "600", color: "#ef4444" }}>Multa: {fmt(v.valor_multas)}</span>
             </div>
           )}
         </div>
@@ -137,7 +137,7 @@ export default function MotosPage() {
 
   const [search,            setSearch]           = useState("");
   const [statusFilter,      setStatusFilter]     = useState<VehicleStatus | "">("");
-  const [sortKey,           setSortKey]          = useState<"data_compra" | "valor_anunciado" | "quilometragem">("data_compra");
+  const [sortKey,           setSortKey]          = useState<"data_compra" | "parados" | "valor_anunciado" | "quilometragem">("data_compra");
   const [marcaFilter,       setMarcaFilter]      = useState<string[]>([]);
   const [combustivelFilter, setCombustivelFilter] = useState<string[]>([]);
   const [corFilter,         setCorFilter]        = useState<string[]>([]);
@@ -151,7 +151,7 @@ export default function MotosPage() {
 
   const { data: motos = [], isLoading } = useQuery<Vehicle[]>({
     queryKey: ["vehicles", "motos-all"],
-    queryFn: () => vehiclesApi.list({ tipo: "moto", limit: 200 }),
+    queryFn: () => vehiclesApi.list({ tipo: "moto", limit: 500 }),
   });
 
   const deleteMutation = useMutation({
@@ -204,6 +204,7 @@ export default function MotosPage() {
     if (precoMax) list = list.filter(v => (v.valor_anunciado ?? 0) <= parseCurrency(precoMax));
     return [...list].sort((a, b) => {
       switch (sortKey) {
+        case "parados": return new Date(a.data_compra).getTime() - new Date(b.data_compra).getTime();
         case "valor_anunciado": return (b.valor_anunciado ?? 0) - (a.valor_anunciado ?? 0);
         case "quilometragem":   return (a.quilometragem ?? 0) - (b.quilometragem ?? 0);
         default: return new Date(b.data_compra).getTime() - new Date(a.data_compra).getTime();
@@ -221,38 +222,18 @@ export default function MotosPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
 
-      {/* Hero Banner */}
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-        style={{ position: "relative", borderRadius: "20px", overflow: "hidden", height: "clamp(120px, 18vw, 200px)", background: "#060606", border: "1px solid rgba(249,115,22,0.15)" }}>
-        <img src="/BANNERHERO.png" alt="Banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center right", opacity: 0.7 }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(6,6,6,0.97) 30%, rgba(6,6,6,0.4) 70%, rgba(6,6,6,0.1) 100%)" }} />
-        <div style={{ position: "relative", zIndex: 1, padding: "clamp(16px,4vw,32px) clamp(16px,4vw,36px)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          <div style={{ paddingRight: "clamp(80px, 20%, 150px)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-              <Bike size={13} color={accent} strokeWidth={2} />
-              <p style={{ fontSize: "11px", fontWeight: "700", color: accent, letterSpacing: "0.12em", textTransform: "uppercase" }}>Painel de Estoque - Motos</p>
-            </div>
-            <h1 style={{ fontSize: "clamp(16px, 3.5vw, 26px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.8px", lineHeight: 1.15 }}>
-              Controle de motos<br/><span style={{ color: accent }}>no seu estoque</span>
-            </h1>
-          </div>
-          <div className="hero-chips">
-            {[{ icon: Package, text: "Inventário de motos" }, { icon: TrendingUp, text: "Margem por unidade" }, { icon: CheckCircle2, text: "Status em tempo real" }].map(({ icon: Ic, text }) => (
-              <div key={text} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-                <div style={{ width: 26, height: 26, borderRadius: 8, background: `${accent}14`, border: `1px solid ${accent}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Ic size={13} color={accent} strokeWidth={2} />
-                </div>
-                <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.8)", fontWeight: "600" }}>{text}</span>
-              </div>
-            ))}
-          </div>
+      {/* Cabeçalho compacto: o banner de 200px empurrava a lista para baixo e prendia o botão principal dentro da imagem */}
+      <div className="dash-topo">
+        <div>
+          <h1 className="dash-topo__titulo">Motos em estoque</h1>
+          <p className="dash-topo__sub" style={{ textTransform: "none" }}>Clique num veículo para ver custos, fotos e histórico.</p>
         </div>
-        {/* "Nova Moto" button - inside banner, never overlaps header */}
-        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => router.push("/dashboard/motos/nova")}
-          style={{ position: "absolute", top: 12, right: 12, zIndex: 2, display: "flex", alignItems: "center", gap: "7px", background: `linear-gradient(135deg, ${accent}, #ea580c)`, color: "#fff", border: "none", borderRadius: "12px", padding: "9px 16px", cursor: "pointer", fontSize: "13px", fontWeight: "800", boxShadow: "0 4px 20px rgba(249,115,22,0.4)" }}>
-          <Plus size={15} strokeWidth={2.5} /> Nova Moto
-        </motion.button>
-      </motion.div>
+        <div className="dash-topo__acoes">
+          <button className="btn btn-primary" onClick={() => router.push("/dashboard/motos/nova")}>
+            <Plus size={16} strokeWidth={2.5} /> Nova moto
+          </button>
+        </div>
+      </div>
 
 
       {/* Sidebar + Grid */}
@@ -311,7 +292,7 @@ export default function MotosPage() {
                                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0, opacity: active ? 1 : 0.35 }} />
                                 <span style={{ fontSize: "12px", color: active ? color : "var(--text-secondary)", fontWeight: active ? 700 : 400 }}>{label}</span>
                               </div>
-                              <span style={{ fontSize: "10px", color: active ? color : "var(--text-muted)", fontWeight: 700 }}>{count}</span>
+                              <span style={{ fontSize: "11.5px", color: active ? color : "var(--text-muted)", fontWeight: 700 }}>{count}</span>
                             </button>
                           );
                         })}
@@ -481,7 +462,7 @@ export default function MotosPage() {
                       <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0, opacity: active ? 1 : 0.35 }} />
                       <span style={{ fontSize: "12px", color: active ? color : "var(--text-secondary)", fontWeight: active ? 700 : 400 }}>{label}</span>
                     </div>
-                    <span style={{ fontSize: "10px", color: active ? color : "var(--text-muted)", fontWeight: 700 }}>{count}</span>
+                    <span style={{ fontSize: "11.5px", color: active ? color : "var(--text-muted)", fontWeight: 700 }}>{count}</span>
                   </button>
                 );
               })}
@@ -587,8 +568,9 @@ export default function MotosPage() {
               {hasFilters && <span style={{ color: "var(--text-muted)" }}> (filtrado)</span>}
             </p>
             <select value={sortKey} onChange={e => setSortKey(e.target.value as typeof sortKey)}
-              className="input" style={{ height: "34px", width: "140px", padding: "0 32px 0 10px", flexShrink: 0 }}>
+              className="input" style={{ height: "34px", width: "200px", padding: "0 32px 0 10px", flexShrink: 0 }}>
               <option value="data_compra">Mais recente</option>
+              <option value="parados">Parados há mais tempo</option>
               <option value="valor_anunciado">Maior preço</option>
               <option value="quilometragem">Menor km</option>
             </select>

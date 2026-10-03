@@ -12,7 +12,7 @@ import {
   Package, BarChart3, FileText, Images, Camera, Maximize2, Gauge, Fuel, Settings,
   Hash, Zap,
 } from "lucide-react";
-import { vehiclesApi } from "@/lib/api";
+import { vehiclesApi, authApi } from "@/lib/api";
 import {
   Vehicle, VehicleExpense, CostCenter,
   VEHICLE_STATUS_LABELS, FUEL_LABELS, TRANSMISSION_LABELS,
@@ -26,7 +26,7 @@ import { Select } from "@/components/Select";
 import { Portal } from "@/components/Portal";
 
 const ACCENT = "#f97316"; // laranja para motos
-import { fmtCurrencyFull as fmt, fmtDate } from "@/lib/formatters";
+import { fmtCurrencyFull as fmt, fmtDate, dataISO } from "@/lib/formatters";
 import { CAT_COLORS, daysInStock, DaysChip, WhatsAppIcon, buildWhatsAppVehicleUrl } from "@/components/vehicle/shared";
 
 // ─── Lightbox ─────────────────────────────────────────────────────────────────
@@ -207,7 +207,7 @@ function ExpenseModal({ vehicleId, expense, onClose, onSuccess }: {
   const isEdit = !!expense;
   const fmtVal = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
   const [form, setForm] = useState({
-    data: expense?.data ?? new Date().toISOString().split("T")[0],
+    data: expense?.data ?? dataISO(),
     categoria: (expense?.categoria ?? "mecanica") as ExpenseCategory,
     descricao: expense?.descricao ?? "",
     valorDisplay: expense ? fmtVal(expense.valor) : "",
@@ -344,7 +344,7 @@ function SpecPill({ icon: Icon, label, value, accent }: { icon: React.ElementTyp
     <div style={{ display: "flex", flexDirection: "column", gap: 2, padding: "10px 12px", background: accent ? `${ACCENT}10` : "var(--surface-2)", borderRadius: 10, border: `1px solid ${accent ? ACCENT + "30" : "var(--border)"}`, minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
         <Icon size={11} color={accent ? ACCENT : ACCENT} />
-        <span style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>{label}</span>
+        <span style={{ fontSize: 11.5, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>{label}</span>
       </div>
       <span style={{ fontSize: 12, fontWeight: 700, color: accent ? ACCENT : "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span>
     </div>
@@ -360,7 +360,7 @@ function KpiCard({ label, value, sub, color, icon: Icon }: { label: string; valu
       </div>
       <p style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500, marginBottom: 6 }}>{label}</p>
       <p style={{ fontSize: 17, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.4px" }}>{value}</p>
-      {sub && <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 3 }}>{sub}</p>}
+      {sub && <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 3 }}>{sub}</p>}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}00, ${color}60, ${color}00)` }} />
     </div>
   );
@@ -680,9 +680,9 @@ export default function MotoDetailPage() {
                           <div style={{ width: 4, flexShrink: 0, alignSelf: "stretch", borderRadius: 4, background: CAT_COLORS[exp.categoria] || "#64748b" }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "nowrap" }}>
-                              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: `${CAT_COLORS[exp.categoria]}22`, color: CAT_COLORS[exp.categoria], whiteSpace: "nowrap", flexShrink: 0 }}>{EXPENSE_CATEGORY_LABELS[exp.categoria]}</span>
-                              <span style={{ fontSize: 10, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap", flexShrink: 0 }}><Calendar size={9} /> {fmtDate(exp.data)}</span>
-                              {exp.km_atual && <span style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap", flexShrink: 0 }}>{exp.km_atual.toLocaleString("pt-BR")} km</span>}
+                              <span style={{ fontSize: 11.5, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: `${CAT_COLORS[exp.categoria]}22`, color: CAT_COLORS[exp.categoria], whiteSpace: "nowrap", flexShrink: 0 }}>{EXPENSE_CATEGORY_LABELS[exp.categoria]}</span>
+                              <span style={{ fontSize: 11.5, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap", flexShrink: 0 }}><Calendar size={9} /> {fmtDate(exp.data)}</span>
+                              {exp.km_atual && <span style={{ fontSize: 11.5, color: "var(--text-muted)", whiteSpace: "nowrap", flexShrink: 0 }}>{exp.km_atual.toLocaleString("pt-BR")} km</span>}
                             </div>
                             <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", marginBottom: 2, lineHeight: 1.4 }}>{exp.descricao}</p>
                             {exp.fornecedor && <p style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 3 }}><User size={10} /> {exp.fornecedor}</p>}
@@ -690,9 +690,9 @@ export default function MotoDetailPage() {
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8, flexWrap: "wrap", gap: 6 }}>
                               <div>
                                 <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>{fmt(exp.valor)}</p>
-                                <p style={{ fontSize: 10, color: "var(--text-muted)", margin: 0 }}>{exp.forma_pagamento.replace(/_/g, " ")}{exp.parcelas && exp.parcelas > 1 ? ` · ${exp.parcelas}x` : ""}</p>
+                                <p style={{ fontSize: 11.5, color: "var(--text-muted)", margin: 0 }}>{exp.forma_pagamento.replace(/_/g, " ")}{exp.parcelas && exp.parcelas > 1 ? ` · ${exp.parcelas}x` : ""}</p>
                               </div>
-                              {vehicle.status !== "vendido" && (
+                              {vehicle.status !== "vendido" && authApi.getUser()?.role === "admin" && (
                                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                                   <button onClick={() => setEditingExpense(exp)} style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8, padding: "5px 12px", cursor: "pointer", fontSize: 11, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 4, fontWeight: 500 }}><Edit size={11} /> Editar</button>
                                   <button onClick={() => setConfirmDeleteExpense(exp.id)} style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "5px 12px", cursor: "pointer", fontSize: 11, color: "#ef4444", display: "flex", alignItems: "center", gap: 4, fontWeight: 500 }}><Trash2 size={11} /> Apagar</button>
@@ -742,7 +742,7 @@ export default function MotoDetailPage() {
                             {cc.margem_percentual != null && (
                               <div style={{ width: 64, height: 64, borderRadius: "50%", background: `${isProfit ? "#10b981" : "#ef4444"}22`, border: `3px solid ${isProfit ? "#10b981" : "#ef4444"}44`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                                 <span style={{ fontSize: 14, fontWeight: 800, color: isProfit ? "#10b981" : "#ef4444" }}>{cc.margem_percentual.toFixed(0)}%</span>
-                                <span style={{ fontSize: 9, color: "var(--text-muted)" }}>margem</span>
+                                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>margem</span>
                               </div>
                             )}
                           </div>
@@ -780,7 +780,7 @@ export default function MotoDetailPage() {
                       {photos.map(p => (
                         <div key={p.id} style={{ position: "relative", paddingBottom: "75%", borderRadius: 12, overflow: "hidden", background: "var(--surface-2)", border: p.is_main ? `2px solid ${ACCENT}` : "1px solid var(--border)" }}>
                           <img src={`${p.url}`} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                          {p.is_main && <div style={{ position: "absolute", top: 6, left: 6, background: ACCENT, borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 700, color: "#fff" }}>Capa</div>}
+                          {p.is_main && <div style={{ position: "absolute", top: 6, left: 6, background: ACCENT, borderRadius: 6, padding: "2px 8px", fontSize: 11.5, fontWeight: 700, color: "#fff" }}>Capa</div>}
                         </div>
                       ))}
                     </div>

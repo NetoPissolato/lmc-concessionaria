@@ -91,7 +91,7 @@ function SaleCardGrid({ sale, delay, onOpen, isAdmin }: { sale: Sale; delay: num
         <div style={{ position: "absolute", top: 12, left: 12 }}>
           <span style={{
             display: "inline-flex", alignItems: "center", gap: "5px",
-            fontSize: "10px", fontWeight: "700", color: stCfg.color,
+            fontSize: "11.5px", fontWeight: "700", color: stCfg.color,
             background: "rgba(0,0,0,0.7)", backdropFilter: "blur(10px)",
             border: `1px solid ${stCfg.color}40`, padding: "4px 10px", borderRadius: "20px",
             letterSpacing: "0.05em", textTransform: "uppercase",
@@ -124,7 +124,7 @@ function SaleCardGrid({ sale, delay, onOpen, isAdmin }: { sale: Sale; delay: num
         {/* Plate + Date */}
         <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", marginBottom: "10px" }}>
           {sale.vehicle_placa && (
-            <span style={{ fontSize: "10px", fontFamily: "monospace", fontWeight: "700", color: "rgba(255,255,255,0.55)", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", padding: "3px 8px", borderRadius: "6px", letterSpacing: "0.1em" }}>
+            <span style={{ fontSize: "11.5px", fontFamily: "monospace", fontWeight: "700", color: "rgba(255,255,255,0.55)", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", padding: "3px 8px", borderRadius: "6px", letterSpacing: "0.1em" }}>
               {sale.vehicle_placa}
             </span>
           )}
@@ -144,14 +144,14 @@ function SaleCardGrid({ sale, delay, onOpen, isAdmin }: { sale: Sale; delay: num
         <div style={{ paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <div style={{ display: "grid", gridTemplateColumns: sale.vendedor_nome ? "1fr 1fr" : "1fr", gap: 8 }}>
             <div>
-              <p style={{ fontSize: "8.5px", fontWeight: "800", color: "rgba(34,197,94,0.55)", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 3px" }}>Comprador</p>
+              <p style={{ fontSize: "10.5px", fontWeight: "800", color: "rgba(34,197,94,0.55)", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 3px" }}>Comprador</p>
               <p style={{ fontSize: "11.5px", fontWeight: "600", color: "rgba(255,255,255,0.7)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {toTitleCase(sale.cliente_nome || "-")}
               </p>
             </div>
             {sale.vendedor_nome && (
               <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "8.5px", fontWeight: "800", color: "rgba(167,139,250,0.55)", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 3px" }}>Vendedor</p>
+                <p style={{ fontSize: "10.5px", fontWeight: "800", color: "rgba(167,139,250,0.55)", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 3px" }}>Vendedor</p>
                 <p style={{ fontSize: "11.5px", fontWeight: "600", color: "rgba(255,255,255,0.5)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {toTitleCase(sale.vendedor_nome)}
                 </p>
@@ -218,11 +218,11 @@ function SaleCardList({ sale, delay, onOpen, isAdmin }: { sale: Sale; delay: num
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "6px" }}>
             {sale.vehicle_placa && (
-              <span style={{ fontSize: "9px", fontFamily: "monospace", fontWeight: "700", color: "var(--text-muted)", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", padding: "1px 6px", borderRadius: "4px", letterSpacing: "0.08em" }}>
+              <span style={{ fontSize: "11px", fontFamily: "monospace", fontWeight: "700", color: "var(--text-muted)", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", padding: "1px 6px", borderRadius: "4px", letterSpacing: "0.08em" }}>
                 {sale.vehicle_placa}
               </span>
             )}
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: "600", color: stCfg.color, background: stCfg.bg, padding: "2px 8px", borderRadius: "12px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11.5px", fontWeight: "600", color: stCfg.color, background: stCfg.bg, padding: "2px 8px", borderRadius: "12px" }}>
               <StIcon size={9} /> {stCfg.label}
             </span>
           </div>
@@ -354,41 +354,18 @@ export default function VendasCarrosPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
 
-      {/* Hero Banner */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-        style={{ position: "relative", borderRadius: "20px", overflow: "hidden", height: "clamp(120px, 18vw, 190px)", marginBottom: 24, background: "#060608", border: "1px solid rgba(59,130,246,0.15)" }}>
-        <img src="/BANNERHERO.png" alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%", opacity: 0.35 }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(105deg, rgba(6,6,8,0.98) 35%, rgba(6,6,8,0.5) 65%, transparent 100%)" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${COLOR}90, transparent)` }} />
-        <div style={{ position: "relative", zIndex: 1, padding: "clamp(16px,4vw,28px) clamp(16px,4vw,36px)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          <div style={{ paddingRight: isMobile ? "clamp(110px, 30%, 150px)" : 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: COLOR, boxShadow: `0 0 8px ${COLOR}` }} />
-              <span style={{ fontSize: "11px", fontWeight: "800", color: COLOR, letterSpacing: "0.14em", textTransform: "uppercase" }}>Gestão de Vendas · Carros</span>
-            </div>
-            <h1 style={{ fontSize: "clamp(16px, 3.5vw, 28px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.8px", lineHeight: 1.1, margin: 0 }}>
-              Registro de vendas<br />
-              <span style={{ color: COLOR }}>de automóveis</span>
-            </h1>
-          </div>
-          <div className="hero-chips">
-            {[{ icon: DollarSign, text: "Receita detalhada" }, { icon: TrendingUp, text: "Métricas em tempo real" }, { icon: Calendar, text: "Filtro por período" }].map(({ icon: Ic, text }) => (
-              <div key={text} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 9, background: `${COLOR}15`, border: `1px solid ${COLOR}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Ic size={13} color={COLOR} strokeWidth={2} />
-                </div>
-                <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", fontWeight: "600" }}>{text}</span>
-              </div>
-            ))}
-          </div>
+      {/* Cabeçalho compacto (o banner de ~190px com foto genérica empurrava a lista para baixo) */}
+      <div className="dash-topo" style={{ marginBottom: 20 }}>
+        <div>
+          <h1 className="dash-topo__titulo">Vendas de carros</h1>
+          <p className="dash-topo__sub">Histórico do mês, com receita e ticket médio.</p>
         </div>
-        {/* "Nova Venda" button - inside banner */}
-        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-          onClick={() => router.push("/dashboard/vendas/nova?tipo=carro")}
-          style={{ position: "absolute", top: 12, right: 12, zIndex: 2, display: "flex", alignItems: "center", gap: 8, background: `linear-gradient(135deg, ${COLOR}, #1d4ed8)`, color: "#fff", border: "none", borderRadius: "12px", padding: "9px 16px", cursor: "pointer", fontSize: "13px", fontWeight: "800", boxShadow: `0 4px 20px ${COLOR}50`, letterSpacing: "-0.2px" }}>
-          <Plus size={15} strokeWidth={2.5} /> Nova Venda
-        </motion.button>
-      </motion.div>
+        <div className="dash-topo__acoes">
+          <button className="btn btn-primary" onClick={() => router.push("/dashboard/vendas/nova?tipo=carro")}>
+            <Plus size={16} strokeWidth={2.5} /> Nova venda
+          </button>
+        </div>
+      </div>
 
       {/* ── KPI + MONTH NAV ──────────────────────────────────────── */}
       {isMobileOrTablet ? (
@@ -404,7 +381,7 @@ export default function VendasCarrosPage() {
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, height: 44 }}>
               <Calendar size={13} color={COLOR} />
               <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>{MONTHS[month - 1]} {year}</span>
-              {isCurrentMonth && <span style={{ fontSize: "9px", fontWeight: "800", color: COLOR, background: `${COLOR}15`, padding: "2px 7px", borderRadius: "20px", letterSpacing: "0.06em", textTransform: "uppercase" }}>Atual</span>}
+              {isCurrentMonth && <span style={{ fontSize: "11px", fontWeight: "800", color: COLOR, background: `${COLOR}15`, padding: "2px 7px", borderRadius: "20px", letterSpacing: "0.06em", textTransform: "uppercase" }}>Atual</span>}
             </div>
             <button onClick={nextMonth} disabled={isCurrentMonth} style={{ width: 44, height: 44, background: "none", border: "none", cursor: isCurrentMonth ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isCurrentMonth ? "rgba(255,255,255,0.1)" : "var(--text-muted)", borderLeft: "1px solid var(--border)" }}>
               <ChevronRight size={14} />
@@ -426,7 +403,7 @@ export default function VendasCarrosPage() {
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <p style={{ fontSize: "clamp(12px, 3.5vw, 15px)", fontWeight: "900", color: "var(--text-primary)", letterSpacing: "-0.4px", lineHeight: 1, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</p>
-                    <p style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: 2 }}>{label}</p>
+                    <p style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: 2 }}>{label}</p>
                   </div>
                 </motion.div>
               ))}
@@ -466,7 +443,7 @@ export default function VendasCarrosPage() {
             <div style={{ padding: "0 14px", display: "flex", alignItems: "center", gap: 10, height: 44, minWidth: 158, justifyContent: "center" }}>
               <Calendar size={13} color={COLOR} />
               <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>{MONTHS[month - 1]} {year}</span>
-              {isCurrentMonth && <span style={{ fontSize: "9px", fontWeight: "800", color: COLOR, background: `${COLOR}15`, padding: "2px 7px", borderRadius: "20px", letterSpacing: "0.06em", textTransform: "uppercase" }}>Atual</span>}
+              {isCurrentMonth && <span style={{ fontSize: "11px", fontWeight: "800", color: COLOR, background: `${COLOR}15`, padding: "2px 7px", borderRadius: "20px", letterSpacing: "0.06em", textTransform: "uppercase" }}>Atual</span>}
             </div>
             <button onClick={nextMonth} disabled={isCurrentMonth} style={{ width: 40, height: 44, background: "none", border: "none", cursor: isCurrentMonth ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isCurrentMonth ? "rgba(255,255,255,0.1)" : "var(--text-muted)", borderLeft: "1px solid var(--border)" }}>
               <ChevronRight size={14} />
@@ -522,7 +499,7 @@ export default function VendasCarrosPage() {
         className="scroll-x-hide">
         <div style={{ display: "flex", alignItems: "center", gap: 5, marginRight: 4 }}>
           <SlidersHorizontal size={12} color="var(--text-muted)" />
-          <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Status</span>
+          <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Status</span>
         </div>
         {STATUS_FILTERS.map(f => {
           const active = statusFilter === f.value;
@@ -541,7 +518,7 @@ export default function VendasCarrosPage() {
               }}>
               {active && <div style={{ width: 5, height: 5, borderRadius: "50%", background: f.color, boxShadow: `0 0 6px ${f.color}` }} />}
               {f.label}
-              <span style={{ fontSize: "10px", fontWeight: 700, padding: "0 6px", borderRadius: "10px", background: active ? `${f.color}20` : "rgba(255,255,255,0.05)", color: active ? f.color : "var(--text-muted)" }}>{cnt}</span>
+              <span style={{ fontSize: "11.5px", fontWeight: 700, padding: "0 6px", borderRadius: "10px", background: active ? `${f.color}20` : "rgba(255,255,255,0.05)", color: active ? f.color : "var(--text-muted)" }}>{cnt}</span>
             </button>
           );
         })}

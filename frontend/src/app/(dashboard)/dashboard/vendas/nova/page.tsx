@@ -49,7 +49,7 @@ const PAY_COLOR: Record<string, string> = {
   cartao: "#f59e0b", financiamento: "#a78bfa", consorcio: "#f97316", permuta: "#ec4899",
 };
 
-import { fmtCurrencyFull as fmt } from "@/lib/formatters";
+import { fmtCurrencyFull as fmt, dataISO } from "@/lib/formatters";
 
 let _id = 100;
 const newId = () => _id++;
@@ -156,7 +156,7 @@ function PayRow({ line, onChange, onRemove, canRemove, totalVenda, onFillRemaind
                 style={{ fontSize: "14px", fontWeight: 600, borderColor: `${color}40`, paddingRight: totalVenda > 0 && line.valor > 0 ? 46 : 12 }}
                 onChange={e => { const m = maskCurrency(e.target.value); onChange(line.id, { valor_display: m, valor: parseCurrency(m) }); }} />
               {totalVenda > 0 && line.valor > 0 && (
-                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: "10px", fontWeight: 700, color, background: `${color}15`, padding: "1px 6px", borderRadius: 4 }}>
+                <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: "11.5px", fontWeight: 700, color, background: `${color}15`, padding: "1px 6px", borderRadius: 4 }}>
                   {Math.round((line.valor / totalVenda) * 100)}%
                 </span>
               )}
@@ -212,7 +212,7 @@ function PayRow({ line, onChange, onRemove, canRemove, totalVenda, onFillRemaind
                         }}>
                         <img src={b.logo} alt={b.value}
                           style={{ width: 36, height: 22, objectFit: "contain", filter: sel ? "none" : "opacity(0.6)" }} />
-                        <span style={{ fontSize: "9px", fontWeight: sel ? 700 : 500, color: sel ? "#a78bfa" : "var(--text-muted)", whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: "11px", fontWeight: sel ? 700 : 500, color: sel ? "#a78bfa" : "var(--text-muted)", whiteSpace: "nowrap" }}>
                           {b.value}
                         </span>
                       </button>
@@ -243,7 +243,7 @@ function PayRow({ line, onChange, onRemove, canRemove, totalVenda, onFillRemaind
                 <div style={{ padding: "11px 14px", borderRadius: 10, background: "linear-gradient(135deg,rgba(167,139,250,0.06),rgba(99,102,241,0.06))", border: "1px solid rgba(167,139,250,0.2)", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 12 }}>
                   {[{ label: `${parcelasN}x de`, value: fmt(sim.parcela), color: "#a78bfa" }, { label: "Juros totais", value: fmt(sim.juros), color: sim.juros > 0 ? "#f59e0b" : "#22c55e" }, { label: "Total c/ juros", value: fmt(sim.total), color: sim.juros > 0 ? "#ef4444" : "var(--text-primary)" }].map(r => (
                     <div key={r.label} style={{ textAlign: "center" }}>
-                      <p style={{ fontSize: "10px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 2 }}>{r.label}</p>
+                      <p style={{ fontSize: "11.5px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 2 }}>{r.label}</p>
                       <p style={{ fontSize: "14px", fontWeight: 700, color: r.color }}>{r.value}</p>
                     </div>
                   ))}
@@ -289,7 +289,7 @@ function PayRow({ line, onChange, onRemove, canRemove, totalVenda, onFillRemaind
                           style={{ width: 36, height: 22, objectFit: "contain",
                             filter: sel ? "none" : "opacity(0.6)"
                           }} />
-                        <span style={{ fontSize: "9px", fontWeight: sel ? 700 : 500, color: sel ? "#F5A623" : "var(--text-muted)", whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: "11px", fontWeight: sel ? 700 : 500, color: sel ? "#F5A623" : "var(--text-muted)", whiteSpace: "nowrap" }}>
                           {b.value}
                         </span>
                       </button>
@@ -368,21 +368,24 @@ export default function NovaVendaPage() {
   // Step 2 - payment
   const [valorVendaDisplay, setValorVendaDisplay] = useState("");
   const [valorVenda, setValorVenda]               = useState(0);
-  const [dataVenda, setDataVenda]                 = useState(new Date().toISOString().split("T")[0]);
+  const [dataVenda, setDataVenda]                 = useState(dataISO());
   const [dataEntrega, setDataEntrega]             = useState("");
   const [paymentLines, setPaymentLines]           = useState<PaymentLine[]>([{ id: newId(), forma: "pix", valor_display: "", valor: 0 }]);
   const [observacoes, setObservacoes]             = useState("");
   const [saleStatus, setSaleStatus]               = useState<"concluida" | "pendente">("concluida");
+  // Comissão do vendedor em %. O valor em R$ é calculado no servidor (antes o painel
+  // mandava sempre 0 e o relatório de comissões ficava zerado).
+  const [comissaoPct, setComissaoPct]             = useState("");
 
   // ─── Queries ──────────────────────────────────────────────────────────────
   const { data: carrosData = [] } = useQuery<Vehicle[]>({
     queryKey: ["vehicles-carros", vehicleSearch],
-    queryFn: () => vehiclesApi.list({ status: "disponivel", tipo: "carro", q: vehicleSearch || undefined, limit: 40 }),
+    queryFn: () => vehiclesApi.list({ status: "disponivel,reservado", tipo: "carro", q: vehicleSearch || undefined, limit: 40 }),
     enabled: step === 0,
   });
   const { data: motosData = [] } = useQuery<Vehicle[]>({
     queryKey: ["vehicles-motos", vehicleSearch],
-    queryFn: () => vehiclesApi.list({ status: "disponivel", tipo: "moto", q: vehicleSearch || undefined, limit: 40 }),
+    queryFn: () => vehiclesApi.list({ status: "disponivel,reservado", tipo: "moto", q: vehicleSearch || undefined, limit: 40 }),
     enabled: step === 0,
   });
   const vehicles = vehicleTab === "moto" ? motosData : carrosData;
@@ -497,6 +500,9 @@ export default function NovaVendaPage() {
       if (!valorVenda || valorVenda <= 0) errs.valorVenda = "Informe o valor de venda";
       if (!dataVenda) errs.dataVenda = "Informe a data de venda";
       if (Math.abs(remainder) > 0.5) errs.payment = `Faltam ${fmt(remainder)} para totalizar o valor de venda`;
+      else if (totalPago - valorVenda > 0.01) errs.payment = `As formas de pagamento somam ${fmt(totalPago)}, mais que o valor da venda (${fmt(valorVenda)})`;
+      const pct = Number(comissaoPct.replace(",", ".") || 0);
+      if (Number.isNaN(pct) || pct < 0 || pct > 20) errs.comissao = "Comissão entre 0% e 20%";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -510,13 +516,13 @@ export default function NovaVendaPage() {
       vehicle_id: selectedVehicle.id,
       cliente_id: selectedClient.id,
       valor_venda: valorVenda,
-      valor_entrada: paymentLines[0]?.valor || valorVenda,
+      // Entrada = tudo que não é financiado (antes era só a 1ª forma de pagamento)
+      valor_entrada: Math.max(0, (totalPago || valorVenda) - (paymentLines.find(l => l.forma === "financiamento")?.valor || 0)),
       valor_financiado: paymentLines.find(l => l.forma === "financiamento")?.valor || 0,
       parcelas: paymentLines.length === 1 ? parseInt(paymentLines[0].parcelas || "0") || null : null,
       forma_pagamento: formaFinal,
       banco_financiamento: paymentLines.find(l => l.forma === "financiamento")?.banco || null,
-      comissao_percentual: 0,
-      comissao_valor: 0,
+      comissao_percentual: Number(comissaoPct.replace(",", ".") || 0),
       data_venda: dataVenda,
       data_entrega: dataEntrega || null,
       status: saleStatus,
@@ -595,7 +601,7 @@ export default function NovaVendaPage() {
                         color: isActive ? color : "var(--text-muted)" }}>
                       <TabIcon size={14} />
                       <span style={{ fontSize: "13px", fontWeight: isActive ? 700 : 500 }}>{tab === "moto" ? "Motos" : "Carros"}</span>
-                      {count > 0 && <span style={{ fontSize: "10px", fontWeight: 700, color: isActive ? color : "var(--text-muted)", background: isActive ? `${color}18` : "var(--border)", padding: "1px 7px", borderRadius: 20 }}>{count}</span>}
+                      {count > 0 && <span style={{ fontSize: "11.5px", fontWeight: 700, color: isActive ? color : "var(--text-muted)", background: isActive ? `${color}18` : "var(--border)", padding: "1px 7px", borderRadius: 20 }}>{count}</span>}
                     </button>
                   );
                 })}
@@ -671,8 +677,8 @@ export default function NovaVendaPage() {
                             <p style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", marginBottom: 2, lineHeight: 1.2 }}>{v.marca} {v.modelo}</p>
                             <p style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: 8 }}>{v.ano} · {v.quilometragem.toLocaleString("pt-BR")} km</p>
                             <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
-                              <span style={{ fontSize: "10px", fontFamily: "monospace", background: "var(--surface)", border: "1px solid var(--border)", padding: "1px 6px", borderRadius: 4, color: "var(--text-muted)" }}>{v.placa}</span>
-                              {v.cor && <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "10px", color: "var(--text-muted)", background: "var(--surface)", border: "1px solid var(--border)", padding: "1px 6px", borderRadius: 4 }}><ColorDot cor={v.cor} /> {v.cor}</div>}
+                              <span style={{ fontSize: "11.5px", fontFamily: "monospace", background: "var(--surface)", border: "1px solid var(--border)", padding: "1px 6px", borderRadius: 4, color: "var(--text-muted)" }}>{v.placa}</span>
+                              {v.cor && <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "11.5px", color: "var(--text-muted)", background: "var(--surface)", border: "1px solid var(--border)", padding: "1px 6px", borderRadius: 4 }}><ColorDot cor={v.cor} /> {v.cor}</div>}
                             </div>
                           </div>
                         </motion.div>
@@ -895,7 +901,7 @@ export default function NovaVendaPage() {
                             <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: 1 }}>{c.cpf_cnpj || c.telefone || c.email || "Sem contato cadastrado"}</p>
                           </div>
                           {c.total_compras !== undefined && c.total_compras > 0 && (
-                            <span style={{ fontSize: "10px", fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", padding: "2px 8px", borderRadius: 20, flexShrink: 0 }}>
+                            <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", padding: "2px 8px", borderRadius: 20, flexShrink: 0 }}>
                               {c.total_compras}ª compra
                             </span>
                           )}
@@ -966,7 +972,16 @@ export default function NovaVendaPage() {
                 <Field label="Data de Entrega (opcional)">
                   <input type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} className="input" style={{ fontSize: "13px" }} />
                 </Field>
+                <Field label="Comissão do vendedor (%)" error={errors.comissao}>
+                  <input value={comissaoPct} inputMode="decimal" placeholder="Ex.: 1,5" className="input" style={{ fontSize: "13px" }}
+                    onChange={e => setComissaoPct(e.target.value.replace(/[^0-9,.]/g, ""))} />
+                </Field>
               </div>
+              {valorVenda > 0 && Number(comissaoPct.replace(",", ".") || 0) > 0 && (
+                <p style={{ fontSize: 12.5, color: "var(--text-secondary)", marginTop: 10 }}>
+                  Comissão: {fmt(valorVenda * Number(comissaoPct.replace(",", ".")) / 100)} (lançada como saída no caixa ao concluir)
+                </p>
+              )}
             </div>
 
             {/* Payment lines */}
@@ -1057,7 +1072,7 @@ export default function NovaVendaPage() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 14 }}>
                 {selectedVehicle && (
                   <div style={{ padding: 16, borderRadius: 12, background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-                    <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Veículo</p>
+                    <p style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Veículo</p>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 38, height: 38, borderRadius: 10, background: selectedVehicle.tipo === "moto" ? "rgba(249,115,22,0.1)" : "rgba(59,130,246,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         {selectedVehicle.tipo === "moto" ? <Bike size={17} color="#f97316" /> : <Car size={17} color="#3b82f6" />}
@@ -1071,7 +1086,7 @@ export default function NovaVendaPage() {
                 )}
                 {selectedClient && (
                   <div style={{ padding: 16, borderRadius: 12, background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-                    <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Cliente</p>
+                    <p style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Cliente</p>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(167,139,250,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: "#a78bfa" }}>
                         {selectedClient.nome.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase()}
@@ -1085,7 +1100,7 @@ export default function NovaVendaPage() {
                 )}
               </div>
               <div style={{ marginTop: 14, padding: 20, borderRadius: 14, background: "linear-gradient(135deg,rgba(34,197,94,0.08),rgba(16,185,129,0.04))", border: "1px solid rgba(34,197,94,0.2)" }}>
-                <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>Resumo Financeiro</p>
+                <p style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>Resumo Financeiro</p>
                 <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 14 }}>
                   {[
                     { label: "Valor de Venda", value: fmt(valorVenda), color: "#22c55e" },
@@ -1093,7 +1108,7 @@ export default function NovaVendaPage() {
                     { label: "Data da Venda", value: new Date(dataVenda + "T12:00:00").toLocaleDateString("pt-BR"), color: "#a78bfa" },
                   ].map(r => (
                     <div key={r.label} style={{ textAlign: "center" }}>
-                      <p style={{ fontSize: "10px", color: "var(--text-muted)", marginBottom: 4 }}>{r.label}</p>
+                      <p style={{ fontSize: "11.5px", color: "var(--text-muted)", marginBottom: 4 }}>{r.label}</p>
                       <p style={{ fontSize: "18px", fontWeight: 800, color: r.color, letterSpacing: "-0.5px" }}>{r.value}</p>
                     </div>
                   ))}

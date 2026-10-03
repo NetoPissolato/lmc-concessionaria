@@ -245,7 +245,7 @@ export function PhotoUploader({ vehicleId }: PhotoUploaderProps) {
               >
                 <img src={photo.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s" }} className="photo-img" />
                 {photo.is_main && (
-                  <div style={{ position: "absolute", top: 7, left: 7, background: "rgba(245,158,11,0.92)", backdropFilter: "blur(4px)", borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 800, color: "#fff" }}>CAPA</div>
+                  <div style={{ position: "absolute", top: 7, left: 7, background: "rgba(245,158,11,0.92)", backdropFilter: "blur(4px)", borderRadius: 6, padding: "2px 8px", fontSize: 11.5, fontWeight: 800, color: "#fff" }}>CAPA</div>
                 )}
                 <div className="photo-overlay" style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.15) 60%,transparent 100%)", display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, padding: 10, opacity: 0, transition: "opacity 0.18s" }}>
                   {!photo.is_main && (

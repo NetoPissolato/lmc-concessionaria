@@ -246,6 +246,8 @@ export interface FinancialEntry {
   vehicle_id?: string | null;
   venda_id?: string | null;
   expense_id?: string | null;
+  /** Preenchido quando este lançamento é um ESTORNO (valor negativo) de outro */
+  estorno_de_id?: string | null;
   foto_url?: string | null;
   created_at?: string;
 }
@@ -261,11 +263,30 @@ export interface DashboardStats {
   vendidos_hoje: number;
   vendidos_mes: number;
   faturamento_mes: number;
-  lucro_mes: number;
+  /** Saldo de caixa do mês (entradas − saídas). NÃO é lucro. null para funcionário. */
+  lucro_mes: number | null;
+  /** Lucro de verdade: venda − custo total do veículo, das vendas concluídas no mês */
+  lucro_bruto_mes?: number | null;
+  margem_media_mes?: number | null;
+  ticket_medio_mes?: number | null;
+  saldo_caixa_mes?: number | null;
+  custo_estoque?: number | null;
+  estoque_parado_total?: number;
+  estoque_parado?: EstoqueParado[];
   top_sellers: TopSeller[];
   ultimas_vendas: Sale[];
   annual_chart: ChartDataPoint[];
   daily_chart: DailyChartDataPoint[];
+}
+
+export interface EstoqueParado {
+  id: string;
+  marca: string;
+  modelo: string;
+  ano: number;
+  tipo: "carro" | "moto";
+  dias_em_estoque: number;
+  valor_anunciado: number | null;
 }
 
 export interface TopSeller {

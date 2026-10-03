@@ -138,7 +138,7 @@ function ModeloCard({
             ) : (
               <>
                 <ImageIcon size={18} />
-                <span style={{ fontSize: 10, fontWeight: 600 }}>Adicionar</span>
+                <span style={{ fontSize: 11.5, fontWeight: 600 }}>Adicionar</span>
               </>
             )}
           </div>

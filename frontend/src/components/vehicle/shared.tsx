@@ -30,7 +30,7 @@ export function VehicleStatusBadge({ status }: { status: VehicleStatus }) {
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: "4px",
-      fontSize: "10px", fontWeight: "700", color: c.color, background: c.bg,
+      fontSize: "11.5px", fontWeight: "700", color: c.color, background: c.bg,
       border: `1px solid ${c.color}20`, padding: "3px 8px", borderRadius: "20px", whiteSpace: "nowrap",
     }}>
       <Icon size={9} />{VEHICLE_STATUS_LABELS[status]}
@@ -92,7 +92,7 @@ export function DaysChip({ days }: { days: number | null }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: "4px",
-      fontSize: "10px", fontWeight: "700", color, background: bg,
+      fontSize: "11.5px", fontWeight: "700", color, background: bg,
       border: `1px solid ${color}28`, padding: "3px 8px", borderRadius: "20px", flexShrink: 0,
       whiteSpace: "nowrap",
     }}>
@@ -115,7 +115,7 @@ export function MarginBar({ pct }: { pct: number }) {
           style={{ height: "100%", background: color, borderRadius: "2px" }}
         />
       </div>
-      <span style={{ fontSize: "10px", fontWeight: "700", color, minWidth: "32px" }}>
+      <span style={{ fontSize: "11.5px", fontWeight: "700", color, minWidth: "32px" }}>
         {n.toFixed(1)}%
       </span>
     </div>
@@ -190,7 +190,7 @@ export function SidebarSection({
       borderRadius: "14px", padding: "14px 16px",
     }}>
       <p style={{
-        fontSize: "10px", fontWeight: "800", color: "var(--text-muted)",
+        fontSize: "11.5px", fontWeight: "800", color: "var(--text-muted)",
         textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "12px",
       }}>
         {title}
@@ -232,7 +232,7 @@ export function FilterCheckbox({
           {label}
         </span>
       </div>
-      <span style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: 600 }}>
+      <span style={{ fontSize: "11.5px", color: "var(--text-muted)", fontWeight: 600 }}>
         {count}
       </span>
     </button>

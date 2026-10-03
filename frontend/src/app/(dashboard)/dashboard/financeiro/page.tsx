@@ -82,6 +82,14 @@ const CATEGORY_ICONS: Record<string, any> = {
 const PAGE_SIZE = 10;
 const LUCRO_PAGE_SIZE = 5;
 
+// Eixo do gráfico: "-120k", "1,2M". Antes a largura fixa cortava o sinal e o número ("0k" em todo tick).
+function eixoValor(v: number) {
+  const a = Math.abs(v);
+  if (a >= 1_000_000) return `${(v / 1_000_000).toFixed(1).replace(".", ",")}M`;
+  if (a >= 1_000) return `${Math.round(v / 1_000)}k`;
+  return String(Math.round(v));
+}
+
 export default function FinanceiroPage() {
   const now = new Date();
   const [year,  setYear]  = useState(now.getFullYear());
@@ -109,15 +117,24 @@ export default function FinanceiroPage() {
     refetchInterval: 30_000,   // auto-atualiza a cada 30s
   });
 
-  const { data: allYearEntries = [] } = useQuery<FinancialEntry[]>({
-    queryKey: ["financial-chart", year],
-    queryFn: () => financialApi.list({ year, limit: 500 }),
+  // Série anual somada no servidor (antes: baixava até 500 lançamentos e somava aqui;
+  // com mais de 500 no ano o gráfico ficava errado sem avisar)
+  const { data: anual } = useQuery<{ meses: { mes: number; entradas: number; saidas: number; saldo: number }[] }>({
+    queryKey: ["financial-annual", year],
+    queryFn: () => financialApi.getAnnual(year),
+    refetchInterval: 30_000,
+  });
+
+  // Lançamentos do MÊS escolhido (antes a lista ignorava o mês e mostrava o ano todo)
+  const { data: monthEntries = [] } = useQuery<FinancialEntry[]>({
+    queryKey: ["financial-month", year, month],
+    queryFn: () => financialApi.list({ year, month, limit: 500 }),
     refetchInterval: 30_000,
   });
 
   const { data: entries = [], isLoading } = useQuery<FinancialEntry[]>({
-    queryKey: ["financial-entries", typeFilter, year],
-    queryFn: () => financialApi.list({ year, limit: 500, tipo: typeFilter || undefined }),
+    queryKey: ["financial-entries", typeFilter, year, month],
+    queryFn: () => financialApi.list({ year, month, limit: 500, tipo: typeFilter || undefined }),
     refetchInterval: 15_000,   // lista de lançamentos atualiza a cada 15s
   });
 
@@ -141,24 +158,19 @@ export default function FinanceiroPage() {
   const safeLucroPage = Math.min(lucroPage, Math.max(lucroTotalPages, 1));
   const veiculosLucro = veiculosLucroAll.slice((safeLucroPage - 1) * LUCRO_PAGE_SIZE, safeLucroPage * LUCRO_PAGE_SIZE);
 
-  const lucro    = Number(summary?.lucro_liquido   ?? 0);
+  // Saldo de caixa do mês (entradas − saídas). Não é lucro: compra de carro entra como saída.
+  const lucro    = Number(summary?.saldo ?? summary?.lucro_liquido ?? 0);
   const entradas = Number(summary?.total_entradas  ?? 0);
   const saidas   = Number(summary?.total_saidas    ?? 0);
 
   const monthlyChartData = MONTHS_SHORT.map((name, idx) => {
-    const mes = idx + 1;
-    const e = allYearEntries.filter(en => new Date(en.data + "T12:00:00").getMonth() + 1 === mes && en.tipo === "entrada");
-    const s = allYearEntries.filter(en => new Date(en.data + "T12:00:00").getMonth() + 1 === mes && en.tipo === "saida");
-    const entr = e.reduce((a, b) => a + Number(b.valor), 0);
-    const said = s.reduce((a, b) => a + Number(b.valor), 0);
+    const m = anual?.meses?.find(x => x.mes === idx + 1);
+    const entr = Number(m?.entradas ?? 0);
+    const said = Number(m?.saidas ?? 0);
     return { name, entradas: entr, saidas: said, lucro: entr - said };
   });
 
   const dailyChartData = useMemo(() => {
-    const monthEntries = allYearEntries.filter(en => {
-      const d = new Date(en.data + "T12:00:00");
-      return d.getFullYear() === year && d.getMonth() + 1 === month;
-    });
     const today = new Date().getDate();
     const isCurrentMonth = year === now.getFullYear() && month === (now.getMonth() + 1);
     const maxDay = isCurrentMonth ? today : new Date(year, month, 0).getDate();
@@ -170,7 +182,7 @@ export default function FinanceiroPage() {
       const said = s.reduce((a, b) => a + Number(b.valor), 0);
       return { name: String(dia), entradas: entr, saidas: said, lucro: entr - said };
     });
-  }, [allYearEntries, year, month]);
+  }, [monthEntries, year, month]);
 
   const chartData = period === "mensal" ? monthlyChartData : dailyChartData;
 
@@ -219,7 +231,7 @@ export default function FinanceiroPage() {
           <div style={{ width: "1px", background: "var(--border)" }} />
           <select value={year} onChange={e => handleYear(Number(e.target.value))} className="input"
             style={{ border: "none", borderRadius: 0, background: "transparent", width: isMobileOrTablet ? "auto" : "90px", height: "40px", fontSize: "13px" }}>
-            {[2023, 2024, 2025, 2026].map(y => (<option key={y} value={y}>{y}</option>))}
+            {Array.from({ length: now.getFullYear() - 2022 }, (_, i) => 2023 + i).map(y => (<option key={y} value={y}>{y}</option>))}
           </select>
         </div>
       </motion.div>
@@ -240,13 +252,13 @@ export default function FinanceiroPage() {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ArrowUpRight size={16} color="#22c55e" />
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(34,197,94,0.2)" }}>ENTRADAS</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(34,197,94,0.2)" }}>ENTRADAS</span>
           </div>
           {summaryLoading ? <div className="skeleton" style={{ height: 24, width: "70%", marginBottom: 6 }} /> : (
             <p style={{ fontSize: "clamp(13px,2.5vw,22px)", fontWeight: 800, color: "#22c55e", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fmt(entradas)}</p>
           )}
           <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Receita Bruta</p>
-          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>{MONTHS[month - 1]} {year}</p>
+          <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 1 }}>{MONTHS[month - 1]} {year}</p>
         </motion.div>
 
         {/* Total Saídas */}
@@ -255,13 +267,13 @@ export default function FinanceiroPage() {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ArrowDownRight size={16} color="#ef4444" />
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: "#ef4444", background: "rgba(239,68,68,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(239,68,68,0.2)" }}>SAÍDAS</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#ef4444", background: "rgba(239,68,68,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(239,68,68,0.2)" }}>SAÍDAS</span>
           </div>
           {summaryLoading ? <div className="skeleton" style={{ height: 24, width: "70%", marginBottom: 6 }} /> : (
             <p style={{ fontSize: "clamp(13px,2.5vw,22px)", fontWeight: 800, color: "#ef4444", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fmt(saidas)}</p>
           )}
           <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Total Saídas</p>
-          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>Custos e despesas</p>
+          <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 1 }}>Custos e despesas</p>
         </motion.div>
 
         {/* Lucro Líquido */}
@@ -270,15 +282,15 @@ export default function FinanceiroPage() {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: lucro >= 0 ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <DollarSign size={16} color={lucro >= 0 ? "#22c55e" : "#ef4444"} />
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: lucro >= 0 ? "#22c55e" : "#ef4444", background: lucro >= 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", padding: "2px 7px", borderRadius: 20, border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>{lucro >= 0 ? "POSITIVO" : "NEGATIVO"}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: lucro >= 0 ? "#22c55e" : "#ef4444", background: lucro >= 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", padding: "2px 7px", borderRadius: 20, border: `1px solid ${lucro >= 0 ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>{lucro >= 0 ? "POSITIVO" : "NEGATIVO"}</span>
           </div>
           {summaryLoading ? <div className="skeleton" style={{ height: 24, width: "70%", marginBottom: 6 }} /> : (
             <p style={{ fontSize: "clamp(13px,2.5vw,22px)", fontWeight: 800, color: lucro >= 0 ? "#22c55e" : "#ef4444", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {lucro >= 0 ? "+" : ""}{fmt(lucro)}
             </p>
           )}
-          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)" }}>Lucro Líquido</p>
-          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>Resultado do período</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)" }}>Saldo do mês</p>
+          <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 1 }}>Entradas menos saídas</p>
         </motion.div>
 
         {/* Veículos Vendidos */}
@@ -287,7 +299,7 @@ export default function FinanceiroPage() {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Car size={16} color="#F5A623" />
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: "#F5A623", background: "rgba(245,166,35,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(245,166,35,0.2)" }}>VENDAS</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#F5A623", background: "rgba(245,166,35,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(245,166,35,0.2)" }}>VENDAS</span>
           </div>
           {lucLoading ? <div className="skeleton" style={{ height: 24, width: "50%", marginBottom: 6 }} /> : (
             <p style={{ fontSize: "clamp(16px,3vw,28px)", fontWeight: 800, color: "#F5A623", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1 }}>
@@ -295,7 +307,7 @@ export default function FinanceiroPage() {
             </p>
           )}
           <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Veículos Vendidos</p>
-          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>{MONTHS[month - 1]} {year}</p>
+          <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 1 }}>{MONTHS[month - 1]} {year}</p>
         </motion.div>
 
         {/* Margem Média */}
@@ -304,7 +316,7 @@ export default function FinanceiroPage() {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <TrendingUp size={16} color="#6366f1" />
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: "#6366f1", background: "rgba(99,102,241,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(99,102,241,0.2)" }}>MARGEM</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "rgba(99,102,241,0.1)", padding: "2px 7px", borderRadius: 20, border: "1px solid rgba(99,102,241,0.2)" }}>MARGEM</span>
           </div>
           {lucLoading ? <div className="skeleton" style={{ height: 24, width: "50%", marginBottom: 6 }} /> : (
             <p style={{ fontSize: "clamp(16px,3vw,28px)", fontWeight: 800, color: "#6366f1", letterSpacing: "-0.5px", marginBottom: 4, lineHeight: 1 }}>
@@ -312,7 +324,7 @@ export default function FinanceiroPage() {
             </p>
           )}
           <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Margem Média</p>
-          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>Por veículo vendido</p>
+          <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 1 }}>Por veículo vendido</p>
         </motion.div>
       </div>
 
@@ -329,7 +341,7 @@ export default function FinanceiroPage() {
           gap: "10px",
         }}>
           <div>
-            <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
               Performance {period === "mensal" ? "Mensal" : "Diária"}
             </span>
             <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.3px", marginTop: 4 }}>
@@ -341,7 +353,7 @@ export default function FinanceiroPage() {
               {(["mensal", "Diário"] as const).map(p => (
                 <button key={p} onClick={() => setPeriod(p)} style={{
                   padding: "4px 10px", borderRadius: "6px", border: "none", cursor: "pointer",
-                  fontSize: "10px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em",
+                  fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em",
                   background: period === p ? "rgba(245,166,35,0.15)" : "transparent",
                   color: period === p ? "#F5A623" : "rgba(255,255,255,0.35)",
                   transition: "all 0.15s",
@@ -352,7 +364,7 @@ export default function FinanceiroPage() {
               {([
                 { key: "entradas", label: "Entradas", color: "#22c55e", vis: visEntradas, toggle: toggleEntradas },
                 { key: "saidas",   label: "Saídas",   color: "#ef4444", vis: visSaidas,   toggle: toggleSaidas   },
-                { key: "lucro",    label: "Lucro",    color: "#6366f1", vis: visLucro,    toggle: toggleLucro    },
+                { key: "lucro",    label: "Saldo",    color: "#6366f1", vis: visLucro,    toggle: toggleLucro    },
               ]).map(({ key, label, color, vis, toggle }) => (
                 <button key={key} onClick={toggle} style={{
                   display: "flex", alignItems: "center", gap: "5px",
@@ -362,7 +374,7 @@ export default function FinanceiroPage() {
                   cursor: "pointer", transition: "all 0.15s",
                 }}>
                   <div style={{ width: 7, height: 7, borderRadius: 2, background: vis ? color : "rgba(255,255,255,0.2)" }} />
-                  <span style={{ fontSize: "10px", fontWeight: "600", color: vis ? color : "rgba(255,255,255,0.3)", transition: "color 0.15s" }}>{label}</span>
+                  <span style={{ fontSize: "11.5px", fontWeight: "600", color: vis ? color : "rgba(255,255,255,0.3)", transition: "color 0.15s" }}>{label}</span>
                 </button>
               ))}
             </div>
@@ -370,7 +382,7 @@ export default function FinanceiroPage() {
         </div>
 
         <ResponsiveContainer width="100%" height={isMobileOrTablet ? 160 : 200}>
-          <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: isMobileOrTablet ? -24 : -16, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gradEntradas" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%"   stopColor="#22c55e" stopOpacity={0.25} />
@@ -389,8 +401,8 @@ export default function FinanceiroPage() {
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
             <XAxis dataKey="name" tick={{ fontSize: isMobileOrTablet ? 9 : 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
               interval={isMobileOrTablet ? (period === "mensal" ? 1 : 4) : 0} />
-            <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
-              tickFormatter={v => `${(v/1000).toFixed(0)}k`} width={isMobileOrTablet ? 30 : 38} />
+            <YAxis tick={{ fontSize: 11.5, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
+              tickFormatter={eixoValor} width={isMobileOrTablet ? 44 : 52} />
             <Tooltip
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null;
@@ -419,7 +431,7 @@ export default function FinanceiroPage() {
                     )}
                     <div style={{ marginTop: "7px", paddingTop: "7px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                       <p style={{ fontWeight: "800", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                        <span style={{ fontSize: 10, color: "var(--text-muted)" }}>Lucro</span>
+                        <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>Saldo</span>
                         <span style={{ color: lucroVal >= 0 ? "#6366f1" : "#ef4444", fontSize: 13 }}>
                           {lucroVal >= 0 ? "+" : ""}{fmt(lucroVal)}
                         </span>
@@ -459,7 +471,7 @@ export default function FinanceiroPage() {
           <div style={{ padding: isMobileOrTablet ? "16px 16px 14px" : "20px 22px 16px", borderBottom: "1px solid var(--border)" }}>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
               <div>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Lucratividade</span>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Lucratividade</span>
                 <h3 style={{ fontSize: isMobile ? 14 : 16, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.4px", marginTop: 2 }}>
                   Lucro por Veículo — {MONTHS[month - 1]} {year}
                 </h3>
@@ -472,7 +484,7 @@ export default function FinanceiroPage() {
                     { label: "Margem média", value: resumoLucro.margem_media?.toFixed(1) + "%", color: "#6366f1" },
                   ].map(s => (
                     <div key={s.label} style={{ textAlign: "right" }}>
-                      <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{s.label}</p>
+                      <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{s.label}</p>
                       <p style={{ fontSize: isMobile ? 13 : 15, fontWeight: 800, color: s.color }}>{s.value}</p>
                     </div>
                   ))}
@@ -550,11 +562,11 @@ export default function FinanceiroPage() {
                           <p style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: isMobile ? "180px" : "none" }}>
                             {v.veiculo}
                           </p>
-                          <span style={{ fontSize: 10, fontWeight: 600, padding: "1px 6px", borderRadius: 4, background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: 11.5, fontWeight: 600, padding: "1px 6px", borderRadius: 4, background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                             {v.placa}
                           </span>
                         </div>
-                        <p style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: isMobile ? 8 : 10 }}>
+                        <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginBottom: isMobile ? 8 : 10 }}>
                           Vendido em {v.data_venda}{v.vendedor && v.vendedor !== "—" ? ` · ${v.vendedor}` : ""}
                         </p>
 
@@ -566,10 +578,10 @@ export default function FinanceiroPage() {
                               style={{ height: "100%", background: "linear-gradient(90deg, #10b981, #22c55e)" }} />
                           </div>
                           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-                            <span style={{ fontSize: 9, color: "var(--text-muted)" }}>
+                            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
                               <span style={{ color: "#f97316" }}>&#9632;</span> Custo {custoBarPct.toFixed(0)}%
                             </span>
-                            <span style={{ fontSize: 9, color: isProfit ? "#22c55e" : "#ef4444" }}>
+                            <span style={{ fontSize: 11, color: isProfit ? "#22c55e" : "#ef4444" }}>
                               Lucro {lucroBarPct.toFixed(0)}% <span style={{ color: isProfit ? "#22c55e" : "#ef4444" }}>&#9632;</span>
                             </span>
                           </div>
@@ -584,7 +596,7 @@ export default function FinanceiroPage() {
                               { label: "Vendido por", value: fmt(v.valor_vendido), color: "#10b981", bold: true },
                             ].map(d => (
                               <div key={d.label}>
-                                <p style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 1 }}>{d.label}</p>
+                                <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 1 }}>{d.label}</p>
                                 <p style={{ fontSize: 11, fontWeight: d.bold ? 700 : 600, color: d.color }}>{d.value}</p>
                               </div>
                             ))}
@@ -594,11 +606,11 @@ export default function FinanceiroPage() {
                         {isMobile && (
                           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                             <div>
-                              <p style={{ fontSize: 9, color: "var(--text-muted)" }}>Custo total</p>
+                              <p style={{ fontSize: 11, color: "var(--text-muted)" }}>Custo total</p>
                               <p style={{ fontSize: 11, fontWeight: 700, color: "#f97316" }}>{fmt(v.custo_total)}</p>
                             </div>
                             <div>
-                              <p style={{ fontSize: 9, color: "var(--text-muted)" }}>Vendido por</p>
+                              <p style={{ fontSize: 11, color: "var(--text-muted)" }}>Vendido por</p>
                               <p style={{ fontSize: 11, fontWeight: 700, color: "#10b981" }}>{fmt(v.valor_vendido)}</p>
                             </div>
                           </div>
@@ -608,12 +620,12 @@ export default function FinanceiroPage() {
 
                     <div style={{ textAlign: isMobile ? "left" : "right", flexShrink: 0 }}>
                       <div style={{ padding: isMobile ? "8px 12px" : "10px 14px", borderRadius: 10, background: isProfit ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${isProfit ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`, display: "flex", flexDirection: isMobile ? "row" : "column", alignItems: isMobile ? "center" : "flex-end", gap: isMobile ? 10 : 0 }}>
-                        <p style={{ fontSize: 9, fontWeight: 600, color: "var(--text-muted)", marginBottom: isMobile ? 0 : 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Lucro</p>
+                        <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", marginBottom: isMobile ? 0 : 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Lucro</p>
                         <p style={{ fontSize: isMobile ? 18 : 20, fontWeight: 900, color: profitColor, letterSpacing: "-0.5px", lineHeight: 1 }}>
                           {isProfit ? "+" : ""}{fmt(v.lucro_bruto)}
                         </p>
                         {v.margem_pct !== 0 && (
-                          <p style={{ fontSize: 10, fontWeight: 700, color: profitColor, marginTop: isMobile ? 0 : 3, marginLeft: isMobile ? "auto" : 0, opacity: 0.8 }}>
+                          <p style={{ fontSize: 11.5, fontWeight: 700, color: profitColor, marginTop: isMobile ? 0 : 3, marginLeft: isMobile ? "auto" : 0, opacity: 0.8 }}>
                             {v.margem_pct?.toFixed(1)}% margem
                           </p>
                         )}
@@ -666,8 +678,8 @@ export default function FinanceiroPage() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Registros</span>
-              <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.3px" }}>Lancamentos</h3>
+              <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Registros</span>
+              <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.3px" }}>Lançamentos do mês</h3>
             </div>
             {!isLoading && entries.length > 0 && (
               <span style={{
@@ -791,14 +803,20 @@ export default function FinanceiroPage() {
                         {e.descricao}
                       </p>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{d.toLocaleDateString("pt-BR")}</span>
+                        <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>{d.toLocaleDateString("pt-BR")}</span>
                         {/* Badge categoria */}
-                        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}25`, letterSpacing: "0.02em" }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}25`, letterSpacing: "0.02em" }}>
                           {catLabel}
                         </span>
+                        {/* Estorno: lançamento que desfaz outro (venda cancelada, despesa removida) */}
+                        {e.estorno_de_id && (
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: "rgba(148,163,184,0.12)", color: "#cbd5e1", border: "1px solid rgba(148,163,184,0.3)" }}>
+                            Estorno
+                          </span>
+                        )}
                         {/* Badge tipo */}
                         {!isMobile && (
-                          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: `${color}10`, color, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: `${color}10`, color, letterSpacing: "0.04em", textTransform: "uppercase" }}>
                             {isEntrada ? "Entrada" : "Saída"}
                           </span>
                         )}
@@ -817,7 +835,7 @@ export default function FinanceiroPage() {
                         {isEntrada ? "+" : "-"}{fmt(Number(e.valor))}
                       </p>
                       {isMobile && (
-                        <span style={{ fontSize: 9, color, opacity: 0.7, fontWeight: 600 }}>{isEntrada ? "Entrada" : "Saída"}</span>
+                        <span style={{ fontSize: 11, color, opacity: 0.7, fontWeight: 600 }}>{isEntrada ? "Entrada" : "Saída"}</span>
                       )}
                     </div>
                   </motion.div>

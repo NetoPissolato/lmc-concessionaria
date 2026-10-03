@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+/* Inter vem do next/font no layout raiz (--font-inter); o @import do Google Fonts baixava a fonte de novo */
 @import "tailwindcss";
 
 /* ─── Design Tokens ─────────────────────────────────────────────────────────── */
@@ -26,7 +26,7 @@
   /* Text — neutral, no blue cast */
   --text-primary:   #f0f0f0;
   --text-secondary: #9a9a9a;
-  --text-muted:     #636363;
+  --text-muted:     #8b8b8b;   /* era #636363 (3,4:1 no fundo, reprovava); agora 5,6:1 */
   --text-accent:    #F5A623;
 
   /* Status */
@@ -91,7 +91,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: var(--background);
   color: var(--text-primary);
   line-height: 1.6;
@@ -229,7 +229,7 @@ input:-webkit-autofill:active {
 
 /* ─── Section Title ─────────────────────────────────────────────────────────── */
 .section-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -432,7 +432,7 @@ input[type="number"] { -moz-appearance: textfield; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 20px;
@@ -548,7 +548,7 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 .table-head-cell {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -1297,7 +1297,7 @@ input[type="number"] { -moz-appearance: textfield; }
   padding: 8px 4px 4px;
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
   transition: color 0.15s;
@@ -1915,11 +1915,13 @@ input[type="number"] { -moz-appearance: textfield; }
   .form-grid-2 { grid-template-columns: 1fr; }
 }
 
-/* ─── KPI strip — 3 cols on desktop, 2 on tablet, 1 on mobile ───────────────── */
+/* ─── KPI strip no celular: 2 colunas (1 coluna gastava uma tela inteira com 5 números).
+   Abaixo de 340px a regra "8. CARDS KPI" empilha em 1 coluna. */
 @media (max-width: 639px) {
-  .kpi-strip {
-    grid-template-columns: 1fr !important;
-  }
+  .kpi-strip { grid-template-columns: 1fr 1fr !important; }
+  .kpi-strip > * { padding: 16px 14px !important; border-right: none !important; border-bottom: 1px solid var(--border); }
+  .kpi-strip > *:nth-child(odd):not(:last-child) { border-right: 1px solid var(--border) !important; }
+  .kpi-strip > *:last-child:nth-child(odd) { grid-column: 1 / -1; border-bottom: none; }
 }
 
 /* ─── Search bar + controls row — stack on mobile ───────────────────────────── */
@@ -2580,8 +2582,8 @@ body.modal-open {
 .row-card__header { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; margin-bottom: 4px; }
 .row-card__footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 .row-card__actions { display: flex; gap: 6px; flex-shrink: 0; }
-.row-card__tag    { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
-.row-card__meta   { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 3px; white-space: nowrap; flex-shrink: 0; }
+.row-card__tag    { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+.row-card__meta   { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 3px; white-space: nowrap; flex-shrink: 0; }
 
 /* BTN-ROW: grupo de botoes adaptavel */
 .btn-row           { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -3019,7 +3021,7 @@ img { max-width: 100%; height: auto; }
 /* Em telas 381–479px, texto do eixo menor */
 @media (min-width: 381px) and (max-width: 479px) {
   .recharts-cartesian-axis-tick text {
-    font-size: 8px !important;
+    font-size: 11px !important;
   }
   /* Mostra menos labels no eixo X reduzindo densidade */
   .recharts-xAxis .recharts-cartesian-axis-tick:nth-child(even) { display: none; }
@@ -3152,7 +3154,7 @@ img { max-width: 100%; height: auto; }
 /* ── 6. STEPPER DE FORMULÁRIO MULTI-STEP ────────────────────────────────────── */
 /* Labels dos passos ficam menores em mobile para caber na linha */
 @media (max-width: 479px) {
-  .step-label { font-size: 9px !important; }
+  .step-label { font-size: 11px !important; }
   .step-circle { width: 28px !important; height: 28px !important; }
 }
 
@@ -3406,4 +3408,43 @@ img { max-width: 100%; height: auto; }
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 16px;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ─── Dashboard: cabeçalho compacto, alerta e estoque parado (2026-10) ───────
+   ══════════════════════════════════════════════════════════════════════════════ */
+.dash-topo { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
+.dash-topo__titulo { font-size: clamp(20px, 2.4vw, 26px); font-weight: 800; letter-spacing: -0.6px; color: var(--text-primary); }
+.dash-topo__sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+.dash-topo__acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+.dash-alerta {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 12px 16px; border-radius: 12px; cursor: pointer;
+  background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fecaca; font-size: 14px;
+}
+.dash-alerta svg:first-child { color: #f87171; flex-shrink: 0; }
+.dash-alerta span { flex: 1; }
+.dash-alerta strong { color: #fff; }
+.dash-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+.dash-card__topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 14px; }
+.dash-card__titulo { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
+.dash-card__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+.dash-parados { list-style: none; display: grid; gap: 6px; }
+.dash-parados button {
+  width: 100%; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 10px; cursor: pointer; text-align: left;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-secondary);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.dash-parados button:hover { border-color: var(--border-hover); background: var(--surface-3); }
+.dash-parados__nome { color: var(--text-primary); font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash-parados__preco { font-size: 13px; font-variant-numeric: tabular-nums; }
+.dash-parados__dias { font-size: 12px; font-weight: 700; color: #fca5a5; background: rgba(239, 68, 68, 0.12); padding: 3px 9px; border-radius: 999px; }
+@media (max-width: 640px) { .dash-parados__preco { display: none; } .dash-parados button { grid-template-columns: auto 1fr auto; } }
+
+/* Movimento só para quem não pediu menos movimento no sistema */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
 }

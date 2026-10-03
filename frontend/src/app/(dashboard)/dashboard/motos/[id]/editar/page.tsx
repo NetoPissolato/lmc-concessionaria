@@ -285,7 +285,7 @@ export default function EditarMotoPage() {
                   value={form.quilometragem}
                   onChange={e => setForm(f => ({ ...f, quilometragem: maskKM(e.target.value) }))}
                 />
-                <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
+                <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "11.5px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
               </div>
             </Field>
             <Field label="Status" required>

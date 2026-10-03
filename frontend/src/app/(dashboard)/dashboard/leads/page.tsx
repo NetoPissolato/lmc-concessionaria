@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { leadsApi } from "@/lib/api";
+import PedidosAviso from "./PedidosAviso";
 
 const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "");
 const PAGE_SIZE = 20;
@@ -186,7 +187,7 @@ export default function LeadsPage() {
     <div style={{ maxWidth: 960, margin: "0 auto" }}>
       {confirmDeleteId && (
         <ConfirmModal
-          message="Este lead sera removido permanentemente."
+          message="Este lead será removido permanentemente."
           onConfirm={() => doDeleteLead(confirmDeleteId)}
           onCancel={() => setConfirmDeleteId(null)}
         />
@@ -215,7 +216,7 @@ export default function LeadsPage() {
       `}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 12, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, gap: 12, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
             Leads <span style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: 18 }}>/ CRM</span>
@@ -228,6 +229,8 @@ export default function LeadsPage() {
           <RefreshCw size={13} /> Atualizar
         </button>
       </div>
+
+      <PedidosAviso />
 
       {/* KPI strip */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>

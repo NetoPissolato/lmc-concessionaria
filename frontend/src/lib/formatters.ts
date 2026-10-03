@@ -61,3 +61,12 @@ export const fmtKm = (v: number): string =>
 /** Converte string para Title Case (ex: "FULANO DA SILVA" → "Fulano Da Silva"). */
 export const toTitleCase = (s: string): string =>
   s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+
+/**
+ * Data LOCAL no formato YYYY-MM-DD. Não use toISOString() para isso: ele converte para
+ * UTC e, depois das 21h em São Paulo, a venda/compra/despesa sai com a data de amanhã.
+ */
+export function dataISO(d: Date = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}

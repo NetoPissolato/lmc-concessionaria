@@ -20,7 +20,7 @@ type LoadState = "idle" | "loading" | "done" | "error";
 
 const MONTHS = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
-import { fmtCurrency as fmt } from "@/lib/formatters";
+import { fmtCurrency as fmt, dataISO } from "@/lib/formatters";
 
 // ─── Config dos relatórios ────────────────────────────────────────────────────
 const REPORTS: {
@@ -234,7 +234,7 @@ function ReportCard({
         <div className="filter-chip-row" style={{ marginBottom: "14px" }}>
           {report.tags.map(tag => (
             <span key={tag} style={{
-              fontSize: "10px", fontWeight: "600", padding: "2px 8px", borderRadius: "20px",
+              fontSize: "11.5px", fontWeight: "600", padding: "2px 8px", borderRadius: "20px",
               background: `${report.color}10`, border: `1px solid ${report.color}20`, color: report.color,
             }}>{tag}</span>
           ))}
@@ -336,7 +336,7 @@ function ReportCard({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function RelatoriosPage() {
   const now   = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = dataISO(now);
 
   // Modo de filtro
   type PeriodMode = "hoje" | "semana" | "mes" | "ano" | "custom";
@@ -356,11 +356,11 @@ export default function RelatoriosPage() {
       const day  = d.getDay();
       const mon  = new Date(d); mon.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
       const sun  = new Date(mon); sun.setDate(mon.getDate() + 6);
-      return { data_inicio: mon.toISOString().slice(0, 10), data_fim: sun.toISOString().slice(0, 10) };
+      return { data_inicio: dataISO(mon), data_fim: dataISO(sun) };
     }
     if (mode === "mes") {
-      const first = new Date(ano, mes - 1, 1).toISOString().slice(0, 10);
-      const last  = new Date(ano, mes, 0).toISOString().slice(0, 10);
+      const first = dataISO(new Date(ano, mes - 1, 1));
+      const last  = dataISO(new Date(ano, mes, 0));
       return { data_inicio: first, data_fim: last };
     }
     if (mode === "ano") {
@@ -475,7 +475,7 @@ export default function RelatoriosPage() {
               <button onClick={prevMonth} style={{ width: 34, height: 38, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)" }}><ChevronLeft size={13} /></button>
               <div style={{ padding: "0 14px", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", height: 38, display: "flex", alignItems: "center", gap: 8, minWidth: isMobileOrTablet ? 110 : 136, justifyContent: "center" }}>
                 <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>{MONTHS[mes - 1]} {ano}</span>
-                {isCurrentMonth && <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--brand)", background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.2)", padding: "1px 6px", borderRadius: 20 }}>Atual</span>}
+                {isCurrentMonth && <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--brand)", background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.2)", padding: "1px 6px", borderRadius: 20 }}>Atual</span>}
               </div>
               <button onClick={nextMonth} disabled={isCurrentMonth} style={{ width: 34, height: 38, background: "none", border: "none", cursor: isCurrentMonth ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isCurrentMonth ? "var(--border)" : "var(--text-muted)" }}><ChevronRight size={13} /></button>
             </div>

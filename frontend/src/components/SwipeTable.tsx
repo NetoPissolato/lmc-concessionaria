@@ -90,7 +90,7 @@ export function SwipeTable({ children, style, showHint = true }: SwipeTableProps
           transform: "translateX(-50%)",
           background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.3)",
           borderRadius: "20px", padding: "3px 12px",
-          fontSize: "10px", color: "rgba(245,166,35,0.9)",
+          fontSize: "11.5px", color: "rgba(245,166,35,0.9)",
           fontWeight: 600, letterSpacing: "0.05em",
           pointerEvents: "none", zIndex: 10,
           backdropFilter: "blur(6px)",

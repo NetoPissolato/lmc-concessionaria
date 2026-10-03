@@ -1,5 +1,6 @@
 "use client";
 
+import { dataISO } from "@/lib/formatters";
 import { useState, useEffect } from "react";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useRouter } from "next/navigation";
@@ -118,7 +119,7 @@ export default function NovoVeiculoPage() {
     reValidateMode: "onBlur",
     defaultValues: {
       quilometragem: 0,
-      data_compra: new Date().toISOString().split("T")[0],
+      data_compra: dataISO(),
     },
   });
 
@@ -448,7 +449,7 @@ export default function NovoVeiculoPage() {
                       value={kmDisplay}
                       onChange={e => handleKM(e.target.value)}
                     />
-                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
+                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "11.5px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
                   </div>
                 </Field>
                 <Field label="Carroceria" error={undefined}>
@@ -510,7 +511,7 @@ export default function NovoVeiculoPage() {
                         setValue("placa", v, { shouldValidate: true });
                       }}
                     />
-                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px", color: "var(--text-muted)" }}>
+                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "11.5px", color: "var(--text-muted)" }}>
                       {(watchPlaca || "").replace(/[^A-Z0-9]/gi, "").length}/7
                     </span>
                   </div>
@@ -530,7 +531,7 @@ export default function NovoVeiculoPage() {
                     />
                     <span style={{
                       position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
-                      fontSize: "10px",
+                      fontSize: "11.5px",
                       color: (watchChassi || "").length === 17 ? "#10b981" : "var(--text-muted)",
                       fontWeight: 600,
                     }}>
@@ -700,7 +701,7 @@ export default function NovoVeiculoPage() {
 
                           {/* Main badge */}
                           {photo.is_main && (
-                            <div style={{ position: "absolute", top: 8, left: 8, background: "var(--brand)", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "#000", display: "flex", alignItems: "center", gap: 4 }}>
+                            <div style={{ position: "absolute", top: 8, left: 8, background: "var(--brand)", borderRadius: 20, padding: "3px 10px", fontSize: 11.5, fontWeight: 700, color: "#000", display: "flex", alignItems: "center", gap: 4 }}>
                               <Star size={10} fill="#000" /> CAPA
                             </div>
                           )}

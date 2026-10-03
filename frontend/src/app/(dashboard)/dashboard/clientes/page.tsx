@@ -238,7 +238,7 @@ export default function ClientesPage() {
                           <span style={{ fontSize: 11, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</span>
                         </div>
                       )}
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, fontSize: 10, fontWeight: 700, background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, fontSize: 11.5, fontWeight: 700, background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>
                         <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#22c55e" }} />
                         Cliente Ativo
                       </span>
@@ -251,21 +251,21 @@ export default function ClientesPage() {
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <CreditCard size={12} color="var(--text-muted)" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div>
-                        <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>CPF / CNPJ</p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>CPF / CNPJ</p>
                         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, fontWeight: 500 }}>{c.cpf_cnpj || ""}</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <MessageCircle size={12} color="var(--text-muted)" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div>
-                        <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>WhatsApp</p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>WhatsApp</p>
                         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, fontWeight: 500 }}>{(c as {whatsapp?: string}).whatsapp || c.telefone || ""}</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <MapPin size={12} color="var(--text-muted)" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div>
-                        <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Cidade</p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Cidade</p>
                         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, fontWeight: 500 }}>
                           {c.cidade ? `${c.cidade}${c.estado ? ` - ${c.estado}` : ""}` : ""}
                         </p>
@@ -280,14 +280,14 @@ export default function ClientesPage() {
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <Car size={12} color="var(--text-muted)" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div>
-                        <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Veículos</p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Veículos</p>
                         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, fontWeight: 500 }}>{c.total_compras ?? 0}</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <Building2 size={12} color="var(--text-muted)" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Endereço</p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Endereço</p>
                         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {c.endereco || "-"}
                         </p>
@@ -296,7 +296,7 @@ export default function ClientesPage() {
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <User size={12} color="var(--text-muted)" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div>
-                        <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Cliente desde</p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Cliente desde</p>
                         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, fontWeight: 500 }}>{fmtDate(c.created_at)}</p>
                       </div>
                     </div>
@@ -487,7 +487,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
                   <Phone size={13} color="#F5A623" />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{customer.telefone}</span>
                 </div>
-                <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Telefone</p>
+                <p style={{ fontSize: 11.5, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Telefone</p>
                 <a
                   href={`tel:${customer.telefone.replace(/\D/g, "")}`}
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
@@ -502,7 +502,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
                   <MessageCircle size={13} color="#25d366" />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{customer.whatsapp || customer.telefone}</span>
                 </div>
-                <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>WhatsApp</p>
+                <p style={{ fontSize: 11.5, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>WhatsApp</p>
                 <a
                   href={`https://wa.me/55${(customer.whatsapp || customer.telefone || "").replace(/\D/g, "")}`}
                   target="_blank" rel="noopener noreferrer"
@@ -518,7 +518,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
                   <Mail size={13} color="#F5A623" />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "clamp(140px, 20vw, 240px)", display: "block", whiteSpace: "nowrap" }}>{customer.email}</span>
                 </div>
-                <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>E-mail</p>
+                <p style={{ fontSize: 11.5, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>E-mail</p>
                 <a
                   href={`mailto:${customer.email}`}
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
@@ -542,16 +542,16 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
               <div>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>CPF / CNPJ</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>CPF / CNPJ</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{customer.cpf_cnpj || "-"}</p>
               </div>
               <div>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>WhatsApp</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>WhatsApp</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{customer.whatsapp || customer.telefone || "-"}</p>
               </div>
               {customer.observacoes && (
                 <div style={{ gridColumn: "1/-1" }}>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Observações</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Observações</p>
                   <p style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.5 }}>{customer.observacoes}</p>
                 </div>
               )}
@@ -567,15 +567,15 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
               <div>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Cidade</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Cidade</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{customer.cidade || "-"}</p>
               </div>
               <div>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Estado</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Estado</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{customer.estado || "-"}</p>
               </div>
               <div style={{ gridColumn: "1/-1" }}>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Endereço</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Endereço</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{customer.endereco || "-"}</p>
               </div>
             </div>
@@ -590,15 +590,15 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
               <div>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Cliente desde</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Cliente desde</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{fmtDateFull(customer.created_at)}</p>
               </div>
               <div>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Vendas realizadas</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Vendas realizadas</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{isLoading ? "…" : purchases.length}</p>
               </div>
               <div style={{ gridColumn: "1/-1" }}>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Valor total comprado</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Valor total comprado</p>
                 <p style={{ fontSize: 18, fontWeight: 800, color: "#22c55e" }}>{isLoading ? "…" : fmt(totalSpent)}</p>
               </div>
             </div>
@@ -632,7 +632,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                   }}>{value}</p>
-                  {sub.map((s, j) => <p key={j} style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.4, margin: 0 }}>{s}</p>)}
+                  {sub.map((s, j) => <p key={j} style={{ fontSize: 11.5, color: "var(--text-muted)", lineHeight: 1.4, margin: 0 }}>{s}</p>)}
                 </div>
               ))}
             </div>
@@ -788,7 +788,7 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
                 </div>
               </div>
               <span style={{
-                fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 99, flexShrink: 0,
+                fontSize: 11.5, fontWeight: 700, padding: "4px 10px", borderRadius: 99, flexShrink: 0,
                 background: `${statusColors[p.status] || "#6b7280"}12`,
                 color: statusColors[p.status] || "#6b7280",
                 border: `1px solid ${statusColors[p.status] || "#6b7280"}25`,
@@ -800,11 +800,11 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
             {/* Financial row */}
             <div style={{ display: "flex", gap: 24, flexWrap: "wrap", paddingTop: 12, borderTop: "1px solid var(--border)" }}>
               <div>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Valor</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Valor</p>
                 <p style={{ fontSize: 17, fontWeight: 800, color: "#22c55e" }}>{fmt(p.valor_venda)}</p>
               </div>
               <div>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Pagamento</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Pagamento</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: paymentColors[p.forma_pagamento] || "var(--text-secondary)" }}>
                   {paymentLabels[p.forma_pagamento] || p.forma_pagamento}{p.parcelas ? ` ${p.parcelas}x` : ""}
                 </p>
@@ -812,26 +812,26 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
               {/* ENTRADA: apenas em financiamento com entrada parcial real */}
               {p.forma_pagamento === "financiamento" && p.valor_entrada > 0 && p.valor_entrada < p.valor_venda && (
                 <div>
-                  <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Entrada</p>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Entrada</p>
                   <p style={{ fontSize: 13, fontWeight: 600, color: "#22c55e" }}>{fmt(p.valor_entrada)}</p>
                 </div>
               )}
               {/* FINANCIADO: apenas em financiamento */}
               {p.forma_pagamento === "financiamento" && p.valor_financiado > 0 && (
                 <div>
-                  <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Financiado</p>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Financiado</p>
                   <p style={{ fontSize: 13, fontWeight: 600, color: "#8b5cf6" }}>{fmt(p.valor_financiado)}{p.parcelas ? ` · ${p.parcelas}x` : ""}</p>
                 </div>
               )}
               {/* BANCO: quando for financiamento com banco informado */}
               {p.forma_pagamento === "financiamento" && p.banco_financiamento && (
                 <div>
-                  <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Banco</p>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Banco</p>
                   <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{p.banco_financiamento}</p>
                 </div>
               )}
               <div style={{ marginLeft: "auto" }}>
-                <p style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Data da Venda</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Data da Venda</p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{fmtSale(p.data_venda)}</p>
               </div>
             </div>

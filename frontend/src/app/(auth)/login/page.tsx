@@ -256,15 +256,9 @@ export default function LoginPage() {
         <motion.div style={{ position: "relative", zIndex: 4 }}
           initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
           <img
-            src="/LogoLMC.png"
+            src="/brand/lmc-logo-on-dark.svg"
             alt="LMC Veículos"
-            style={{
-              height: "clamp(100px, 14vw, 160px)",
-              width: "auto",
-              objectFit: "contain",
-              display: "block",
-              filter: "invert(1) hue-rotate(180deg) drop-shadow(0 4px 24px rgba(245,166,35,0.55))",
-            }}
+            style={{ height: "clamp(64px, 9vw, 110px)", width: "auto", display: "block" }}
           />
         </motion.div>
 
@@ -390,14 +384,8 @@ export default function LoginPage() {
             }}
           />
           <motion.img
-            src="/LogoLMC.png"
+            src="/brand/lmc-logo-on-dark.svg"
             alt="LMC Veículos"
-            animate={{ filter: [
-              "invert(1) hue-rotate(180deg) drop-shadow(0 0 12px rgba(245,166,35,0.4)) brightness(1.0)",
-              "invert(1) hue-rotate(180deg) drop-shadow(0 0 28px rgba(245,166,35,0.85)) brightness(1.12)",
-              "invert(1) hue-rotate(180deg) drop-shadow(0 0 12px rgba(245,166,35,0.4)) brightness(1.0)",
-            ]}}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             style={{
               height: "90px",
               width: "auto",
@@ -448,12 +436,13 @@ export default function LoginPage() {
 
               {/* Usuario */}
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600",
-                  color: "rgba(255,255,255,0.65)", marginBottom: "8px" }}>Usuário</label>
+                <label htmlFor="login-usuario" style={{ display: "block", fontSize: "13px", fontWeight: "600",
+                  color: "rgba(255,255,255,0.78)", marginBottom: "8px" }}>Usuário</label>
                 <div style={{ position: "relative" }}>
                   <User size={15} color="rgba(255,255,255,0.28)"
                     style={{ position: "absolute", left: "15px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                  <input type="text" placeholder="E-mail ou nome de usuário" value={identifier}
+                  <input id="login-usuario" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false}
+                    placeholder="E-mail ou nome de usuário" value={identifier}
                     onChange={e => { setIdentifier(e.target.value); setError(""); }}
                     style={{ width: "100%", boxSizing: "border-box", padding: "13px 14px 13px 44px",
                       background: "rgba(255,255,255,0.05)", border: `1px solid ${error ? "#ef4444" : "rgba(255,255,255,0.1)"}`,
@@ -466,12 +455,13 @@ export default function LoginPage() {
 
               {/* Senha */}
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.48 }}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600",
-                  color: "rgba(255,255,255,0.65)", marginBottom: "8px" }}>Senha</label>
+                <label htmlFor="login-senha" style={{ display: "block", fontSize: "13px", fontWeight: "600",
+                  color: "rgba(255,255,255,0.78)", marginBottom: "8px" }}>Senha</label>
                 <div style={{ position: "relative" }}>
                   <Lock size={15} color="rgba(255,255,255,0.28)"
                     style={{ position: "absolute", left: "15px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                  <input type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={senha}
+                  <input id="login-senha" type={showPassword ? "text" : "password"} autoComplete="current-password"
+                    placeholder="Digite sua senha" value={senha}
                     onChange={e => { setSenha(e.target.value); setError(""); }}
                     onKeyDown={handleKeyEvent} onKeyUp={handleKeyEvent}
                     style={{ width: "100%", boxSizing: "border-box", padding: "13px 46px 13px 44px",
@@ -481,6 +471,7 @@ export default function LoginPage() {
                     onFocus={e => { e.target.style.borderColor="#F5A623"; e.target.style.boxShadow="0 0 0 3px rgba(245,166,35,0.12)"; }}
                     onBlur={e => { e.target.style.borderColor=error?"#ef4444":"rgba(255,255,255,0.1)"; e.target.style.boxShadow="none"; }} />
                   <motion.button type="button" onClick={() => setShowPassword(v => !v)} whileTap={{ scale: 0.85 }}
+                    aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
                     style={{
                       position: "absolute", right: "12px", top: 0, bottom: 0,
                       background: "none", border: "none", cursor: "pointer",
@@ -531,9 +522,10 @@ export default function LoginPage() {
                 <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none" }}>
                   <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
                     style={{ accentColor: "#F5A623", width: "15px", height: "15px", cursor: "pointer" }} />
-                  <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)" }}>Lembrar de mim</span>
+                  <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>Lembrar meu usuário</span>
                 </label>
                 <motion.button type="button" whileHover={{ scale: 1.04 }}
+                  onClick={() => { setErrorType("rate"); setError("Peça ao administrador da loja para criar uma nova senha em Usuários."); }}
                   style={{ background: "none", border: "none", cursor: "pointer",
                     fontSize: "13px", color: "#F5A623", fontWeight: "600", padding: 0 }}>
                   Esqueci minha senha
@@ -572,19 +564,6 @@ export default function LoginPage() {
                 <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.07)" }} />
               </motion.div>
 
-              {/* Secondary btn */}
-              <motion.button type="button" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                whileHover={{ borderColor: "rgba(255,255,255,0.25)", color: "#fff" }}
-                style={{
-                  padding: "13px", background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.09)", borderRadius: "12px",
-                  color: "rgba(255,255,255,0.5)", fontSize: "14px", fontWeight: "500",
-                  cursor: "pointer", display: "flex", alignItems: "center",
-                  justifyContent: "center", gap: "8px", transition: "all 0.2s",
-                }}>
-                <User size={14} /> Entrar com outro usuário
-              </motion.button>
             </motion.form>
           )}
         </AnimatePresence>

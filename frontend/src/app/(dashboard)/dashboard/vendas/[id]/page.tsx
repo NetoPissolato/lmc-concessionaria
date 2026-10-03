@@ -13,7 +13,7 @@ import {
   ChevronRight, X, Fuel, Palette,
   Hash, MapPin, Wrench, ShieldCheck,
 } from "lucide-react";
-import { salesApi, vehiclesApi } from "@/lib/api";
+import { salesApi, vehiclesApi, authApi } from "@/lib/api";
 import { Sale, PAYMENT_TYPE_LABELS } from "@/types";
 import { PaymentBadge } from "@/components/PaymentBadge";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -111,6 +111,8 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   const st = String(sale.status).replace("SaleStatus.", "");
+  // Desfazer venda concluída/cancelada mexe no caixa e no estoque: só o administrador
+  const podeAlterarStatus = authApi.getUser()?.role === "admin" || st === "pendente";
   const stCfg = STATUS_CFG[st] ?? STATUS_CFG.concluida;
   const StIcon = stCfg.icon;
   const payColor = PAYMENT_COLORS[sale.forma_pagamento] || "var(--text-muted)";
@@ -167,7 +169,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
             <div style={{ position: "absolute", top: 14, left: 14 }}>
               <span style={{
                 display: "inline-flex", alignItems: "center", gap: "5px",
-                fontSize: "10px", fontWeight: "700", color: stCfg.color,
+                fontSize: "11.5px", fontWeight: "700", color: stCfg.color,
                 background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)",
                 border: `1px solid ${stCfg.color}50`, padding: "5px 12px", borderRadius: "20px",
                 letterSpacing: "0.07em", textTransform: "uppercase",
@@ -269,7 +271,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
             <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "10px", background: "rgba(167,139,250,0.06)", border: "1px solid rgba(167,139,250,0.12)" }}>
               <User size={14} color="#a78bfa" />
               <div>
-                <p style={{ fontSize: "10px", color: "var(--text-muted)", margin: 0, lineHeight: 1.2 }}>Cliente</p>
+                <p style={{ fontSize: "11.5px", color: "var(--text-muted)", margin: 0, lineHeight: 1.2 }}>Cliente</p>
                 <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>{sale.cliente_nome || "-"}</p>
               </div>
             </div>
@@ -277,7 +279,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
               <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "10px", background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.12)" }}>
                 <ShieldCheck size={14} color="#f59e0b" />
                 <div>
-                  <p style={{ fontSize: "10px", color: "var(--text-muted)", margin: 0, lineHeight: 1.2 }}>Vendedor</p>
+                  <p style={{ fontSize: "11.5px", color: "var(--text-muted)", margin: 0, lineHeight: 1.2 }}>Vendedor</p>
                   <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>{sale.vendedor_nome}</p>
                 </div>
               </div>
@@ -304,6 +306,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       </motion.div>
 
+      {podeAlterarStatus && (<>
       {/* ── Status Actions ── */}
       <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
         style={{ display: "flex", flexDirection: "column", gap: 10, padding: "14px 18px",
@@ -332,6 +335,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
           {statusLoading && <RefreshCw size={14} color="var(--text-muted)" style={{ animation: "spin 1s linear infinite", flexShrink: 0, alignSelf: "center" }} />}
         </div>
       </motion.div>
+      </>)}
 
       {/* ── 3-column detail grid ── */}
       <div style={{ display: "grid", gridTemplateColumns: isMobileOrTablet ? "1fr" : "repeat(3, 1fr)", gap: "14px" }}>
@@ -391,15 +395,15 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
                       </div>
                       {(pm.parcelas || pm.banco) && (
                         <div style={{ padding: "4px 10px 8px 21px", display: "flex", gap: 12 }}>
-                          {pm.banco && <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>{pm.banco}</span>}
-                          {pm.parcelas && <span style={{ fontSize: "10px", color: pmColor, fontWeight: 600 }}>{pm.parcelas}x ≈ {fmt(Number(pm.valor) / pm.parcelas)}/mês</span>}
+                          {pm.banco && <span style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>{pm.banco}</span>}
+                          {pm.parcelas && <span style={{ fontSize: "11.5px", color: pmColor, fontWeight: 600 }}>{pm.parcelas}x ≈ {fmt(Number(pm.valor) / pm.parcelas)}/mês</span>}
                         </div>
                       )}
                     </div>
                   );
                 })}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTop: "1px solid var(--border)", marginTop: 4 }}>
-                  <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Total pago</span>
+                  <span style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>Total pago</span>
                   <span style={{ fontSize: "clamp(11px, 2.5vw, 13px)", fontWeight: 800, color: "#22c55e", whiteSpace: "nowrap" }}>{fmt(Number(sale.valor_venda))}</span>
                 </div>
               </>
@@ -470,7 +474,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* Footer */}
       <div style={{ textAlign: "center" }}>
-        <p style={{ fontSize: "10px", color: "var(--text-muted)", fontFamily: "monospace" }}>ID: {sale.id}</p>
+        <p style={{ fontSize: "11.5px", color: "var(--text-muted)", fontFamily: "monospace" }}>ID: {sale.id}</p>
       </div>
     </div>
 

@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Car, Bike, TrendingUp, DollarSign, ShoppingBag,
   Package, Activity,
-  CalendarDays, ChevronRight, BarChart2,
+  CalendarDays, ChevronRight, BarChart2, AlertTriangle, Clock,
 } from "lucide-react";
 import {
   ComposedChart, Area, Bar, Line, XAxis, YAxis, CartesianGrid,
@@ -119,7 +119,7 @@ function SaleCard({ sale, isAdmin, delay = 0 }: { sale: Sale; isAdmin: boolean; 
             {sale.vehicle_info || "Veículo"}
           </p>
           <span style={{
-            fontSize: "9px", fontWeight: "700", flexShrink: 0,
+            fontSize: "11px", fontWeight: "700", flexShrink: 0,
             color: stCfg.color, background: stCfg.bg,
             padding: "2px 8px", borderRadius: "20px",
             textTransform: "uppercase", letterSpacing: "0.07em",
@@ -134,7 +134,7 @@ function SaleCard({ sale, isAdmin, delay = 0 }: { sale: Sale; isAdmin: boolean; 
           {sale.vehicle_tipo && (
             <span style={{
               display: "inline-flex", alignItems: "center", gap: "3px",
-              fontSize: "9px", fontWeight: "800",
+              fontSize: "11px", fontWeight: "800",
               color: isMoto ? "#f97316" : "#38bdf8",
               background: isMoto ? "rgba(249,115,22,0.1)" : "rgba(56,189,248,0.1)",
               border: `1px solid ${isMoto ? "rgba(249,115,22,0.2)" : "rgba(56,189,248,0.2)"}`,
@@ -147,7 +147,7 @@ function SaleCard({ sale, isAdmin, delay = 0 }: { sale: Sale; isAdmin: boolean; 
           )}
           {sale.vehicle_placa && (
             <span style={{
-              fontSize: "10px", fontFamily: "monospace", fontWeight: "700",
+              fontSize: "11.5px", fontFamily: "monospace", fontWeight: "700",
               color: "rgba(255,255,255,0.45)", letterSpacing: "0.08em",
               background: "rgba(255,255,255,0.04)", padding: "1px 6px",
               borderRadius: "4px", border: "1px solid rgba(255,255,255,0.06)",
@@ -158,7 +158,7 @@ function SaleCard({ sale, isAdmin, delay = 0 }: { sale: Sale; isAdmin: boolean; 
           <span style={{ fontSize: "11px", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {sale.cliente_nome || "-"}
           </span>
-          <span style={{ fontSize: "10px", color: "var(--text-muted)", opacity: 0.5, flexShrink: 0 }}>
+          <span style={{ fontSize: "11.5px", color: "var(--text-muted)", opacity: 0.5, flexShrink: 0 }}>
             · {new Date(sale.data_venda).toLocaleDateString("pt-BR")}
           </span>
         </div>
@@ -259,7 +259,7 @@ export default function DashboardPage() {
           name,
           faturamento: found ? Number(found.faturamento) : 0,
           vendas:      found ? found.total_vendas         : 0,
-          saidas:      found ? Number(found.saidas)       : 0,
+          saidas:      found ? Number(found.saidas ?? 0) : 0,
         };
       })
     : (() => {
@@ -273,7 +273,7 @@ export default function DashboardPage() {
             name:        String(dia),
             faturamento: found ? Number(found.faturamento) : 0,
             vendas:      found ? found.total_vendas         : 0,
-            saidas:      found ? Number(found.saidas)       : 0,
+            saidas:      found ? Number(found.saidas ?? 0) : 0,
           };
         });
       })();
@@ -300,186 +300,36 @@ export default function DashboardPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
-      {/* ── HERO BANNER ──────────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        style={{
-          position: "relative",
-          borderRadius: "20px",
-          overflow: "hidden",
-          height: "clamp(160px, 20vw, 240px)",
-          background: "linear-gradient(135deg, #0c0905 0%, #060606 45%, #070a06 100%)",
-          border: "1px solid rgba(245,166,35,0.2)",
-        }}
-      >
-        {/* Imagem de fundo - carro */}
-        <img
-          src="/BANNERHERO.png"
-          alt="Banner"
-          style={{
-            position: "absolute", inset: 0,
-            width: "100%", height: "100%",
-            objectFit: "cover", objectPosition: "center",
-            opacity: 0.5,
-          }}
-        />
-        {/* Overlay escuro para destacar logo */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "radial-gradient(ellipse at center, rgba(6,6,6,0.35) 0%, rgba(6,6,6,0.82) 100%)",
-        }} />
-
-        {/* Radial glow center */}
-        <motion.div
-          animate={{ opacity: [0.4, 0.8, 0.4] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            position: "absolute", inset: 0,
-            background: "radial-gradient(ellipse 60% 80% at 50% 50%, rgba(245,166,35,0.18) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Corner decorations */}
-        <div style={{ position: "absolute", top: 16, left: 20, width: 40, height: 40, borderTop: "1.5px solid rgba(245,166,35,0.35)", borderLeft: "1.5px solid rgba(245,166,35,0.35)", borderRadius: "4px 0 0 0" }} />
-        <div style={{ position: "absolute", top: 16, right: 20, width: 40, height: 40, borderTop: "1.5px solid rgba(245,166,35,0.35)", borderRight: "1.5px solid rgba(245,166,35,0.35)", borderRadius: "0 4px 0 0" }} />
-        <div style={{ position: "absolute", bottom: 16, left: 20, width: 40, height: 40, borderBottom: "1.5px solid rgba(245,166,35,0.35)", borderLeft: "1.5px solid rgba(245,166,35,0.35)", borderRadius: "0 0 0 4px" }} />
-        <div style={{ position: "absolute", bottom: 16, right: 20, width: 40, height: 40, borderBottom: "1.5px solid rgba(245,166,35,0.35)", borderRight: "1.5px solid rgba(245,166,35,0.35)", borderRadius: "0 0 4px 0" }} />
-
-        {/* Linha de acento top animada */}
-        <motion.div
-          animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-          transition={{ duration: 4, repeat: Infinity }}
-          style={{
-            position: "absolute", top: 0, left: 0, right: 0, height: "2px",
-            background: "linear-gradient(90deg, transparent, #F5A623, #ffce6e, #F5A623, transparent)",
-            backgroundSize: "200%",
-          }}
-        />
-        {/* Linha de acento bottom */}
-        <div style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: "1px",
-          background: "linear-gradient(90deg, transparent, rgba(245,166,35,0.4), transparent)",
-        }} />
-
-        {/* Logo LMC centralizada com efeitos */}
-        <div style={{
-          position: "absolute", inset: 0,
-          display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center",
-          gap: "12px",
-        }}>
-          {/* Glow de fundo pulsante */}
-          <motion.div
-            animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.2, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            style={{
-              position: "absolute",
-              width: "320px", height: "200px",
-              background: "radial-gradient(ellipse, rgba(245,166,35,0.25) 0%, transparent 70%)",
-              pointerEvents: "none",
-            }}
-          />
-
-          {/* Logo image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            {/* Anel decorativo externo */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              style={{
-                position: "absolute",
-                width: "clamp(140px, 18vw, 220px)", height: "clamp(140px, 18vw, 220px)",
-                borderRadius: "50%",
-                border: "1px solid rgba(245,166,35,0.15)",
-                borderTopColor: "rgba(245,166,35,0.55)",
-                borderRightColor: "rgba(245,166,35,0.3)",
-                pointerEvents: "none",
-              }}
-            />
-            {/* Anel decorativo interno */}
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-              style={{
-                position: "absolute",
-                width: "clamp(100px, 13vw, 160px)", height: "clamp(100px, 13vw, 160px)",
-                borderRadius: "50%",
-                border: "1px dashed rgba(245,166,35,0.1)",
-                borderBottomColor: "rgba(245,166,35,0.4)",
-                borderLeftColor: "rgba(245,166,35,0.25)",
-                pointerEvents: "none",
-              }}
-            />
-
-            {/* Logo image */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                filter: "drop-shadow(0 0 30px rgba(245,166,35,0.5))",
-              }}
-            >
-              <img
-                src="/LogoLMC.png"
-                alt="LMC Veículos"
-                style={{
-                  height: "clamp(80px, 12vw, 160px)",
-                  width: "auto",
-                  objectFit: "contain",
-                  display: "block",
-                  filter: "invert(1) hue-rotate(180deg) drop-shadow(0 4px 24px rgba(245,166,35,0.6)) brightness(1.1)",
-                }}
-              />
-            </motion.div>
-          </motion.div>
-
-          {/* Subtítulo */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.55, duration: 0.5 }}
-            style={{
-              fontSize: "11px",
-              fontWeight: "700",
-              letterSpacing: "0.28em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.4)",
-              marginTop: "4px",
-            }}
-          >
-            Concession&#225;ria &middot; Sistema de Gest&#227;o
-          </motion.p>
-
-          {/* Ponto online */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            style={{ display: "flex", alignItems: "center", gap: "6px" }}
-          >
-            <motion.div
-              animate={{ opacity: [1, 0.3, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }}
-            />
-            <span style={{ fontSize: "10px", fontWeight: "600", color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em" }}>
-              Sistema Operacional
-            </span>
-          </motion.div>
+      {/* ── Cabeçalho compacto (o banner decorativo de 240px saiu: o topo é para números) ── */}
+      <div className="dash-topo">
+        <div>
+          <h1 className="dash-topo__titulo">
+            {now.getHours() < 12 ? "Bom dia" : now.getHours() < 18 ? "Boa tarde" : "Boa noite"}{user?.nome ? `, ${String(user.nome).split(" ")[0]}` : ""}
+          </h1>
+          <p className="dash-topo__sub">
+            {(() => { const d = now.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }); return d.charAt(0).toUpperCase() + d.slice(1); })()}
+          </p>
         </div>
-      </motion.div>
+        <div className="dash-topo__acoes">
+          <button className="btn btn-secondary" onClick={() => router.push("/dashboard/veiculos/novo")}>
+            <Car size={16} /> Cadastrar veículo
+          </button>
+          <button className="btn btn-primary" onClick={() => router.push("/dashboard/vendas/nova")}>
+            <ShoppingBag size={16} /> Nova venda
+          </button>
+        </div>
+      </div>
+
+      {(stats?.estoque_parado_total ?? 0) > 0 && (
+        <button className="dash-alerta" onClick={() => document.getElementById("estoque-parado")?.scrollIntoView({ behavior: "smooth" })}>
+          <AlertTriangle size={18} />
+          <span>
+            <strong>{stats!.estoque_parado_total} {stats!.estoque_parado_total === 1 ? "veículo parado" : "veículos parados"} há mais de 60 dias.</strong>{" "}
+            Vale revisar preço ou anúncio.
+          </span>
+          <ChevronRight size={16} />
+        </button>
+      )}
 
       {/* ── KPI STRIP ────────────────────────────────────────────────────────── */}
       <motion.div
@@ -495,13 +345,15 @@ export default function DashboardPage() {
         }}
       >
         {([
-          { label: "Disponíveis",    formatted: String(stats?.disponivel || 0),              sub: "em estoque",      color: "#38bdf8", icon: Package    },
+          { label: "Disponíveis",    formatted: String(stats?.disponivel || 0),              sub: (stats?.reservado ? `${stats.reservado} reservado(s)` : "à venda agora"), color: "#38bdf8", icon: Package },
           ...(isAdmin ? [
-            { label: "Faturamento",  formatted: fmtShort(Number(stats?.faturamento_mes||0)), sub: "receita do mês",   color: "#22c55e", icon: DollarSign },
-            { label: "Lucro Líquido",formatted: fmtShort(Number(stats?.lucro_mes||0)),       sub: "resultado líquido",color: "#a78bfa", icon: TrendingUp },
+            { label: "Faturamento",  formatted: fmtShort(Number(stats?.faturamento_mes||0)), sub: "vendas concluídas no mês", color: "#22c55e", icon: DollarSign },
+            // Lucro de verdade: preço de venda − custo total do veículo (compra, despesas e multas).
+            // O antigo "Lucro Líquido" era o saldo do caixa e incluía a COMPRA de carros como "prejuízo".
+            { label: "Lucro bruto",  formatted: fmtShort(Number(stats?.lucro_bruto_mes||0)),  sub: `margem média ${Number(stats?.margem_media_mes||0).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`, color: "#a78bfa", icon: TrendingUp },
           ] : []),
-          { label: "Vendidos/Mês",   formatted: String(stats?.vendidos_mes || 0),             sub: "unidades",        color: "#f59e0b", icon: ShoppingBag },
-          { label: "Vendidos Hoje",  formatted: String(stats?.vendidos_hoje || 0),            sub: "neste dia",       color: "#F5A623", icon: Activity   },
+          { label: "Vendidos no mês", formatted: String(stats?.vendidos_mes || 0),            sub: isAdmin && stats?.ticket_medio_mes ? `ticket médio ${fmtShort(Number(stats.ticket_medio_mes))}` : `${stats?.vendidos_hoje || 0} hoje`, color: "#f59e0b", icon: ShoppingBag },
+          { label: "Parados +60 dias", formatted: String(stats?.estoque_parado_total || 0),   sub: "sem vender",      color: (stats?.estoque_parado_total ? "#ef4444" : "#22c55e"), icon: Clock },
         ] as { label: string; formatted: string; sub: string; color: string; icon: React.ElementType }[])
           .map((item, i, arr) => {
             const Ic = item.icon;
@@ -523,7 +375,7 @@ export default function DashboardPage() {
                   }}>
                     <Ic size={13} color={item.color} strokeWidth={2} />
                   </div>
-                  <p style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  <p style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                     {item.label}
                   </p>
                 </div>
@@ -557,7 +409,7 @@ export default function DashboardPage() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
                 <BarChart2 size={12} color="var(--text-muted)" />
-                <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Performance {period === "mensal" ? "Mensal" : "Diária"}</span>
+                <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Performance {period === "mensal" ? "Mensal" : "Diária"}</span>
               </div>
               <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.3px" }}>
                 {isAdmin
@@ -566,7 +418,8 @@ export default function DashboardPage() {
               </h3>
             </div>
 
-            <div className="filter-chip-row" style={{ justifyContent: "flex-end" }}>
+            {/* Quebra linha em vez de rolar: com "flex-end" numa linha rolável o botão "Mensal" ficava cortado no celular */}
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px" }}>
               {/* Period toggle */}
               <div style={{
                 display: "flex", background: "rgba(255,255,255,0.04)",
@@ -575,7 +428,7 @@ export default function DashboardPage() {
                 {(["mensal", "diario"] as const).map(p => (
                   <button key={p} onClick={() => setPeriod(p)} style={{
                     padding: "4px 10px", borderRadius: "6px", border: "none", cursor: "pointer",
-                    fontSize: "10px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em",
+                    fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em",
                     background: period === p ? "rgba(245,166,35,0.15)" : "transparent",
                     color: period === p ? "#F5A623" : "rgba(255,255,255,0.35)",
                     transition: "all 0.15s",
@@ -588,7 +441,8 @@ export default function DashboardPage() {
                 {([
                   ...(isAdmin ? [{ key: "faturamento" as const, label: "Faturamento", color: "#22c55e" }] : []),
                   { key: "vendas" as const, label: "Vendas", color: "#F5A623" },
-                  { key: "saidas" as const, label: "Saídas", color: "#ef4444" },
+                  // Saídas do caixa: só o administrador vê (o backend nem manda para funcionário)
+                  ...(isAdmin ? [{ key: "saidas" as const, label: "Saídas", color: "#ef4444" }] : []),
                 ]).map(({ key, label, color }) => (
                   <button key={key} onClick={() => toggleSeries(key)} style={{
                     display: "flex", alignItems: "center", gap: "5px",
@@ -597,7 +451,7 @@ export default function DashboardPage() {
                     cursor: "pointer", transition: "all 0.15s",
                   }}>
                     <div style={{ width: 7, height: 7, borderRadius: 2, background: vis[key] ? color : "rgba(255,255,255,0.2)" }} />
-                    <span style={{ fontSize: "10px", fontWeight: "600", color: vis[key] ? color : "rgba(255,255,255,0.3)", transition: "color 0.15s" }}>{label}</span>
+                    <span style={{ fontSize: "11.5px", fontWeight: "600", color: vis[key] ? color : "rgba(255,255,255,0.3)", transition: "color 0.15s" }}>{label}</span>
                   </button>
                 ))}
               </div>
@@ -616,13 +470,13 @@ export default function DashboardPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.03)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 11.5, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
               {isAdmin && vis.faturamento && (
-                <YAxis yAxisId="fat" tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
+                <YAxis yAxisId="fat" tick={{ fontSize: 11.5, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
                   tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
               )}
               <YAxis yAxisId="vnd" orientation={isAdmin && vis.faturamento ? "right" : "left"}
-                tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} width={28} />
+                tick={{ fontSize: 11.5, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} width={28} />
               <Tooltip content={<ChartTooltip />} />
               {/* Faturamento - area */}
               {isAdmin && vis.faturamento && (
@@ -631,7 +485,7 @@ export default function DashboardPage() {
                   activeDot={{ r: 4, fill: "#22c55e", stroke: "var(--surface)", strokeWidth: 2 }} />
               )}
               {/* Saídas - area */}
-              {vis.saidas && (
+              {isAdmin && vis.saidas && (
                 <Area yAxisId={isAdmin && vis.faturamento ? "fat" : "vnd"}
                   type="monotone" dataKey="saidas" name="saidas"
                   stroke="#ef4444" strokeWidth={1.5} fill="url(#gradSaidas)" dot={false}
@@ -660,7 +514,7 @@ export default function DashboardPage() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
             <Package size={12} color="var(--text-muted)" />
-            <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Estoque</span>
+            <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Estoque</span>
           </div>
           <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "20px", letterSpacing: "-0.3px" }}>
             Por Status
@@ -678,7 +532,7 @@ export default function DashboardPage() {
                       <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{VEHICLE_STATUS_LABELS[key as VehicleStatus]}</span>
                     </div>
                     <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                      <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>{pct}%</span>
+                      <span style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>{pct}%</span>
                       <span style={{ fontSize: "13px", fontWeight: "700", color: "#fff", minWidth: "20px", textAlign: "right" }}>{value}</span>
                     </div>
                   </div>
@@ -702,6 +556,30 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
+      {/* -- ESTOQUE PARADO: o que o dono precisa decidir --------------------- */}
+      {(stats?.estoque_parado?.length ?? 0) > 0 && (
+        <section id="estoque-parado" className="dash-card">
+          <div className="dash-card__topo">
+            <div>
+              <h3 className="dash-card__titulo">Parados há mais de 60 dias</h3>
+              <p className="dash-card__sub">Do mais antigo para o mais recente. Clique para abrir e ajustar.</p>
+            </div>
+          </div>
+          <ul className="dash-parados">
+            {stats!.estoque_parado!.map((v) => (
+              <li key={v.id}>
+                <button onClick={() => router.push(`/dashboard/${v.tipo === "moto" ? "motos" : "veiculos"}/${v.id}`)}>
+                  {v.tipo === "moto" ? <Bike size={16} /> : <Car size={16} />}
+                  <span className="dash-parados__nome">{v.marca} {v.modelo} {v.ano}</span>
+                  <span className="dash-parados__preco">{v.valor_anunciado ? fmt(Number(v.valor_anunciado)) : "sem preço"}</span>
+                  <span className="dash-parados__dias">{v.dias_em_estoque} dias</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* -- ÚLTIMAS VENDAS -------------------------------------------------- */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -716,7 +594,7 @@ export default function DashboardPage() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
               <CalendarDays size={12} color="var(--text-muted)" />
-              <span style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Histórico</span>
+              <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Histórico</span>
             </div>
             <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.3px" }}>Últimas Vendas</h3>
           </div>

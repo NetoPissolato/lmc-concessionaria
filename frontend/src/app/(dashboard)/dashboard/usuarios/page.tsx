@@ -331,7 +331,7 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
                       style={{ width: isMobile ? "auto" : 156, flex: isMobile ? 1 : undefined, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", cursor: "pointer", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600 }}>
                       <Upload size={12} /> Alterar foto
                     </button>
-                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", textAlign: "center", margin: 0, lineHeight: 1.6 }}>JPG, PNG ou WebP<br/>máx. 5 MB</p>
+                    <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.28)", textAlign: "center", margin: 0, lineHeight: 1.6 }}>JPG, PNG ou WebP<br/>máx. 5 MB</p>
                     <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} style={{ display: "none" }} />
                   </div>
 
@@ -391,7 +391,7 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 220px), 1fr))", gap: 12, marginBottom: 16 }}>
                   <div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                      <label style={labelStyle}>Cargo <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>— Nossa Equipe</span></label>
+                      <label style={labelStyle}>Cargo <span style={{ fontSize: 11.5, color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>— Nossa Equipe</span></label>
                       <button
                         type="button"
                         onClick={() => setShowOnSite(s => !s)}
@@ -573,44 +573,18 @@ export default function UsuariosPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: isMobileOrTablet ? 14 : 20 }}>
 
-      {/* -- Hero Banner ------------------------------------ */}
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-        style={{ position: "relative", borderRadius: "20px", overflow: "hidden", height: "clamp(120px, 18vw, 200px)", background: "#060606", border: "1px solid rgba(245,166,35,0.15)" }}>
-        <img src="/BANNERHERO.png" alt="Banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center right", opacity: 0.55 }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(6,6,6,0.97) 30%, rgba(6,6,6,0.5) 70%, rgba(6,6,6,0.15) 100%)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(245,166,35,0.06) 0%, transparent 50%)" }} />
-        <div style={{ position: "relative", zIndex: 1, padding: "clamp(16px,4vw,32px) clamp(16px,4vw,36px)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-              <UserCog size={13} color="#F5A623" strokeWidth={2} />
-              <p style={{ fontSize: "11px", fontWeight: "700", color: "#F5A623", letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>Gestão de Equipe</p>
-            </div>
-            <h1 style={{ fontSize: "clamp(16px, 3.5vw, 26px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.8px", lineHeight: 1.15, margin: 0 }}>
-              Funcionários & <span style={{ color: "#F5A623" }}>Permissões</span>
-            </h1>
-          </div>
-          <div className="hero-chips">
-            {([
-              { icon: UserCog,      text: `${total} cadastrado${total !== 1 ? "s" : ""}` },
-              { icon: Crown,        text: `${users.filter(u => u.role === "admin").length} administrador${users.filter(u => u.role === "admin").length !== 1 ? "es" : ""}` },
-              { icon: CheckCircle2, text: `${users.filter(u => u.ativo).length} ativo${users.filter(u => u.ativo).length !== 1 ? "s" : ""}` },
-            ] as { icon: React.ElementType; text: string }[]).map(({ icon: Ic, text }) => (
-              <div key={text} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-                <div style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Ic size={13} color="#F5A623" strokeWidth={2} />
-                </div>
-                <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.8)", fontWeight: "600" }}>{text}</span>
-              </div>
-            ))}
-          </div>
+      {/* Cabeçalho compacto (o banner de ~190px com foto genérica empurrava a lista para baixo) */}
+      <div className="dash-topo" style={{ marginBottom: 20 }}>
+        <div>
+          <h1 className="dash-topo__titulo">Equipe</h1>
+          <p className="dash-topo__sub">Acessos ao painel. Quem tem cargo preenchido aparece na página Sobre do site.</p>
         </div>
-        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-          onClick={() => setShowCreate(true)}
-          style={{ position: "absolute", top: 12, right: 12, zIndex: 2, display: "flex", alignItems: "center", gap: isMobile ? 0 : 8, background: "linear-gradient(135deg, #F5A623, #e8920e)", color: "#000", border: "none", borderRadius: 12, padding: isMobile ? "10px" : "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 800, boxShadow: "0 4px 20px rgba(245,166,35,0.4)", letterSpacing: "-0.2px" }}>
-          <Plus size={15} strokeWidth={2.5} />
-          {!isMobile && <span style={{ marginLeft: 4 }}>Novo Funcionário</span>}
-        </motion.button>
-      </motion.div>
+        <div className="dash-topo__acoes">
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+            <Plus size={16} strokeWidth={2.5} /> Novo funcionário
+          </button>
+        </div>
+      </div>
 
       {/* -- Busca ------------------------------------------ */}
       <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 }} style={{ position: "relative" }}>
@@ -688,14 +662,14 @@ export default function UsuariosPage() {
                       <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
                         <p style={{ fontSize: 15, fontWeight: 800, color: "#fff", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.nome}</p>
                         {isSelf && (
-                          <span style={{ fontSize: 9, fontWeight: 700, color: "#a78bfa", background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.2)", padding: "1px 6px", borderRadius: 99, flexShrink: 0 }}>você</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa", background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.2)", padding: "1px 6px", borderRadius: 99, flexShrink: 0 }}>você</span>
                         )}
                       </div>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: rc.color, background: rc.bg, border: `1px solid ${rc.color}22`, padding: "3px 8px", borderRadius: 99 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: rc.color, background: rc.bg, border: `1px solid ${rc.color}22`, padding: "3px 8px", borderRadius: 99 }}>
                         <RoleIcon size={9} /> {rc.label}
                       </span>
                     </div>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: u.ativo ? "#22c55e" : "#ef4444", background: u.ativo ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${u.ativo ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`, padding: "3px 8px", borderRadius: 99, flexShrink: 0 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: u.ativo ? "#22c55e" : "#ef4444", background: u.ativo ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${u.ativo ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`, padding: "3px 8px", borderRadius: 99, flexShrink: 0 }}>
                       <span style={{ width: 5, height: 5, borderRadius: "50%", background: u.ativo ? "#22c55e" : "#ef4444" }} />
                       {u.ativo ? "Ativo" : "Inativo"}
                     </span>
@@ -717,13 +691,13 @@ export default function UsuariosPage() {
                   {/* Permissões + data */}
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 160px), 1fr))", gap: 12, marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                     <div>
-                      <p style={{ fontSize: 8.5, fontWeight: 800, color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 5px" }}>Permissões</p>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: rc.color, background: rc.bg, border: `1px solid ${rc.color}22`, padding: "3px 9px", borderRadius: 99 }}>
+                      <p style={{ fontSize: 10.5, fontWeight: 800, color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 5px" }}>Permissões</p>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: rc.color, background: rc.bg, border: `1px solid ${rc.color}22`, padding: "3px 9px", borderRadius: 99 }}>
                         <RoleIcon size={9} /> {rc.label}
                       </span>
                     </div>
                     <div>
-                      <p style={{ fontSize: 8.5, fontWeight: 800, color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 5px" }}>Membro desde</p>
+                      <p style={{ fontSize: 10.5, fontWeight: 800, color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 5px" }}>Membro desde</p>
                       <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>{fmtDate(u.created_at)}</span>
                     </div>
                   </div>

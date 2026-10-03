@@ -8,7 +8,7 @@ import {
   Car, Users, ShoppingBag, DollarSign,
   UserCog, LogOut, Search, Bell, FileText, ChevronLeft,
   ChevronRight, Menu, X, Bike, Clock, CheckCircle2, XCircle,
-  ChevronDown, Star,
+  ChevronDown, Star, Sparkles, MessageSquare, Settings,
 } from "lucide-react";
 import { authApi, salesApi } from "@/lib/api";
 import { toast } from "@/lib/toast";
@@ -26,6 +26,7 @@ export const ADMIN_ONLY_ROUTES = [
   "/dashboard/relatorios",
   "/dashboard/usuarios",
   "/dashboard/configuracoes",
+  "/dashboard/modelos-destaque",
 ];
 
 // ─── Custom Icons ────────────────────────────────────────────────────────────
@@ -62,12 +63,13 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
       { href: "/dashboard/veiculos", label: "Carros",    icon: Car,             color: "#38bdf8", adminOnly: false },
       { href: "/dashboard/motos",    label: "Motos",     icon: Bike,            color: "#f97316", adminOnly: false },
       { href: "/dashboard/clientes", label: "Clientes",  icon: Users,           color: "#a78bfa", adminOnly: false },
-      { href: "/dashboard/leads",      label: "Leads CRM",  icon: ShoppingBag,     color: "#22c55e", adminOnly: false },
-      { href: "/dashboard/avaliacoes",  label: "Avaliacoes", icon: Star,            color: "#f59e0b", adminOnly: false },
+      { href: "/dashboard/leads",      label: "Leads",  icon: ShoppingBag,     color: "#22c55e", adminOnly: false },
+      { href: "/dashboard/avaliacoes",  label: "Avaliações", icon: Star,            color: "#f59e0b", adminOnly: false },
+      { href: "/dashboard/modelos-destaque", label: "Destaques do site", icon: Sparkles, color: "#f97316", adminOnly: true },
     ],
   },
   {
-    label: "Negocios",
+    label: "Negócios",
     items: [
       {
         href: "/dashboard/vendas",
@@ -81,14 +83,14 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
         ],
       },
       { href: "/dashboard/financeiro", label: "Financeiro", icon: DollarSign, color: "#f59e0b", adminOnly: true },
-      { href: "/dashboard/relatorios", label: "Relatorios", icon: FileText,   color: "#f97316", adminOnly: true },
+      { href: "/dashboard/relatorios", label: "Relatórios", icon: FileText,   color: "#f97316", adminOnly: true },
     ],
   },
   {
     label: "Sistema",
     items: [
-      { href: "/dashboard/usuarios",       label: "Usuarios",      icon: UserCog,    color: "#ec4899", adminOnly: true },
-      { href: "/dashboard/configuracoes",  label: "Configuracoes", icon: SettingsIcon, color: "#94a3b8", adminOnly: true },
+      { href: "/dashboard/usuarios",       label: "Usuários",      icon: UserCog,    color: "#ec4899", adminOnly: true },
+      { href: "/dashboard/configuracoes",  label: "Configurações", icon: SettingsIcon, color: "#94a3b8", adminOnly: true },
     ],
   },
 ];
@@ -240,16 +242,11 @@ function Sidebar({
                   transition={{ duration: 0.18 }}
                   style={{ display: "flex", alignItems: "center" }}
                 >
+                  {/* Logo vetorial (o PNG de 2 MB era invertido por filtro CSS a cada página) */}
                   <img
-                    src="/LogoLMC.png"
+                    src="/brand/lmc-logo-on-dark.svg"
                     alt="LMC Veículos"
-                    style={{
-                      height: "92px",
-                      width: "auto",
-                      objectFit: "contain",
-                      display: "block",
-                      filter: "invert(1) hue-rotate(180deg) drop-shadow(0 2px 16px rgba(245,166,35,0.5)) brightness(1.08)",
-                    }}
+                    style={{ height: "44px", width: "auto", display: "block" }}
                   />
                 </motion.div>
               ) : (
@@ -352,7 +349,7 @@ function Sidebar({
                   >
                     <div style={{ width: "14px", height: "1px", background: "rgba(255,255,255,0.1)", borderRadius: "1px", flexShrink: 0 }} />
                     <span style={{
-                      fontSize: "8.5px", fontWeight: "800",
+                      fontSize: "10.5px", fontWeight: "800",
                       color: "rgba(255,255,255,0.22)",
                       letterSpacing: "0.2em", textTransform: "uppercase",
                       whiteSpace: "nowrap",
@@ -691,6 +688,10 @@ const PAGE_META: Record<string, { title: string; subtitle: string; icon: React.E
   "/dashboard/financeiro":        { title: "Financeiro",     subtitle: "Fluxo de caixa e lançamentos",             icon: DollarSign,      color: "#f59e0b" },
   "/dashboard/relatorios":        { title: "Relatórios",     subtitle: "Análises, exportações e métricas",         icon: FileText,        color: "#f97316" },
   "/dashboard/usuarios":          { title: "Usuários",       subtitle: "Controle de acesso e permissões",          icon: UserCog,         color: "#ec4899" },
+  "/dashboard/leads":             { title: "Leads",          subtitle: "Contatos do site e pedidos de aviso",      icon: MessageSquare,   color: "#22c55e" },
+  "/dashboard/avaliacoes":        { title: "Avaliações",     subtitle: "Moderação das avaliações do site",         icon: Star,            color: "#f59e0b" },
+  "/dashboard/modelos-destaque":  { title: "Destaques do site", subtitle: "Modelos em destaque na página inicial", icon: Sparkles,        color: "#f97316" },
+  "/dashboard/configuracoes":     { title: "Configurações",  subtitle: "Dados da loja e do site",                  icon: Settings,        color: "#94a3b8" },
 };
 
 // ─── Header ──────────────────────────────────────────────────────────────────
@@ -838,7 +839,7 @@ function Header({
               }}>{meta.title}</h1>
               {meta.subtitle && !isMobileOrTablet && (
                 <p style={{
-                  fontSize: "10px", color: "var(--text-muted)",
+                  fontSize: "11.5px", color: "var(--text-muted)",
                   marginTop: "2px", lineHeight: 1, whiteSpace: "nowrap",
                 }}>
                   {meta.subtitle}
@@ -867,7 +868,7 @@ function Header({
               {dateStr}
             </span>
             <span style={{
-              fontSize: "10px", color: "var(--text-muted)",
+              fontSize: "11.5px", color: "var(--text-muted)",
               borderLeft: "1px solid var(--border)", paddingLeft: "6px",
             }}>
               {timeStr}
@@ -893,7 +894,7 @@ function Header({
             <Search size={12} color="var(--text-muted)" />
             <span style={{ fontSize: "12px", color: "var(--text-muted)", flex: 1, textAlign: "left" }}>Buscar...</span>
             <kbd style={{
-              fontSize: "9px", fontWeight: "700", color: "var(--text-muted)",
+              fontSize: "11px", fontWeight: "700", color: "var(--text-muted)",
               background: "var(--surface-3)", padding: "2px 5px",
               borderRadius: "4px", border: "1px solid var(--border)",
             }}>Ctrl+K</kbd>
@@ -975,7 +976,7 @@ function Header({
                     <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>Notificações</span>
                     {recentSales.length > 0 && (
                       <span style={{
-                        fontSize: "10px", fontWeight: "700", color: "#fff",
+                        fontSize: "11.5px", fontWeight: "700", color: "#fff",
                         background: "var(--brand)", borderRadius: "20px",
                         padding: "1px 7px", lineHeight: "16px",
                       }}>{recentSales.length}</span>
@@ -998,7 +999,7 @@ function Header({
                   ) : (
                     <>
                       <div style={{ padding: "10px 16px 6px" }}>
-                        <p style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                        <p style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                           Vendas Recentes
                         </p>
                       </div>
@@ -1036,12 +1037,12 @@ function Header({
                             <p style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                               {sale.vehicle_info || "Veículo"}
                             </p>
-                            <p style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: 1 }}>
+                            <p style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: 1 }}>
                               {sale.cliente_nome || "Cliente"} · {new Date(sale.data_venda + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                             </p>
                           </div>
                           <span style={{
-                            fontSize: "9px", fontWeight: "700",
+                            fontSize: "11px", fontWeight: "700",
                             color: sale.status === "concluida" ? "#22c55e" : sale.status === "cancelada" ? "#ef4444" : "#f59e0b",
                             background: sale.status === "concluida" ? "rgba(34,197,94,0.1)" : sale.status === "cancelada" ? "rgba(239,68,68,0.1)" : "rgba(245,158,11,0.1)",
                             border: `1px solid ${sale.status === "concluida" ? "rgba(34,197,94,0.2)" : sale.status === "cancelada" ? "rgba(239,68,68,0.2)" : "rgba(245,158,11,0.2)"}`,
@@ -1114,7 +1115,7 @@ function Header({
                 <p style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1, whiteSpace: "nowrap" }}>
                   {user?.nome?.split(" ")[0] || "Usuário"}
                 </p>
-                <p style={{ fontSize: "9px", color: "var(--brand)", marginTop: "2px", fontWeight: "600", textTransform: "capitalize" }}>
+                <p style={{ fontSize: "11px", color: "var(--brand)", marginTop: "2px", fontWeight: "600", textTransform: "capitalize" }}>
                   {user?.role || "admin"}
                 </p>
               </div>
@@ -1141,7 +1142,7 @@ function Header({
                     <p style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)" }}>
                       {user?.nome || "Usuário"}
                     </p>
-                    <p style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: "2px" }}>
+                    <p style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "2px" }}>
                       {user?.email || "-"}
                     </p>
                   </div>
@@ -1370,7 +1371,7 @@ export default function PainelShell({ children }: { children: React.ReactNode })
           <button
             onClick={() => setVendaPickerOpen(v => !v)}
             className={`bottom-nav-item${pathname.startsWith("/dashboard/vendas") ? " active" : ""}`}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, font: "inherit", width: "100%" }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "8px 4px 4px", width: "100%" }}
           >
             <span className="bottom-nav-icon"><ShoppingBag size={20} /></span>
             {!isXs && <span>Vendas</span>}

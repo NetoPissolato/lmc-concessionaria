@@ -161,7 +161,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                 </button>
               ) : (
                 <kbd style={{
-                  fontSize: "10px", fontWeight: "700",
+                  fontSize: "11.5px", fontWeight: "700",
                   color: "rgba(255,255,255,0.3)",
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.08)",
@@ -179,7 +179,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                 <div style={{ padding: "6px 0 8px" }}>
                   <p style={{
                     padding: "8px 16px 5px",
-                    fontSize: "10px", fontWeight: "700",
+                    fontSize: "11.5px", fontWeight: "700",
                     color: "rgba(255,255,255,0.25)",
                     textTransform: "uppercase", letterSpacing: "0.12em",
                   }}>Ações rápidas</p>
@@ -232,7 +232,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                   {results.filter(r => r.kind === "vehicle").length > 0 && (
                     <>
                       <p style={{
-                        padding: "8px 16px 5px", fontSize: "10px", fontWeight: "700",
+                        padding: "8px 16px 5px", fontSize: "11.5px", fontWeight: "700",
                         color: "rgba(255,255,255,0.25)", textTransform: "uppercase", letterSpacing: "0.12em",
                       }}>Veículos</p>
                       {results.filter(r => r.kind === "vehicle").map(r => {
@@ -267,7 +267,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                               </p>
                             </div>
                             <span style={{
-                              fontSize: "10px", padding: "2px 8px", borderRadius: 99, fontWeight: 600, flexShrink: 0,
+                              fontSize: "11.5px", padding: "2px 8px", borderRadius: 99, fontWeight: 600, flexShrink: 0,
                               background: v.status === "disponivel" ? "#22c55e14" : "#f59e0b14",
                               color: v.status === "disponivel" ? "#22c55e" : "#f59e0b",
                               border: `1px solid ${v.status === "disponivel" ? "#22c55e" : "#f59e0b"}22`,
@@ -284,7 +284,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                   {results.filter(r => r.kind === "customer").length > 0 && (
                     <>
                       <p style={{
-                        padding: "10px 16px 5px", fontSize: "10px", fontWeight: "700",
+                        padding: "10px 16px 5px", fontSize: "11.5px", fontWeight: "700",
                         color: "rgba(255,255,255,0.25)", textTransform: "uppercase", letterSpacing: "0.12em",
                       }}>Clientes</p>
                       {results.filter(r => r.kind === "customer").map(r => {
@@ -338,7 +338,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                 <span key={k} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "11px", color: "rgba(255,255,255,0.25)" }}>
                   <kbd style={{
                     background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 4, padding: "2px 6px", fontSize: "10px", fontWeight: "600",
+                    borderRadius: 4, padding: "2px 6px", fontSize: "11.5px", fontWeight: "600",
                     color: "rgba(255,255,255,0.4)",
                   }}>{k}</kbd>
                   {l}

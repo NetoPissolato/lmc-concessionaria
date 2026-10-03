@@ -1,5 +1,6 @@
 "use client";
 
+import { dataISO } from "@/lib/formatters";
 import { useState, useEffect } from "react";
 
 import { useBreakpoint } from "@/hooks/useBreakpoint";
@@ -102,7 +103,7 @@ export default function NovaMotoPage() {
       quilometragem: 0,
       combustivel:   "gasolina",
       cambio:        "manual",
-      data_compra:   new Date().toISOString().split("T")[0],
+      data_compra:   dataISO(),
     },
   });
 
@@ -321,7 +322,7 @@ export default function NovaMotoPage() {
                 <Field label="Quilometragem" required error={errors.quilometragem?.message}>
                   <div style={{ position: "relative" }}>
                     <input inputMode="numeric" placeholder="0" className="input" value={kmDisplay} onChange={e => handleKM(e.target.value)} />
-                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
+                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "11.5px", color: "var(--text-muted)", fontWeight: 600 }}>km</span>
                   </div>
                 </Field>
                 <Field label="Cilindrada (cc)" error={errors.cilindrada?.message}>
@@ -351,7 +352,7 @@ export default function NovaMotoPage() {
                     <input className="input" style={{ textTransform: "uppercase", letterSpacing: "0.12em", ...inputStyle("placa") }}
                       placeholder="ABC1D23" maxLength={8} value={watchPlaca}
                       onChange={e => setValue("placa", maskPlaca(e.target.value), { shouldValidate: true })} />
-                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px", color: "var(--text-muted)" }}>
+                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "11.5px", color: "var(--text-muted)" }}>
                       {(watchPlaca || "").replace(/[^A-Z0-9]/gi, "").length}/7
                     </span>
                   </div>
@@ -361,7 +362,7 @@ export default function NovaMotoPage() {
                     <input className="input" style={{ textTransform: "uppercase", fontFamily: "monospace", letterSpacing: "0.05em", paddingRight: 40, ...inputStyle("chassi") }}
                       placeholder="9BWZZZ377VT004251" maxLength={17} value={watchChassi}
                       onChange={e => setValue("chassi", maskChassi(e.target.value), { shouldValidate: true })} />
-                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "10px",
+                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "11.5px",
                       color: (watchChassi || "").length === 17 ? "#10b981" : "var(--text-muted)", fontWeight: 600 }}>
                       {(watchChassi || "").length}/17
                     </span>
@@ -454,7 +455,7 @@ export default function NovaMotoPage() {
                       <div key={photo.id} style={{ position: "relative", borderRadius: "10px", overflow: "hidden", border: photo.is_main ? "2px solid #f97316" : "1px solid var(--border)", aspectRatio: "4/3" }}>
                         <img src={`${photo.url}`} alt="Foto" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         {photo.is_main && (
-                          <div style={{ position: "absolute", top: 6, left: 6, background: "#f97316", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 700, color: "#000", display: "flex", alignItems: "center", gap: 4 }}>
+                          <div style={{ position: "absolute", top: 6, left: 6, background: "#f97316", borderRadius: 20, padding: "2px 8px", fontSize: 11.5, fontWeight: 700, color: "#000", display: "flex", alignItems: "center", gap: 4 }}>
                             <Star size={9} fill="#000" /> Capa
                           </div>
                         )}

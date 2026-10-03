@@ -223,7 +223,7 @@ export default function ReviewsPage() {
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
                         <span style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>{review.nome}</span>
                         {review.cidade && <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{review.cidade}</span>}
-                        <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 10, fontWeight: 700, background: isPending ? "rgba(245,158,11,0.10)" : "rgba(52,211,153,0.10)", color: isPending ? "#f59e0b" : "#34d399", border: `1px solid ${isPending ? "rgba(245,158,11,0.22)" : "rgba(52,211,153,0.22)"}` }}>
+                        <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 11.5, fontWeight: 700, background: isPending ? "rgba(245,158,11,0.10)" : "rgba(52,211,153,0.10)", color: isPending ? "#f59e0b" : "#34d399", border: `1px solid ${isPending ? "rgba(245,158,11,0.22)" : "rgba(52,211,153,0.22)"}` }}>
                           {isPending ? "Pendente" : "Publicada"}
                         </span>
                       </div>
