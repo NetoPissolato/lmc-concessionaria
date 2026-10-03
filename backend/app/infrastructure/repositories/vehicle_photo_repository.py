@@ -34,6 +34,7 @@ class VehiclePhotoRepository:
         url: str,
         is_main: bool = False,
         ordem: Optional[int] = None,
+        thumb_url: Optional[str] = None,
     ) -> VehiclePhoto:
         """Create a new photo record."""
         if ordem is None:
@@ -45,6 +46,7 @@ class VehiclePhotoRepository:
             vehicle_id=vehicle_id,
             filename=filename,
             url=url,
+            thumb_url=thumb_url,
             is_main=is_main,
             ordem=ordem,
         )

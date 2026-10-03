@@ -3,7 +3,7 @@ import enum
 from decimal import Decimal
 from datetime import date, datetime
 from typing import TYPE_CHECKING
-from sqlalchemy import String, Numeric, Integer, Date, DateTime, Text, Enum as SAEnum, ForeignKey, Boolean, SmallInteger
+from sqlalchemy import String, Numeric, Integer, Date, DateTime, Text, Enum as SAEnum, ForeignKey, Boolean, SmallInteger, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from typing import Optional
@@ -70,6 +70,12 @@ class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
     - margem = lucro_bruto / valor_vendido * 100
     """
     __tablename__ = "vehicles"
+    __table_args__ = (
+        Index("uq_vehicles_placa_ativa", "placa", unique=True,
+              postgresql_where=text("is_deleted = false AND status <> 'VENDIDO'")),
+        Index("uq_vehicles_chassi_ativo", "chassi", unique=True,
+              postgresql_where=text("is_deleted = false AND status <> 'VENDIDO'")),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
 
@@ -113,9 +119,11 @@ class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
     # Analytics
     visualizacoes: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
 
-    # Legal documents (UNIQUE constraints prevent duplicates)
-    placa: Mapped[str] = mapped_column(String(10), unique=True, nullable=False, index=True)
-    chassi: Mapped[str] = mapped_column(String(17), unique=True, nullable=False, index=True)
+    # Documentos. A unicidade vale só entre veículos ATIVOS e NÃO VENDIDOS
+    # (índices parciais em __table_args__): a loja pode recomprar um carro que
+    # já vendeu, e um cadastro excluído não pode travar o recadastro da placa.
+    placa: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+    chassi: Mapped[str] = mapped_column(String(17), nullable=False, index=True)
     renavam: Mapped[str | None] = mapped_column(String(11), nullable=True)
 
     # Purchase information

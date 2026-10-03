@@ -1,4 +1,6 @@
-from pydantic import BaseModel, field_validator
+import re
+
+from pydantic import BaseModel, field_validator, model_validator
 from typing import Optional, List
 from decimal import Decimal
 from datetime import date, datetime
@@ -41,6 +43,36 @@ class SaleCreate(BaseModel):
             raise ValueError("Valor de venda deve ser maior que zero")
         return v
 
+    @field_validator("valor_entrada", "valor_financiado")
+    @classmethod
+    def valores_nao_negativos(cls, v: Decimal) -> Decimal:
+        if v < 0:
+            raise ValueError("Valores de entrada e financiamento não podem ser negativos")
+        return v
+
+    @field_validator("comissao_percentual")
+    @classmethod
+    def comissao_razoavel(cls, v: Decimal) -> Decimal:
+        # A comissão vira saída no caixa: um valor digitado errado (ex.: 150 em vez de 1,5)
+        # zeraria o lucro da venda sem ninguém perceber.
+        if v < 0 or v > 20:
+            raise ValueError("Comissão deve ficar entre 0% e 20%")
+        return v
+
+    @model_validator(mode="after")
+    def pagamentos_somam_o_total(self):
+        if self.payment_methods:
+            total = sum((m.valor for m in self.payment_methods), Decimal("0"))
+            if abs(total - self.valor_venda) > Decimal("0.01"):
+                raise ValueError(
+                    f"As formas de pagamento somam R$ {total:.2f}, mas a venda é de R$ {self.valor_venda:.2f}"
+                )
+            if any(m.valor <= 0 for m in self.payment_methods):
+                raise ValueError("Cada forma de pagamento precisa ter valor maior que zero")
+        if self.valor_entrada + self.valor_financiado > self.valor_venda + Decimal("0.01"):
+            raise ValueError("Entrada + financiado não pode passar do valor da venda")
+        return self
+
 
 class SaleStatusUpdate(BaseModel):
     status: SaleStatus
@@ -73,6 +105,43 @@ class SaleResponse(BaseModel):
     vendedor_nome: Optional[str] = None
 
 
+def _digitos(v: str) -> str:
+    return re.sub(r"\D", "", v or "")
+
+
+def _cpf_valido(d: str) -> bool:
+    if len(d) != 11 or d == d[0] * 11:
+        return False
+    for n in (9, 10):
+        soma = sum(int(d[i]) * (n + 1 - i) for i in range(n))
+        if (soma * 10 % 11) % 10 != int(d[n]):
+            return False
+    return True
+
+
+def _cnpj_valido(d: str) -> bool:
+    if len(d) != 14 or d == d[0] * 14:
+        return False
+    for n, pesos in ((12, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]), (13, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2])):
+        soma = sum(int(d[i]) * pesos[i] for i in range(n))
+        dv = 11 - soma % 11
+        if (0 if dv >= 10 else dv) != int(d[n]):
+            return False
+    return True
+
+
+def normalizar_cpf_cnpj(v: Optional[str]) -> Optional[str]:
+    """Valida e devolve sempre no formato com máscara (assim a unicidade compara igual)."""
+    if v is None or not v.strip():
+        return None
+    d = _digitos(v)
+    if len(d) == 11 and _cpf_valido(d):
+        return f"{d[:3]}.{d[3:6]}.{d[6:9]}-{d[9:]}"
+    if len(d) == 14 and _cnpj_valido(d):
+        return f"{d[:2]}.{d[2:5]}.{d[5:8]}/{d[8:12]}-{d[12:]}"
+    raise ValueError("CPF/CNPJ inválido")
+
+
 class CustomerCreate(BaseModel):
     nome: str
     cpf_cnpj: Optional[str] = None
@@ -95,10 +164,21 @@ class CustomerCreate(BaseModel):
             raise ValueError("Nome não pode ser vazio")
         return v.strip()
 
+    @field_validator("cpf_cnpj")
+    @classmethod
+    def cpf_cnpj_valido(cls, v: Optional[str]) -> Optional[str]:
+        return normalizar_cpf_cnpj(v)
+
 
 class CustomerUpdate(BaseModel):
     nome: Optional[str] = None
     cpf_cnpj: Optional[str] = None
+
+    @field_validator("cpf_cnpj")
+    @classmethod
+    def cpf_cnpj_valido(cls, v: Optional[str]) -> Optional[str]:
+        return normalizar_cpf_cnpj(v)
+
     telefone: Optional[str] = None
     whatsapp: Optional[str] = None
     email: Optional[str] = None

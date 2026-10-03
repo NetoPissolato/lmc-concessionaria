@@ -2,6 +2,7 @@ from typing import Optional
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.models.audit_log import AuditLog
+from app.core import contexto
 
 
 class AuditRepository:
@@ -31,8 +32,9 @@ class AuditRepository:
             entidade_id=entidade_id,
             dados_antes=dados_antes,
             dados_depois=dados_depois,
-            ip_address=ip_address,
-            user_agent=user_agent,
+            # Sem IP explícito, usa o da requisição atual (preenchido pelo middleware)
+            ip_address=ip_address or contexto.ip_cliente.get(),
+            user_agent=(user_agent or contexto.user_agent.get() or "")[:500] or None,
             descricao=descricao,
             timestamp=datetime.now(timezone.utc),
         )

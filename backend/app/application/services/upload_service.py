@@ -117,3 +117,49 @@ class UploadService:
         if not foto_path:
             return None
         return f"/uploads/{foto_path}"
+
+
+# ─── Fotos de veículo ──────────────────────────────────────────────────────────
+FOTO_GRANDE = 1600   # lado maior da versão usada na galeria
+FOTO_MINIATURA = 640  # lado maior da versão usada nos cards
+
+
+def processar_foto_veiculo(data: bytes) -> tuple[bytes, bytes]:
+    """
+    Valida e prepara uma foto de veículo. Devolve (grande_webp, miniatura_webp).
+
+    - Confere o conteúdo de verdade (Pillow abre e verifica), não só a extensão.
+    - Gira conforme a orientação do celular (EXIF) e DESCARTA o EXIF: fotos tiradas no
+      pátio levam GPS e modelo do aparelho, que não devem ir para o site.
+    - Reduz e regrava em WebP: uma foto de 8 MB do celular vira ~200 KB.
+    """
+    if len(data) > settings.max_upload_size_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"Arquivo muito grande. Máximo: {settings.MAX_UPLOAD_SIZE_MB} MB.",
+        )
+    if _detect_extension(data) is None:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Tipo de arquivo não permitido. Use JPG, PNG ou WebP.",
+        )
+    try:
+        from PIL import Image, ImageOps
+        Image.open(io.BytesIO(data)).verify()
+        img = Image.open(io.BytesIO(data))
+        img = ImageOps.exif_transpose(img)
+        img = img.convert("RGB")
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Arquivo de imagem inválido ou corrompido.",
+        )
+
+    def _webp(imagem, lado: int, qualidade: int) -> bytes:
+        copia = imagem.copy()
+        copia.thumbnail((lado, lado), Image.LANCZOS)
+        out = io.BytesIO()
+        copia.save(out, format="WEBP", quality=qualidade, method=5)
+        return out.getvalue()
+
+    return _webp(img, FOTO_GRANDE, 82), _webp(img, FOTO_MINIATURA, 78)

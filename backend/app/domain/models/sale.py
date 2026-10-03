@@ -2,7 +2,7 @@ import uuid
 import enum
 from decimal import Decimal
 from datetime import date
-from sqlalchemy import String, Numeric, Integer, Date, Text, Enum as SAEnum, ForeignKey, Boolean, JSON
+from sqlalchemy import String, Numeric, Integer, Date, Text, Enum as SAEnum, ForeignKey, Boolean, JSON, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List
 
@@ -38,6 +38,13 @@ class Sale(Base, TimestampMixin, SoftDeleteMixin):
     4. Commission is calculated based on vendedor's rate
     """
     __tablename__ = "sales"
+    __table_args__ = (
+        # Um veículo não pode ter duas vendas ativas ao mesmo tempo. A checagem no
+        # service dá a mensagem amigável; o índice garante mesmo com duas requisições
+        # simultâneas.
+        Index("uq_sales_veiculo_ativa", "vehicle_id", unique=True,
+              postgresql_where=text("is_deleted = false AND status IN ('PENDENTE', 'CONCLUIDA')")),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
 

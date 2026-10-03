@@ -1,10 +1,9 @@
 import os
 import uuid
-import shutil
 from pathlib import Path
-from datetime import date as today_date
-from fastapi import APIRouter, Depends, Query, Path as FPath, UploadFile, File, HTTPException
-from sqlalchemy import select, delete as sql_delete
+from fastapi import APIRouter, Depends, Query, Path as FPath, UploadFile, File, HTTPException, Response
+from sqlalchemy import select, func, or_
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
@@ -19,8 +18,11 @@ from app.application.schemas.vehicle import (
 )
 from app.application.schemas.vehicle_photo import VehiclePhotoResponse
 from app.application.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse
-from app.application.services.vehicle_service import VehicleService
-from app.domain.models.vehicle import VehicleStatus, VehicleType
+from app.application.services.vehicle_service import VehicleService, CATEGORIA_CAIXA
+from app.application.services import financeiro_service
+from app.application.services.upload_service import processar_foto_veiculo
+from app.core.tempo import hoje_loja
+from app.domain.models.vehicle import Vehicle, VehicleStatus, VehicleType
 from app.domain.models.financial import FinancialEntry, EntryType, FinancialCategory
 from app.domain.models.vehicle_expense import VehicleExpense, ExpenseCategory, PaymentMethod
 from app.infrastructure.repositories.expense_repository import ExpenseRepository
@@ -32,20 +34,65 @@ router = APIRouter(prefix="/vehicles", tags=["Veículos"])
 
 
 
+ORDENACOES = {
+    "recentes": (Vehicle.created_at.desc(),),
+    # "Parado há mais tempo" primeiro: data de compra mais antiga
+    "dias_estoque_desc": (Vehicle.data_compra.asc(), Vehicle.created_at.asc()),
+    "preco_asc": (Vehicle.valor_anunciado.asc().nulls_last(),),
+    "preco_desc": (Vehicle.valor_anunciado.desc().nulls_last(),),
+    "km_asc": (Vehicle.quilometragem.asc(),),
+    "ano_desc": (Vehicle.ano.desc(), Vehicle.created_at.desc()),
+}
+
+
 @router.get("", response_model=List[VehicleListResponse])
 async def list_vehicles(
+    response: Response,
     q: Optional[str] = Query(None, description="Busca por marca, modelo, placa ou chassi"),
-    status: Optional[VehicleStatus] = Query(None),
+    status: Optional[str] = Query(None, description="Um status ou vários separados por vírgula"),
     tipo: Optional[VehicleType] = Query(None, description="Filtrar por tipo: carro ou moto"),
+    marca: Optional[str] = Query(None),
+    sort: str = Query("recentes", description=", ".join(ORDENACOES)),
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(50, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
     _user: dict = Depends(get_current_user_payload),
 ):
-    """List vehicles with optional search and filters."""
-    service = VehicleService(db)
-    vehicles = await service.list_vehicles(query=q, status=status, tipo=tipo, skip=skip, limit=limit)
-    return vehicles
+    """Lista veículos com filtros e ordenação no servidor. Total no cabeçalho X-Total-Count."""
+    stmt = select(Vehicle).where(Vehicle.is_deleted == False)  # noqa: E712
+    if q:
+        termo = f"%{q.strip().upper()}%"
+        stmt = stmt.where(or_(
+            func.upper(Vehicle.marca).like(termo),
+            func.upper(Vehicle.modelo).like(termo),
+            func.upper(Vehicle.versao).like(termo),
+            Vehicle.placa.like(termo),
+            Vehicle.chassi.like(termo),
+        ))
+    if status:
+        try:
+            status_lista = [VehicleStatus(x.strip().lower()) for x in status.split(",") if x.strip()]
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Status inválido")
+        stmt = stmt.where(Vehicle.status.in_(status_lista))
+    if tipo is not None:
+        stmt = stmt.where(Vehicle.tipo == tipo)
+    if marca:
+        stmt = stmt.where(func.lower(Vehicle.marca) == marca.strip().lower())
+
+    total = await db.scalar(select(func.count()).select_from(stmt.subquery()))
+    response.headers["X-Total-Count"] = str(total or 0)
+
+    ordem = ORDENACOES.get(sort)
+    if ordem is None:
+        raise HTTPException(status_code=422, detail=f"Ordenação inválida. Use: {', '.join(ORDENACOES)}")
+    stmt = (
+        stmt.options(selectinload(Vehicle.photos), selectinload(Vehicle.expenses))
+        .order_by(*ordem)
+        .offset(skip)
+        .limit(limit)
+    )
+    return list((await db.execute(stmt)).scalars().all())
 
 
 @router.get("/brands-models", summary="Marcas e modelos únicos do estoque (autocomplete)")
@@ -103,8 +150,10 @@ async def get_vehicle(
     db: AsyncSession = Depends(get_db),
     _user: dict = Depends(get_current_user_payload),
 ):
-    service = VehicleService(db)
-    return await service.vehicle_repo.get_by_id(vehicle_id)
+    vehicle = await VehicleService(db).vehicle_repo.get_by_id(vehicle_id)
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    return vehicle
 
 
 @router.put("/{vehicle_id}", response_model=VehicleResponse)
@@ -220,30 +269,44 @@ async def update_expense(
     expense_id: str,
     body: ExpenseUpdate,
     db: AsyncSession = Depends(get_db),
-    _user: dict = Depends(get_current_user_payload),
+    user: dict = Depends(require_admin),  # mexe no caixa: só administrador
 ):
-    """Update an existing expense and sync with financial ledger."""
+    """
+    Corrige uma despesa. O lançamento antigo no caixa é ESTORNADO e um novo é lançado
+    com os valores corrigidos (o histórico mostra a correção).
+    """
     repo = ExpenseRepository(db)
     expense = await repo.get_by_id_for_vehicle(expense_id, vehicle_id)
     if not expense:
         raise HTTPException(status_code=404, detail="Despesa não encontrada")
+    antes = {k: str(getattr(expense, k)) for k in body.model_dump(exclude_none=True)}
     updated = await repo.update_expense(expense, **body.model_dump(exclude_none=True))
 
-    # Sync financial entry if exists
-    from sqlalchemy import select as sql_select
-    result = await db.execute(
-        sql_select(FinancialEntry).where(FinancialEntry.expense_id == expense_id)
+    tinha_lancamento = await db.scalar(
+        select(func.count()).select_from(FinancialEntry).where(FinancialEntry.expense_id == expense_id)
     )
-    fin_entry = result.scalar_one_or_none()
-    if fin_entry:
-        update_fields = body.model_dump(exclude_none=True)
-        if "valor" in update_fields:
-            fin_entry.valor = update_fields["valor"]
-        if "data" in update_fields:
-            fin_entry.data = update_fields["data"]
-        if "descricao" in update_fields:
-            fin_entry.descricao = f"{update_fields.get('descricao', fin_entry.descricao)}"
+    if tinha_lancamento:
+        await financeiro_service.estornar(
+            db, FinancialEntry.expense_id == expense_id,
+            motivo="despesa corrigida", usuario_id=user["sub"],
+        )
+        vehicle = await VehicleRepository(db).get_by_id(vehicle_id)
+        db.add(FinancialEntry(
+            tipo=EntryType.SAIDA,
+            categoria=CATEGORIA_CAIXA.get(updated.categoria, FinancialCategory.OUTROS_SAIDA),
+            descricao=f"Despesa {updated.categoria.value} — {vehicle.marca} {vehicle.modelo} ({vehicle.placa}): {updated.descricao}"[:255],
+            valor=updated.valor,
+            data=updated.data,
+            vehicle_id=vehicle_id,
+            expense_id=expense_id,
+            created_by=user["sub"],
+        ))
 
+    await AuditRepository(db).log(
+        usuario_id=user["sub"], acao="UPDATE", entidade="VehicleExpense", entidade_id=expense_id,
+        dados_antes=antes, dados_depois=body.model_dump(mode="json", exclude_none=True),
+        descricao=f"Despesa corrigida no veículo {vehicle_id}",
+    )
     await db.commit()
     return updated
 
@@ -253,19 +316,24 @@ async def delete_expense(
     vehicle_id: str,
     expense_id: str,
     db: AsyncSession = Depends(get_db),
-    _user: dict = Depends(get_current_user_payload),
+    user: dict = Depends(require_admin),  # mexe no caixa: só administrador
 ):
-    """Delete an expense from the vehicle cost center and remove from financial ledger."""
+    """Remove a despesa do centro de custo e ESTORNA o lançamento no caixa (não apaga)."""
     repo = ExpenseRepository(db)
     expense = await repo.get_by_id_for_vehicle(expense_id, vehicle_id)
     if not expense:
         raise HTTPException(status_code=404, detail="Despesa não encontrada")
 
-    # Remove matching financial entry (cascade)
-    await db.execute(
-        sql_delete(FinancialEntry).where(FinancialEntry.expense_id == expense_id)
+    await financeiro_service.estornar(
+        db, FinancialEntry.expense_id == expense_id,
+        motivo="despesa removida", usuario_id=user["sub"],
     )
-
+    await AuditRepository(db).log(
+        usuario_id=user["sub"], acao="DELETE", entidade="VehicleExpense", entidade_id=expense_id,
+        dados_antes={"categoria": expense.categoria.value, "descricao": expense.descricao,
+                     "valor": str(expense.valor), "data": str(expense.data)},
+        descricao=f"Despesa removida do veículo {vehicle_id}",
+    )
     await repo.delete_expense(expense)
     await db.commit()
 
@@ -306,13 +374,13 @@ async def pay_vehicle_fines(
     repo = VehicleRepository(db)
     vehicle = await repo.get_with_expenses(vehicle_id)
     if not vehicle:
-        raise HTTPException(status_code=404, detail="Veiculo nao encontrado")
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
 
     valor = vehicle.valor_multas
     if not valor or valor <= 0:
-        raise HTTPException(status_code=400, detail="Veiculo nao possui multas pendentes")
+        raise HTTPException(status_code=400, detail="Veículo não possui multas pendentes")
 
-    today = today_date.today()
+    today = hoje_loja()
     expense_id = str(uuid.uuid4())
 
     # 1. VehicleExpense — appears in cost center total_despesas
@@ -380,59 +448,38 @@ async def upload_photo(
     db: AsyncSession = Depends(get_db),
     _user: dict = Depends(get_current_user_payload),
 ):
-    """Upload a photo for a vehicle. Accepts jpg, jpeg, png, webp. Max 10MB."""
+    """
+    Envia uma foto. Aceita JPG, PNG e WebP: o conteúdo é validado, o EXIF (GPS do
+    celular) é descartado e a imagem é regravada em WebP em dois tamanhos.
+    """
     from app.infrastructure.repositories.vehicle_photo_repository import VehiclePhotoRepository
-    from app.infrastructure.repositories.vehicle_repository import VehicleRepository
+    from app.domain.models.store_settings import StoreSettings
 
-    # Verify vehicle exists
-    vehicle_repo = VehicleRepository(db)
-    vehicle = await vehicle_repo.get_by_id(vehicle_id)
+    vehicle = await VehicleRepository(db).get_by_id(vehicle_id)
     if not vehicle:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
 
-    # Validate file extension
-    ext = Path(file.filename or "").suffix.lower()
-    if ext not in ALLOWED_PHOTO_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Formato inválido. Use: {', '.join(ALLOWED_PHOTO_EXTENSIONS)}"
-        )
-
-    # Validate file size
-    content = await file.read()
-    if len(content) > settings.max_upload_size_bytes:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Arquivo muito grande. Máximo: {settings.MAX_UPLOAD_SIZE_MB}MB"
-        )
-
     repo = VehiclePhotoRepository(db)
-
-    # Check photo limit
     count = await repo.count_by_vehicle(vehicle_id)
-    if count >= MAX_PHOTOS_PER_VEHICLE:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Limite de {MAX_PHOTOS_PER_VEHICLE} fotos por veículo atingido"
-        )
+    loja = (await db.execute(select(StoreSettings).limit(1))).scalar_one_or_none()
+    limite = getattr(loja, "max_fotos_veiculo", None) or MAX_PHOTOS_PER_VEHICLE
+    if count >= limite:
+        raise HTTPException(status_code=400, detail=f"Limite de {limite} fotos por veículo atingido")
 
-    # Save file to disk
-    vehicle_upload_dir = Path(settings.UPLOAD_DIR) / "vehicles" / vehicle_id
-    vehicle_upload_dir.mkdir(parents=True, exist_ok=True)
+    grande, miniatura = processar_foto_veiculo(await file.read())
 
-    filename = f"{uuid.uuid4()}{ext}"
-    file_path = vehicle_upload_dir / filename
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    url = f"/uploads/vehicles/{vehicle_id}/{filename}"
-    is_main = count == 0  # First photo is automatically the main one
+    pasta = Path(settings.UPLOAD_DIR) / "vehicles" / vehicle_id
+    pasta.mkdir(parents=True, exist_ok=True)
+    base = str(uuid.uuid4())
+    (pasta / f"{base}.webp").write_bytes(grande)
+    (pasta / f"{base}_thumb.webp").write_bytes(miniatura)
 
     photo = await repo.create(
         vehicle_id=vehicle_id,
-        filename=filename,
-        url=url,
-        is_main=is_main,
+        filename=f"{base}.webp",
+        url=f"/uploads/vehicles/{vehicle_id}/{base}.webp",
+        thumb_url=f"/uploads/vehicles/{vehicle_id}/{base}_thumb.webp",
+        is_main=count == 0,  # a primeira foto vira a capa
         ordem=count,
     )
     await db.commit()
@@ -476,11 +523,14 @@ async def delete_photo(
     if not photo:
         raise HTTPException(status_code=404, detail="Foto não encontrada")
 
+    thumb_url = photo.thumb_url
     filename = await repo.delete(photo)
     await db.commit()
 
-    # Remove file from disk
-    file_path = Path(settings.UPLOAD_DIR) / "vehicles" / vehicle_id / filename
-    if file_path.exists():
-        file_path.unlink()
+    # Remove os arquivos (grande e miniatura). Path(...).name impede sair da pasta do veículo.
+    pasta = Path(settings.UPLOAD_DIR) / "vehicles" / vehicle_id
+    for nome in filter(None, [filename, thumb_url and Path(thumb_url).name]):
+        arquivo = pasta / Path(nome).name
+        if arquivo.exists():
+            arquivo.unlink()
 

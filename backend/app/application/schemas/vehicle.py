@@ -6,96 +6,9 @@ from app.domain.models.vehicle import VehicleStatus, FuelType, TransmissionType,
 from app.application.schemas.vehicle_photo import VehiclePhotoResponse
 
 
-# ─── Normalização de marcas ───────────────────────────────────────────────────
-# Garante que a mesma marca nunca apareça com grafias diferentes no sistema.
-# Ex: "bmw", "BMW", "Bmw" → sempre "BMW"
-# Ex: "vw", "volkswagen", "VW" → sempre "Volkswagen"
-
-BRAND_CANONICAL: dict[str, str] = {
-    # Europeias
-    "bmw":                "BMW",
-    "bmw motorrad":       "BMW Motorrad",
-    "bmwmotorrad":        "BMW Motorrad",
-    "audi":               "Audi",
-    "mercedes":           "Mercedes-Benz",
-    "mercedes-benz":      "Mercedes-Benz",
-    "mercedesbenz":       "Mercedes-Benz",
-    "volkswagen":         "Volkswagen",
-    "vw":                 "Volkswagen",
-    "volvo":              "Volvo",
-    "peugeot":            "Peugeot",
-    "citroen":            "Citroën",
-    "citroën":            "Citroën",
-    "renault":            "Renault",
-    "fiat":               "Fiat",
-    "mini":               "MINI",
-    "porsche":            "Porsche",
-    "ferrari":            "Ferrari",
-    "lamborghini":        "Lamborghini",
-    "land rover":         "Land Rover",
-    "landrover":          "Land Rover",
-    "jaguar":             "Jaguar",
-    "alfa romeo":         "Alfa Romeo",
-    "alfaromeo":          "Alfa Romeo",
-    "triumph":            "Triumph",
-    # Americanas
-    "ford":               "Ford",
-    "chevrolet":          "Chevrolet",
-    "gm":                 "Chevrolet",
-    "dodge":              "Dodge",
-    "ram":                "RAM",
-    "chrysler":           "Chrysler",
-    "jeep":               "Jeep",
-    "harley":             "Harley-Davidson",
-    "harley davidson":    "Harley-Davidson",
-    "harley-davidson":    "Harley-Davidson",
-    "harleydavidson":     "Harley-Davidson",
-    # Japonesas
-    "toyota":             "Toyota",
-    "honda":              "Honda",
-    "nissan":             "Nissan",
-    "mitsubishi":         "Mitsubishi",
-    "subaru":             "Subaru",
-    "yamaha":             "Yamaha",
-    "kawasaki":           "Kawasaki",
-    "suzuki":             "Suzuki",
-    "ducati":             "Ducati",
-    # Coreanas
-    "hyundai":            "Hyundai",
-    "kia":                "Kia",
-    # Chinesas
-    "byd":                "BYD",
-    "jac":                "JAC",
-    "chery":              "Chery",
-    "caoa chery":         "CAOA Chery",
-    "caoa":               "CAOA Chery",
-    "great wall":         "Great Wall",
-    "haval":              "Haval",
-    "lifan":              "Lifan",
-    # Brasileiras
-    "agrale":             "Agrale",
-    "troller":            "Troller",
-}
-
-# Palavras que devem manter maiúsculas especiais em cor/modelo
-_UPPER_WORDS = {"cvt", "suv", "gts", "gt", "rs", "ls", "ltz", "lx", "lxs", "exl", "ex", "dx"}
-
-
-def _normalize_brand(v: str) -> str:
-    """Normaliza marca usando dicionário canônico. Fallback: Title Case."""
-    if not v:
-        return v
-    cleaned = " ".join(v.strip().split())  # colapsa espaços extras
-    key = cleaned.lower()
-    return BRAND_CANONICAL.get(key, cleaned.title())
-
-
-def _normalize_text(v: str) -> str:
-    """Title Case com colapso de espaços. Ex: ' PRETO FOSCO  ' → 'Preto Fosco'."""
-    if not v:
-        return v
-    return " ".join(w.title() for w in v.strip().split())
-
+# Normalização de marca/modelo/versão/cor: um único módulo (app/domain/normalizacao.py),
+# aplicado aqui na entrada. O service e as rotas públicas não normalizam de novo.
+from app.domain.normalizacao import normalizar_marca, normalizar_modelo, normalizar_cor  # noqa: E402
 
 
 class VehicleCreate(BaseModel):
@@ -131,17 +44,17 @@ class VehicleCreate(BaseModel):
     @field_validator("marca")
     @classmethod
     def normalize_marca(cls, v: str) -> str:
-        return _normalize_brand(v)
+        return normalizar_marca(v)
 
     @field_validator("modelo", "versao", mode="before")
     @classmethod
     def normalize_modelo_versao(cls, v: str | None) -> str | None:
-        return _normalize_text(v) if v else v
+        return normalizar_modelo(v) if v else v
 
     @field_validator("cor")
     @classmethod
     def normalize_cor(cls, v: str) -> str:
-        return _normalize_text(v)
+        return normalizar_cor(v)
 
     @field_validator("placa")
     @classmethod
@@ -210,17 +123,25 @@ class VehicleUpdate(BaseModel):
     @field_validator("marca", mode="before")
     @classmethod
     def normalize_marca(cls, v: str | None) -> str | None:
-        return _normalize_brand(v) if v else v
+        return normalizar_marca(v) if v else v
 
     @field_validator("modelo", "versao", mode="before")
     @classmethod
     def normalize_modelo_versao(cls, v: str | None) -> str | None:
-        return _normalize_text(v) if v else v
+        return normalizar_modelo(v) if v else v
 
     @field_validator("cor", mode="before")
     @classmethod
     def normalize_cor(cls, v: str | None) -> str | None:
-        return _normalize_text(v) if v else v
+        return normalizar_cor(v) if v else v
+
+    @field_validator("status")
+    @classmethod
+    def status_vendido_so_por_venda(cls, v: VehicleStatus | None) -> VehicleStatus | None:
+        # "Vendido" sem venda registrada trava o veículo e some do caixa/relatórios.
+        if v == VehicleStatus.VENDIDO:
+            raise ValueError("Para marcar como vendido, registre a venda em Vendas → Nova venda")
+        return v
 
 
 class VehicleResponse(BaseModel):

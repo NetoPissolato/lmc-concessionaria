@@ -27,6 +27,9 @@ class VehiclePhoto(Base):
 
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     url: Mapped[str] = mapped_column(String(500), nullable=False)
+    # Miniatura (~640px) para cards e listas; `url` é a versão grande (~1600px).
+    # Fotos antigas, de antes do redimensionamento, podem não ter miniatura.
+    thumb_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     is_main: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     ordem: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

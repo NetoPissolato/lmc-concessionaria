@@ -12,102 +12,29 @@ from app.domain.models.vehicle_expense import VehicleExpense, ExpenseCategory
 from app.domain.models.financial import EntryType, FinancialCategory
 from app.application.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleResponse
 from app.application.schemas.expense import ExpenseCreate, ExpenseUpdate
+from app.application.services import financeiro_service
+from app.domain.models.financial import FinancialEntry
+from sqlalchemy.exc import IntegrityError
 
-# ─── Normalização de marca e modelo ─────────────────────────────────────────────────
-# Garante que "jeep", "JEEP", "Jeep" sejam sempre armazenados como "Jeep".
-# Isso evita que o mesmo modelo/marca vire grupos separados no agrupamento.
-
-# Mapa: entrada lowercase -> forma canônica de armazenamento
-_CANONICAL_MARCA: dict[str, str] = {
-    # Carros
-    "fiat":           "Fiat",
-    "chevrolet":      "Chevrolet",
-    "gm":             "Chevrolet",
-    "volkswagen":     "Volkswagen",
-    "vw":             "Volkswagen",
-    "toyota":         "Toyota",
-    "hyundai":        "Hyundai",
-    "honda":          "Honda",
-    "renault":        "Renault",
-    "jeep":           "Jeep",
-    "ford":           "Ford",
-    "bmw":            "BMW",
-    "nissan":         "Nissan",
-    "mitsubishi":     "Mitsubishi",
-    "kia":            "Kia",
-    "peugeot":        "Peugeot",
-    "citroen":        "Citroën",
-    "citroën":        "Citroën",
-    "mercedes":       "Mercedes-Benz",
-    "mercedes-benz":  "Mercedes-Benz",
-    "mercedesbenz":   "Mercedes-Benz",
-    "audi":           "Audi",
-    "volvo":          "Volvo",
-    "land rover":     "Land Rover",
-    "landrover":      "Land Rover",
-    "subaru":         "Subaru",
-    "porsche":        "Porsche",
-    "ferrari":        "Ferrari",
-    "lamborghini":    "Lamborghini",
-    "dodge":          "Dodge",
-    "ram":            "Ram",
-    "chery":          "Chery",
-    "caoa chery":     "Caoa Chery",
-    "byd":            "BYD",
-    "jac":            "JAC",
-    "effa":           "Effa",
-    "troller":        "Troller",
-    # Motos
-    "yamaha":         "Yamaha",
-    "kawasaki":       "Kawasaki",
-    "suzuki":         "Suzuki",
-    "ducati":         "Ducati",
-    "harley":         "Harley-Davidson",
-    "harley-davidson": "Harley-Davidson",
-    "harleydavidson": "Harley-Davidson",
-    "triumph":        "Triumph",
-    "royalenfield":   "Royal Enfield",
-    "royal enfield":  "Royal Enfield",
-    "bmw moto":       "BMW",
-    "honda moto":     "Honda",
-    "dafra":          "Dafra",
-    "shineray":       "Shineray",
+# Categoria da despesa do veículo → categoria no caixa.
+# Chave é o ENUM (antes era str(enum), que no Python 3.12 vira "ExpenseCategory.MECANICA"
+# e nunca casava: toda despesa caía em "outros").
+CATEGORIA_CAIXA: dict[ExpenseCategory, FinancialCategory] = {
+    ExpenseCategory.MECANICA:      FinancialCategory.MANUTENCAO,
+    ExpenseCategory.FUNILARIA:     FinancialCategory.MANUTENCAO,
+    ExpenseCategory.PINTURA:       FinancialCategory.MANUTENCAO,
+    ExpenseCategory.LAVAGEM:       FinancialCategory.MANUTENCAO,
+    ExpenseCategory.PNEUS:         FinancialCategory.MANUTENCAO,
+    ExpenseCategory.ELETRICA:      FinancialCategory.MANUTENCAO,
+    ExpenseCategory.ACESSORIOS:    FinancialCategory.MANUTENCAO,
+    ExpenseCategory.DOCUMENTACAO:  FinancialCategory.DOCUMENTACAO,
+    ExpenseCategory.GUINCHO:       FinancialCategory.GUINCHO,
+    ExpenseCategory.IPVA:          FinancialCategory.IPVA,
+    ExpenseCategory.LICENCIAMENTO: FinancialCategory.LICENCIAMENTO,
+    ExpenseCategory.COMISSAO:      FinancialCategory.COMISSAO,
+    ExpenseCategory.COMBUSTIVEL:   FinancialCategory.OUTROS_SAIDA,
+    ExpenseCategory.OUTROS:        FinancialCategory.OUTROS_SAIDA,
 }
-
-# Siglas que devem ficar em CAPS mesmo no meio de modelo
-_MODEL_CAPS = {"hb", "gla", "glb", "glc", "gle", "amg", "tdi", "gti", "sdrive", "xdrive", "suv", "4wd", "4x4", "cvt"}
-
-
-def normalize_marca(value: str) -> str:
-    """Retorna a forma canônica da marca. Ex: 'bmw' -> 'BMW', 'vw' -> 'Volkswagen'."""
-    if not value:
-        return value
-    key = value.strip().lower()
-    return _CANONICAL_MARCA.get(key, value.strip().title())
-
-
-def normalize_modelo(value: str) -> str:
-    """
-    Title Case inteligente para modelo.
-    Preserva siglas, números e hifens conhecidos.
-    Ex: 'hb20 s' -> 'HB20 S', 't-cross' -> 'T-Cross', 'civic' -> 'Civic'.
-    """
-    if not value:
-        return value
-    parts = value.strip().split()
-    result = []
-    for part in parts:
-        lower = part.lower()
-        if lower in _MODEL_CAPS:
-            result.append(part.upper())
-        elif lower[:2] in _MODEL_CAPS and any(c.isdigit() for c in part):
-            # Ex: "hb20" -> "HB20"
-            result.append(part.upper())
-        else:
-            result.append(part.capitalize())
-    return " ".join(result)
-
-
 
 class VehicleService:
     """
@@ -148,15 +75,16 @@ class VehicleService:
                 detail=f"Chassi '{data.chassi}' já está cadastrado no sistema.",
             )
 
-        # Normaliza marca e modelo antes de salvar (garante consistência no banco)
-        data.marca  = normalize_marca(data.marca)
-        data.modelo = normalize_modelo(data.modelo)
-
-        vehicle = await self.vehicle_repo.create(
-            **data.model_dump(),
-            created_by=created_by,
-            status=VehicleStatus.DISPONIVEL,
-        )
+        # (marca/modelo já chegam normalizados pelo schema)
+        try:
+            vehicle = await self.vehicle_repo.create(
+                **data.model_dump(),
+                created_by=created_by,
+                status=VehicleStatus.DISPONIVEL,
+            )
+        except IntegrityError:
+            await self.db.rollback()
+            raise HTTPException(status_code=409, detail="Placa ou chassi já cadastrados em outro veículo do estoque.")
 
         # Create financial entry for vehicle purchase (SAIDA) — only if valor_compra > 0
         if vehicle.valor_compra and vehicle.valor_compra > 0:
@@ -207,32 +135,24 @@ class VehicleService:
         }
 
         update_data = data.model_dump(exclude_none=True)
-        # Normaliza marca/modelo se estiverem sendo atualizados
-        if "marca" in update_data:
-            update_data["marca"] = normalize_marca(update_data["marca"])
-        if "modelo" in update_data:
-            update_data["modelo"] = normalize_modelo(update_data["modelo"])
-        updated = await self.vehicle_repo.update(vehicle, **update_data)
+        try:
+            updated = await self.vehicle_repo.update(vehicle, **update_data)
+        except IntegrityError:
+            await self.db.rollback()
+            raise HTTPException(status_code=409, detail="Placa ou chassi já cadastrados em outro veículo do estoque.")
 
-        # Sync financial entry if valor_compra changed
-        if "valor_compra" in update_data:
+        # Valor de compra mudou: estorna o lançamento antigo e lança o novo (o caixa guarda
+        # o histórico da correção em vez de sobrescrever o valor em silêncio).
+        if "valor_compra" in update_data and update_data["valor_compra"] != old_valor_compra:
             new_valor = update_data["valor_compra"]
-            from sqlalchemy import select
-            from app.domain.models.financial import FinancialEntry
-            result = await self.db.execute(
-                select(FinancialEntry).where(
-                    FinancialEntry.vehicle_id == vehicle_id,
-                    FinancialEntry.categoria == FinancialCategory.COMPRA_VEICULO,
-                )
+            await financeiro_service.estornar(
+                self.db,
+                FinancialEntry.vehicle_id == vehicle_id,
+                FinancialEntry.categoria == FinancialCategory.COMPRA_VEICULO,
+                motivo="valor de compra corrigido",
+                usuario_id=updated_by,
             )
-            existing_entry = result.scalar_one_or_none()
-
-            if existing_entry:
-                if new_valor and new_valor > 0:
-                    existing_entry.valor = new_valor
-                else:
-                    await self.db.delete(existing_entry)
-            elif new_valor and new_valor > 0:
+            if new_valor and new_valor > 0:
                 await self.financial_repo.create(
                     tipo=EntryType.SAIDA,
                     categoria=FinancialCategory.COMPRA_VEICULO,
@@ -271,11 +191,12 @@ class VehicleService:
                 detail="Não é possível excluir um veículo vendido.",
             )
 
-        # Remove all financial entries linked to this vehicle (purchase, expenses, fines)
-        from sqlalchemy import delete as sql_delete
-        from app.domain.models.financial import FinancialEntry
-        await self.db.execute(
-            sql_delete(FinancialEntry).where(FinancialEntry.vehicle_id == vehicle_id)
+        # Estorna (não apaga) os lançamentos do veículo: compra, despesas, multas
+        await financeiro_service.estornar(
+            self.db,
+            FinancialEntry.vehicle_id == vehicle_id,
+            motivo="veículo excluído",
+            usuario_id=deleted_by,
         )
 
         await self.vehicle_repo.soft_delete(vehicle, deleted_by)
@@ -341,24 +262,7 @@ class VehicleService:
             **data.model_dump(),
         )
 
-        # Map vehicle expense category -> financial category
-        CATEGORY_MAP: dict[str, FinancialCategory] = {
-            "mecanica":       FinancialCategory.MANUTENCAO,
-            "funilaria":      FinancialCategory.MANUTENCAO,
-            "pintura":        FinancialCategory.MANUTENCAO,
-            "lavagem":        FinancialCategory.MANUTENCAO,
-            "documentacao":   FinancialCategory.DOCUMENTACAO,
-            "pneus":          FinancialCategory.MANUTENCAO,
-            "eletrica":       FinancialCategory.MANUTENCAO,
-            "combustivel":    FinancialCategory.OUTROS_SAIDA,
-            "acessorios":     FinancialCategory.MANUTENCAO,
-            "guincho":        FinancialCategory.GUINCHO,
-            "ipva":           FinancialCategory.IPVA,
-            "licenciamento":  FinancialCategory.LICENCIAMENTO,
-            "comissao":       FinancialCategory.COMISSAO,
-            "outros":         FinancialCategory.OUTROS_SAIDA,
-        }
-        fin_categoria = CATEGORY_MAP.get(str(data.categoria), FinancialCategory.OUTROS_SAIDA)
+        fin_categoria = CATEGORIA_CAIXA.get(data.categoria, FinancialCategory.OUTROS_SAIDA)
 
         # Create financial entry automatically
         await self.financial_repo.create(
@@ -378,7 +282,7 @@ class VehicleService:
             entidade="VehicleExpense",
             entidade_id=expense.id,
             dados_depois=data.model_dump(mode="json"),
-            descricao=f"Despesa adicionada: {data.categoria} R${data.valor} em {vehicle.placa}",
+            descricao=f"Despesa adicionada: {data.categoria.value} R$ {data.valor} em {vehicle.placa}",
         )
 
         return expense

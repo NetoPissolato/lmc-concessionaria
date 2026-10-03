@@ -61,6 +61,13 @@ class FinancialEntry(Base, TimestampMixin):
     vehicle_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("vehicles.id"), nullable=True)
     expense_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
 
+    # Estorno: lançamento NEGATIVO com o mesmo tipo e categoria do original. Cancelar uma
+    # venda ou apagar uma despesa não apaga o histórico do caixa: soma o estorno, e os
+    # totais por categoria se anulam sozinhos.
+    estorno_de_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("financial_entries.id"), nullable=True, index=True
+    )
+
     observacoes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_by: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id"), nullable=True)
 

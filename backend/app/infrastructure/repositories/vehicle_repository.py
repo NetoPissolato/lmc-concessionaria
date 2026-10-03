@@ -19,6 +19,8 @@ class VehicleRepository(BaseRepository[Vehicle]):
             select(Vehicle).where(
                 Vehicle.placa == placa.upper(),
                 Vehicle.is_deleted == False,
+                # Vendido não bloqueia: a loja pode recomprar o mesmo carro
+                Vehicle.status != VehicleStatus.VENDIDO,
             )
         )
         return result.scalar_one_or_none()
@@ -28,6 +30,7 @@ class VehicleRepository(BaseRepository[Vehicle]):
             select(Vehicle).where(
                 Vehicle.chassi == chassi.upper(),
                 Vehicle.is_deleted == False,
+                Vehicle.status != VehicleStatus.VENDIDO,
             )
         )
         return result.scalar_one_or_none()

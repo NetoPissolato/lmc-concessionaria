@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy import select, extract
+from fastapi import APIRouter, Depends, Query, HTTPException, Response
+from sqlalchemy import select, extract, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from typing import Optional, List
@@ -20,11 +21,10 @@ from app.infrastructure.repositories.sale_customer_repository import (
 )
 from app.application.services.sale_service import SaleService
 from app.domain.models.sale import Sale, SaleStatus
-from app.domain.models.user import User as UserModel
-from app.domain.models.vehicle import Vehicle, VehicleStatus
+from app.domain.models.customer import Customer
+from app.domain.models.user import UserRole
+from app.domain.models.vehicle import Vehicle
 from app.domain.models.vehicle_photo import VehiclePhoto
-from app.infrastructure.repositories.financial_repository import FinancialRepository
-from app.infrastructure.ws_manager import ws_manager
 
 # ─── Customers ────────────────────────────────────────────────────────────────
 customers_router = APIRouter(prefix="/customers", tags=["Clientes"])
@@ -32,15 +32,19 @@ customers_router = APIRouter(prefix="/customers", tags=["Clientes"])
 
 @customers_router.get("", response_model=List[CustomerResponse])
 async def list_customers(
+    response: Response,
     q: Optional[str] = Query(None, description="Busca por nome, CPF, telefone ou email"),
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(50, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
     _user: dict = Depends(get_current_user_payload),
 ):
     repo = CustomerRepository(db)
     if q:
         return await repo.search(q, skip=skip, limit=limit)
+    # Total sem paginação no cabeçalho: o painel pagina sem precisar baixar tudo
+    total = await db.scalar(select(func.count()).select_from(Customer).where(Customer.is_deleted == False))  # noqa: E712
+    response.headers["X-Total-Count"] = str(total or 0)
     return await repo.get_all(skip=skip, limit=limit)
 
 
@@ -55,7 +59,11 @@ async def create_customer(
         existing = await repo.get_by_cpf(body.cpf_cnpj)
         if existing:
             raise HTTPException(status_code=409, detail="CPF/CNPJ já cadastrado")
-    return await repo.create(**body.model_dump())
+    try:
+        return await repo.create(**body.model_dump())
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="CPF/CNPJ já cadastrado")
 
 
 @customers_router.get("/{customer_id}", response_model=CustomerResponse)
@@ -82,7 +90,15 @@ async def update_customer(
     customer = await repo.get_by_id(customer_id)
     if not customer:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
-    return await repo.update(customer, **body.model_dump(exclude_none=True))
+    if body.cpf_cnpj and body.cpf_cnpj != customer.cpf_cnpj:
+        existing = await repo.get_by_cpf(body.cpf_cnpj)
+        if existing and existing.id != customer.id:
+            raise HTTPException(status_code=409, detail="CPF/CNPJ já cadastrado em outro cliente")
+    try:
+        return await repo.update(customer, **body.model_dump(exclude_none=True))
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="CPF/CNPJ já cadastrado em outro cliente")
 
 
 @customers_router.delete("/{customer_id}", status_code=204)
@@ -104,6 +120,7 @@ sales_router = APIRouter(prefix="/sales", tags=["Vendas"])
 
 @sales_router.get("", response_model=list)
 async def list_sales(
+    response: Response,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=500),
     status: Optional[str] = Query(None, description="Filter by status: pendente, concluida, cancelada"),
@@ -131,6 +148,9 @@ async def list_sales(
 
     if month:
         stmt = stmt.where(extract("month", Sale.data_venda) == month)
+
+    total = await db.scalar(select(func.count()).select_from(stmt.order_by(None).subquery()))
+    response.headers["X-Total-Count"] = str(total or 0)
 
     stmt = stmt.offset(skip).limit(limit)
     result = await db.execute(stmt)
@@ -172,7 +192,7 @@ async def list_sales(
             "vehicle_placa": s.vehicle.placa if s.vehicle else None,
             "vehicle_cor": s.vehicle.cor if s.vehicle else None,
             "vehicle_photos": [
-                {"url": p.url, "is_main": p.is_main}
+                {"url": p.url, "thumb_url": p.thumb_url, "is_main": p.is_main}
                 for p in (s.vehicle.photos or [])
             ] if s.vehicle else [],
             "payment_methods": s.payment_methods or None,
@@ -188,11 +208,8 @@ async def create_sale(
     user: dict = Depends(get_current_user_payload),
 ):
     """
-    Register a sale.
-    Automatically:
-    - Sets vehicle status to VENDIDO
-    - Creates financial entry
-    - Calculates commission
+    Registra uma venda (pendente reserva o veículo; concluída marca como vendido e lança
+    no caixa). Recusa com 409 se o veículo já tem venda ativa.
     """
     # Auto-fill vendedor_id from the authenticated user if not provided
     if not body.vendedor_id:
@@ -209,9 +226,15 @@ async def get_dashboard(
     db: AsyncSession = Depends(get_db),
     _user: dict = Depends(get_current_user_payload),
 ):
-    """Dashboard KPIs and charts."""
+    """Dashboard KPIs and charts. Funcionário não vê lucro, caixa nem saídas."""
     service = SaleService(db)
-    return await service.get_dashboard_stats(year, month)
+    stats = await service.get_dashboard_stats(year, month)
+    if _user.get("role") != UserRole.ADMIN.value:
+        for campo in ("lucro_bruto_mes", "margem_media_mes", "saldo_caixa_mes", "lucro_mes", "custo_estoque"):
+            stats[campo] = None
+        for ponto in stats.get("annual_chart", []) + stats.get("daily_chart", []):
+            ponto.pop("saidas", None)
+    return stats
 
 
 @sales_router.get("/{sale_id}")
@@ -236,7 +259,7 @@ async def get_sale(
             .order_by(VehiclePhoto.is_main.desc(), VehiclePhoto.ordem.asc())
         )
         vehicle_photos = [
-            {"url": p.url, "is_main": p.is_main}
+            {"url": p.url, "thumb_url": p.thumb_url, "is_main": p.is_main}
             for p in photos_result.scalars().all()
         ]
 
@@ -277,64 +300,12 @@ async def update_sale_status(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_current_user_payload),
 ):
-    repo = SaleRepository(db)
-    s = await repo.get_with_relations(sale_id)
-    if not s:
-        raise HTTPException(status_code=404, detail="Venda não encontrada")
-
-    old_status = s.status.value if hasattr(s.status, "value") else str(s.status)
-    new_status = body.status.value if hasattr(body.status, "value") else str(body.status)
-
-    if old_status == new_status:
-        raise HTTPException(status_code=400, detail="Status já é o mesmo")
-
-    # Fetch vehicle
-    vehicle = None
-    if s.vehicle_id:
-        veh_result = await db.execute(select(Vehicle).where(Vehicle.id == s.vehicle_id))
-        vehicle = veh_result.scalar_one_or_none()
-
-    # → concluida: mark vehicle as VENDIDO (from pendente OR cancelada)
-    if new_status == "concluida":
-        if vehicle:
-            vehicle.status = VehicleStatus.VENDIDO
-            vehicle.valor_vendido = s.valor_venda
-        # Create financial entries only when coming from pendente (first conclusion)
-        # When coming from cancelada, financial entries were deleted on cancel — recreate them
-        if old_status in ("pendente", "cancelada"):
-            svc = SaleService(db)
-            await svc.create_financial_for_sale(s, user["sub"])
-
-    # any → cancelada: revert vehicle to DISPONIVEL + apaga entradas financeiras
-    elif new_status == "cancelada":
-        if vehicle:
-            veh_val = vehicle.status.value if hasattr(vehicle.status, "value") else str(vehicle.status)
-            if veh_val == "vendido":
-                vehicle.status = VehicleStatus.DISPONIVEL
-            vehicle.valor_vendido = None  # apaga valor vendido — não aparece mais na lucratividade
-        # Apaga todas as entradas financeiras desta venda
-        fin_repo = FinancialRepository(db)
-        await fin_repo.delete_by_venda_id(s.id)
-
-    # concluida → pendente: revert vehicle to DISPONIVEL + apaga entradas financeiras
-    elif old_status == "concluida" and new_status == "pendente":
-        if vehicle:
-            vehicle.status = VehicleStatus.DISPONIVEL
-            vehicle.valor_vendido = None  # remove da lucratividade
-        fin_repo = FinancialRepository(db)
-        await fin_repo.delete_by_venda_id(s.id)
-
-    s.status = SaleStatus(new_status)
-    await db.commit()
-    await db.refresh(s)
-
-    # Broadcast real-time event to all connected browsers
-    await ws_manager.broadcast("sale_updated", {
-        "sale_id": s.id,
-        "old_status": old_status,
-        "new_status": new_status,
-    })
-
+    """
+    Muda o status da venda. Regras em SaleService.change_status: funcionário só altera
+    venda pendente; cancelar estorna o caixa (nada é apagado) e só libera o veículo se
+    esta venda era a que o ocupava.
+    """
+    s = await SaleService(db).change_status(sale_id, body.status, user)
     return {"id": s.id, "status": s.status.value}
 
 

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, date
-from sqlalchemy import String, Boolean, Enum as SAEnum, DateTime, Date
+from sqlalchemy import String, Boolean, Enum as SAEnum, DateTime, Date, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 import enum
@@ -42,6 +42,9 @@ class User(Base, TimestampMixin, SoftDeleteMixin):
         nullable=False,
     )
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # Incrementada ao trocar a senha, desativar, excluir ou mudar o papel: todo token
+    # emitido com a versão anterior deixa de valer (derruba as sessões abertas).
+    sessao_versao: Mapped[int] = mapped_column(Integer, default=0, nullable=False, server_default="0")
     # Cargo/funcao exibido na pagina de equipe do site publico
     cargo: Mapped[str | None] = mapped_column(String(120), nullable=True)
     # Data de contratacao — usada para calcular tempo de empresa
