@@ -1,56 +1,41 @@
 import { NextResponse } from "next/server";
-import { getPublicVehicles } from "@/lib/publicApi";
+import { getAllPublicVehicles } from "@/lib/publicApi";
 import { vehicleSlug } from "@/lib/vehicleSlug";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://site.spacerstorepaineladmin.com";
+const escapar = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  const staticPages = [
-    { url: `${baseUrl}/home`, priority: "1.0", changefreq: "daily" },
-    { url: `${baseUrl}/estoque`, priority: "0.9", changefreq: "hourly" },
-    { url: `${baseUrl}/sobre`, priority: "0.6", changefreq: "monthly" },
-    { url: `${baseUrl}/contato`, priority: "0.7", changefreq: "monthly" },
-    { url: `${baseUrl}/comparador`, priority: "0.5", changefreq: "weekly" },
+export async function GET() {
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://site.spacerstorepaineladmin.com";
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  const fixas = [
+    { loc: `${base}/`, prioridade: "1.0", freq: "daily" },
+    { loc: `${base}/estoque`, prioridade: "0.9", freq: "hourly" },
+    { loc: `${base}/sobre`, prioridade: "0.6", freq: "monthly" },
+    { loc: `${base}/contato`, prioridade: "0.6", freq: "monthly" },
+    { loc: `${base}/comparador`, prioridade: "0.4", freq: "weekly" },
+    { loc: `${base}/politica-de-privacidade`, prioridade: "0.2", freq: "yearly" },
   ];
 
-  // Fetch all vehicles for individual pages
-  let vehicleUrls: string[] = [];
-  try {
-    const vehicles = await getPublicVehicles({ limit: 200 });
-    vehicleUrls = vehicles.map((v) => `${baseUrl}/veiculo/${vehicleSlug(v)}`);
-  } catch {
-    // silently fail — sitemap still works without vehicle pages
-  }
-
-  const now = new Date().toISOString().split("T")[0];
+  // Todo o estoque (antes pedia 200 e o backend aceitava no máximo 100: a resposta era
+  // erro 422 e o sitemap saía SEM nenhum veículo)
+  const { veiculos } = await getAllPublicVehicles();
+  const urls = [
+    ...fixas.map((p) => ({ ...p, lastmod: hoje })),
+    ...veiculos.map((v) => ({
+      loc: `${base}/veiculo/${vehicleSlug(v)}`,
+      prioridade: "0.8",
+      freq: "weekly",
+      lastmod: (v.created_at ?? hoje).slice(0, 10),
+    })),
+  ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${staticPages
-  .map(
-    (p) => `  <url>
-    <loc>${p.url}</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>${p.changefreq}</changefreq>
-    <priority>${p.priority}</priority>
-  </url>`
-  )
-  .join("\n")}
-${vehicleUrls
-  .map(
-    (url) => `  <url>
-    <loc>${url}</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`
-  )
-  .join("\n")}
+${urls.map((u) => `  <url><loc>${escapar(u.loc)}</loc><lastmod>${u.lastmod}</lastmod><changefreq>${u.freq}</changefreq><priority>${u.prioridade}</priority></url>`).join("\n")}
 </urlset>`;
 
-  return new NextResponse(xml, {
-    headers: { "Content-Type": "application/xml" },
-  });
+  return new NextResponse(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=900" } });
 }

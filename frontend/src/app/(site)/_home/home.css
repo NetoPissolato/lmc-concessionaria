@@ -193,6 +193,7 @@
 .h-estrelas { display: inline-flex; gap: 2px; color: var(--brand); }
 .h-aval__cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
 .h-depo {
+  margin: 0;
   display: grid; gap: 12px; align-content: start;
   padding: 20px; border-radius: var(--r-card);
   background: var(--surface); border: 1px solid var(--border);
