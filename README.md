@@ -15,7 +15,7 @@ nginx (porta 80/443)
 PostgreSQL (dados) · Redis (sessões, bloqueio de login, rate limit)
 ```
 
-O site e o painel são o mesmo código Next.js; o `proxy.ts` decide pelo domínio. Hosts que começam com `site.` vão para a loja. Para usar um domínio próprio na loja, defina `SITE_HOST=lmcveiculos.com.br` no serviço `frontend_site` e `NEXT_PUBLIC_SITE_URL=https://lmcveiculos.com.br` (usado em links, sitemap e compartilhamento).
+O site e o painel são o mesmo código Next.js; o `proxy.ts` decide pelo domínio. Hosts que começam com `site.` vão para a loja. Para usar um domínio próprio na loja, defina no serviço `frontend_site` do compose `SITE_HOST=lmcveiculos.com.br` (em `environment`) e `NEXT_PUBLIC_SITE_URL=https://lmcveiculos.com.br` (em `build.args` — variáveis `NEXT_PUBLIC_` entram no build; usada em links, sitemap e compartilhamento).
 
 ---
 
