@@ -18,12 +18,15 @@ O que muda e por quê:
 5. placa/chassi/CPF: únicos só entre registros ativos (e, para veículos, não vendidos).
 6. vehicle_photos.thumb_url: miniatura para cards.
 7. users.sessao_versao: trocar senha, desativar ou mudar papel derruba as sessões abertas.
+8. Repara nomes estragados pela normalização antiga (INITCAP/capitalize): "T-cross" →
+   "T-Cross", "Xei" → "XEi", "Ltz" → "LTZ", "Hr-v" → "HR-V", "Cg 160" → "CG 160".
 
 Tudo idempotente (pode rodar de novo sem erro).
 """
 from typing import Sequence, Union
 
 from alembic import op
+import sqlalchemy as sa
 
 
 revision: str = "a1u2d3i4t5o6"
@@ -106,6 +109,26 @@ def upgrade() -> None:
 
     # 7. Versão de sessão
     op.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS sessao_versao INTEGER NOT NULL DEFAULT 0")
+
+    # 8. Reparo dos nomes (mesma função usada no cadastro: o resultado bate com o que
+    # um cadastro novo geraria, e rodar de novo não muda nada)
+    from app.domain.normalizacao import normalizar_marca, normalizar_modelo
+    conn = op.get_bind()
+    for tabela, colunas in (("vehicles", ("marca", "modelo", "versao")), ("modelos_destaque", ("marca", "modelo"))):
+        existe = conn.execute(sa.text("SELECT to_regclass(:t)"), {"t": tabela}).scalar()
+        if not existe:
+            continue
+        linhas = conn.execute(sa.text(f"SELECT id, {', '.join(colunas)} FROM {tabela}")).mappings().all()
+        for linha in linhas:
+            novos = {}
+            for col in colunas:
+                atual = linha[col]
+                corrigido = normalizar_marca(atual) if col == "marca" else normalizar_modelo(atual)
+                if atual and corrigido != atual:
+                    novos[col] = corrigido
+            if novos:
+                sets = ", ".join(f"{c} = :{c}" for c in novos)
+                conn.execute(sa.text(f"UPDATE {tabela} SET {sets} WHERE id = :id"), {**novos, "id": linha["id"]})
 
 
 def downgrade() -> None:
