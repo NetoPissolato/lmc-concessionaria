@@ -10,10 +10,11 @@ import {
   ChevronLeft, ChevronRight, Bike, Wrench, DollarSign, TrendingUp, TrendingDown,
   Plus, Trash2, Edit, Calendar, User, AlertCircle, AlertTriangle, X, Loader2, Check,
   Package, BarChart3, FileText, Images, Camera, Maximize2, Gauge, Fuel, Settings,
-  Hash, Zap,
+  Hash, Zap, Globe, ExternalLink,
 } from "lucide-react";
 import { vehiclesApi, authApi } from "@/lib/api";
 import { mensagemErro } from "@/lib/erros";
+import { urlDoVeiculoNoSite } from "@/lib/site/endereco";
 import {
   Vehicle, VehicleExpense, CostCenter,
   VEHICLE_STATUS_LABELS, FUEL_LABELS, TRANSMISSION_LABELS,
@@ -870,11 +871,24 @@ export default function MotoDetailPage() {
                 style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 0", borderRadius: 10, background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-secondary)", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
                 <Edit size={14} /> Editar Moto
               </motion.button>
+              {/* Mesma página que o cliente vê (abre em outra aba). Só disponível aparece no site. */}
+              {vehicle.status === "disponivel" ? (
+                <a href={urlDoVeiculoNoSite(vehicle)} target="_blank" rel="noopener noreferrer"
+                  style={{ width: "100%", justifyContent: "center", gap: 8, display: "flex", alignItems: "center", padding: "9px 16px", borderRadius: "var(--radius-md)", border: "1px solid rgba(245,166,35,0.35)", background: "rgba(245,166,35,0.08)", color: "var(--brand)", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>
+                  <Globe size={14} /> Ver no site <ExternalLink size={12} style={{ opacity: 0.7 }} />
+                </a>
+              ) : (
+                <p style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <Globe size={12} /> Fora do site: só veículo disponível aparece para o cliente
+                </p>
+              )}
               {vehicle.status !== "vendido" && (
                 <motion.button
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                   onClick={() => window.open(buildWhatsAppVehicleUrl(
                     { ...vehicle, versao: vehicle.versao, placa: vehicle.placa },
+                    undefined,
+                    vehicle.status === "disponivel" ? urlDoVeiculoNoSite(vehicle) : null,
                   ), "_blank")}
                   style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 0", borderRadius: 10, background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.4)", color: "#25d366", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
                 >

@@ -8,8 +8,9 @@ import {
   Car, Users, ShoppingBag, DollarSign,
   UserCog, LogOut, Search, Bell, FileText, ChevronLeft,
   ChevronRight, Menu, X, Bike, Clock, CheckCircle2, XCircle,
-  ChevronDown, Star, Sparkles, MessageSquare, Settings,
+  ChevronDown, Star, Sparkles, MessageSquare, Settings, Globe, ExternalLink,
 } from "lucide-react";
+import { urlDoSite } from "@/lib/site/endereco";
 import { authApi, salesApi } from "@/lib/api";
 import { toast } from "@/lib/toast";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -666,9 +667,40 @@ function Sidebar({
             </button>
           )}
 
-
-
-
+          {/* Atalho para o site público: abre em outra aba o que o cliente vê */}
+          <a
+            href={urlDoSite("/")}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Abrir o site da loja em outra aba"
+            style={{
+              display: "flex", alignItems: "center",
+              gap: collapsed ? "0" : "11px",
+              padding: collapsed ? "9px" : "9px 10px",
+              justifyContent: collapsed ? "center" : "flex-start",
+              borderRadius: "10px", textDecoration: "none",
+              border: "1px solid rgba(245,166,35,0.18)",
+              background: "rgba(245,166,35,0.06)",
+              color: "#F5A623", fontSize: "13px", fontWeight: 600,
+              transition: "all 0.18s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(245,166,35,0.12)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(245,166,35,0.06)"; }}
+          >
+            <div style={{
+              width: "30px", height: "30px", borderRadius: "9px", flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.2)",
+            }}>
+              <Globe size={15} strokeWidth={2} color="#F5A623" />
+            </div>
+            {!collapsed && (
+              <>
+                <span style={{ whiteSpace: "nowrap", flex: 1 }}>Ver site da loja</span>
+                <ExternalLink size={12} style={{ opacity: 0.7, flexShrink: 0 }} />
+              </>
+            )}
+          </a>
         </div>
 
       </motion.aside>

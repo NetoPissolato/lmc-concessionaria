@@ -147,7 +147,7 @@ export function buildWhatsAppVehicleUrl(v: {
   marca: string; modelo: string; ano: number; cor: string;
   quilometragem: number; valor_anunciado?: number | null;
   versao?: string | null; placa?: string | null;
-}, telefoneCliente?: string): string {
+}, telefoneCliente?: string, linkSite?: string | null): string {
   const km  = v.quilometragem.toLocaleString("pt-BR");
   const val = v.valor_anunciado
     ? v.valor_anunciado.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0 })
@@ -163,6 +163,9 @@ export function buildWhatsAppVehicleUrl(v: {
     `📍 KM: ${km} km`,
     v.placa ? `🔖 Placa: ${v.placa}` : null,
     val ? `💲 Valor: *${val}*` : null,
+    // Página do site com todas as fotos (só existe enquanto o veículo está disponível)
+    linkSite ? `` : null,
+    linkSite ? `📸 Fotos e detalhes: ${linkSite}` : null,
     ``,
     `Ficou interessado? Responda essa mensagem ou venha nos visitar! 😊`,
     ``,
