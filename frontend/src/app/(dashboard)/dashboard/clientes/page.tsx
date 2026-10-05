@@ -12,6 +12,7 @@ import {
   CreditCard, TrendingUp, Building2,
 } from "lucide-react";
 import { customersApi, vehiclesApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
 import { Customer, VehiclePhoto } from "@/types";
 import { toast } from "@/lib/toast";
 import { WhatsAppIcon } from "@/components/vehicle/shared";
@@ -68,6 +69,11 @@ type Purchase = {
   vehicle: { id: string; marca: string; modelo: string; versao: string | null; ano: number; cor: string; placa: string; quilometragem: number; tipo?: string } | null;
 };
 
+/** Rua, número, complemento e bairro em uma linha (cada um tem coluna própria). */
+function enderecoCompleto(c: Customer): string {
+  return [c.endereco, c.numero, c.complemento, c.bairro].filter(Boolean).join(", ");
+}
+
 // --- Main Page -------------------------------------------------------
 export default function ClientesPage() {
   const queryClient = useQueryClient();
@@ -95,7 +101,7 @@ export default function ClientesPage() {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["customer-purchases", deletedId] });
     },
-    onError: () => toast.error("Erro ao excluir cliente"),
+    onError: (e: unknown) => toast.error(mensagemErro(e, "Erro ao excluir cliente")),
   });
 
   const total = customers.length;
@@ -289,7 +295,7 @@ export default function ClientesPage() {
                       <div style={{ minWidth: 0 }}>
                         <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, margin: 0 }}>Endereço</p>
                         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {c.endereco || "-"}
+                          {enderecoCompleto(c) || "-"}
                         </p>
                       </div>
                     </div>
@@ -576,7 +582,7 @@ function CustomerProfileModal({ customer, onEdit, onDelete, onClose }: {
               </div>
               <div style={{ gridColumn: "1/-1" }}>
                 <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Endereço</p>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{customer.endereco || "-"}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>{enderecoCompleto(customer) || "-"}{customer.cep ? ` · CEP ${customer.cep}` : ""}</p>
               </div>
             </div>
           </motion.div>
@@ -850,13 +856,16 @@ function VehiclePurchaseCard({ purchase: p, index: i, fmtSale }: {
 function CustomerModal({ customer, onClose, onSuccess }: {
   customer: Customer | null; onClose: () => void; onSuccess: () => void;
 }) {
-  const [form, setForm] = useState({
+  // CEP, número, complemento e bairro têm coluna própria. Antes iam todos juntos num texto
+  // só ("Rua X, Bairro, 100, ap 2"), o CEP digitado se perdia e a edição abria vazia.
+  const inicial = {
     nome: customer?.nome || "", cpf_cnpj: customer?.cpf_cnpj || "",
     telefone: customer?.telefone || "", whatsapp: customer?.whatsapp || "",
-    email: customer?.email || "", cep: "", rua: customer?.endereco || "",
-    numero: "", complemento: "", cidade: customer?.cidade || "",
-    estado: customer?.estado || "", observacoes: customer?.observacoes || "",
-  });
+    email: customer?.email || "", cep: customer?.cep || "", rua: customer?.endereco || "",
+    numero: customer?.numero || "", complemento: customer?.complemento || "", bairro: customer?.bairro || "",
+    cidade: customer?.cidade || "", estado: customer?.estado || "", observacoes: customer?.observacoes || "",
+  };
+  const [form, setForm] = useState(inicial);
   const [loading, setLoading]       = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
   const [cepOk, setCepOk]           = useState(false);
@@ -865,27 +874,12 @@ function CustomerModal({ customer, onClose, onSuccess }: {
   useBodyScrollLock(true);
 
   // ── Dirty state: só mostra Salvar se algo mudou ─────────────────────
-  const initialRef = useRef({
-    nome: customer?.nome || "", cpf_cnpj: customer?.cpf_cnpj || "",
-    telefone: customer?.telefone || "", whatsapp: customer?.whatsapp || "",
-    email: customer?.email || "", rua: customer?.endereco || "",
-    cidade: customer?.cidade || "", estado: customer?.estado || "",
-    observacoes: customer?.observacoes || "",
-  });
-  const isDirty = !customer ||
-    form.nome !== initialRef.current.nome ||
-    form.cpf_cnpj !== initialRef.current.cpf_cnpj ||
-    form.telefone !== initialRef.current.telefone ||
-    form.whatsapp !== initialRef.current.whatsapp ||
-    form.email !== initialRef.current.email ||
-    form.cidade !== initialRef.current.cidade ||
-    form.estado !== initialRef.current.estado ||
-    form.observacoes !== initialRef.current.observacoes ||
-    !!form.cep || !!form.numero || !!form.complemento;
+  const initialRef = useRef(inicial);
+  const isDirty = !customer || (Object.keys(inicial) as (keyof typeof inicial)[]).some(k => form[k] !== initialRef.current[k]);
 
   // ── Refs para navegação Enter / auto-avanço ─────────────────────
-  // Ordem dos campos: 0=nome, 1=cpf, 2=email, 3=fone, 4=whats, 5=cep, 6=uf, 7=rua, 8=num, 9=comp, 10=cidade, 11=obs
-  const fieldRefs = useRef<(HTMLInputElement | HTMLTextAreaElement | null)[]>(Array(12).fill(null));
+  // Ordem dos campos: 0=nome, 1=cpf, 2=email, 3=fone, 4=whats, 5=cep, 6=uf, 7=rua, 8=num, 9=comp, 10=bairro, 11=cidade, 12=obs
+  const fieldRefs = useRef<(HTMLInputElement | HTMLTextAreaElement | null)[]>(Array(13).fill(null));
   const focusField = (idx: number) => {
     const el = fieldRefs.current[idx];
     if (!el) return;
@@ -911,7 +905,7 @@ function CustomerModal({ customer, onClose, onSuccess }: {
       else {
         setForm(f => ({
           ...f,
-          rua: `${data.logradouro}${data.bairro ? ", " + data.bairro : ""}`,
+          rua: data.logradouro || f.rua, bairro: data.bairro || f.bairro,
           cidade: data.localidade, estado: data.uf,
         }));
         setCepOk(true);
@@ -920,23 +914,22 @@ function CustomerModal({ customer, onClose, onSuccess }: {
     finally { setCepLoading(false); }
   };
 
-  const buildEndereco = () => [form.rua, form.numero, form.complemento].filter(Boolean).join(", ");
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true);
     try {
+      // Na edição, campo apagado vai como "" (antes ia undefined e o valor antigo ficava)
+      const v = (x: string) => x.trim() || (customer ? "" : undefined);
       const payload = {
-        nome: form.nome, cpf_cnpj: form.cpf_cnpj || undefined,
-        telefone: form.telefone || undefined, whatsapp: form.whatsapp || undefined,
-        email: form.email || undefined, endereco: buildEndereco() || undefined,
-        cidade: form.cidade || undefined, estado: form.estado || undefined,
-        observacoes: form.observacoes || undefined,
+        nome: form.nome.trim(), cpf_cnpj: form.cpf_cnpj || undefined,
+        telefone: v(form.telefone), whatsapp: v(form.whatsapp), email: v(form.email),
+        cep: v(form.cep), endereco: v(form.rua), numero: v(form.numero), complemento: v(form.complemento),
+        bairro: v(form.bairro), cidade: v(form.cidade), estado: v(form.estado), observacoes: v(form.observacoes),
       };
       if (customer) { await customersApi.update(customer.id, payload); toast.success("Cliente atualizado!"); }
       else { await customersApi.create(payload); toast.success("Cliente cadastrado!"); }
       onSuccess();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Erro ao salvar";
+      const msg = mensagemErro(err, "Erro ao salvar o cliente");
       toast.error(msg);
     } finally { setLoading(false); }
   };
@@ -1103,37 +1096,44 @@ function CustomerModal({ customer, onClose, onSuccess }: {
               className="input" placeholder="SP" maxLength={2} style={{ minHeight: 44 }} />
           </div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
-            <label style={lbl}>Logradouro e Bairro</label>
+            <label style={lbl}>Rua / Avenida</label>
             <input value={form.rua} onChange={e => setForm({ ...form, rua: e.target.value })}
               ref={el => { fieldRefs.current[7] = el; }}
               onKeyDown={e => onEnter(e, 8)}
-              className="input" placeholder="Rua, Bairro (preenchido pelo CEP)" style={{ minHeight: 44 }} />
+              className="input" placeholder="Preenchida pelo CEP" maxLength={255} style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>Número</label>
             <input value={form.numero} onChange={e => setForm({ ...form, numero: e.target.value })}
               ref={el => { fieldRefs.current[8] = el; }}
               onKeyDown={e => onEnter(e, 9)}
-              className="input" placeholder="123" inputMode="numeric" style={{ minHeight: 44 }} />
+              className="input" placeholder="123" maxLength={10} style={{ minHeight: 44 }} />
           </div>
           <div>
             <label style={lbl}>Complemento</label>
             <input value={form.complemento} onChange={e => setForm({ ...form, complemento: e.target.value })}
               ref={el => { fieldRefs.current[9] = el; }}
               onKeyDown={e => onEnter(e, 10)}
-              className="input" placeholder="Apto, Casa..." style={{ minHeight: 44 }} />
+              className="input" placeholder="Apto, Casa..." maxLength={100} style={{ minHeight: 44 }} />
           </div>
-          <div style={isMobile ? {} : { gridColumn: "span 2" }}>
-            <label style={lbl}>Cidade</label>
-            <input value={form.cidade} onChange={e => setForm({ ...form, cidade: e.target.value })}
+          <div>
+            <label style={lbl}>Bairro</label>
+            <input value={form.bairro} onChange={e => setForm({ ...form, bairro: e.target.value })}
               ref={el => { fieldRefs.current[10] = el; }}
               onKeyDown={e => onEnter(e, 11)}
-              className="input" placeholder="Cidade" style={{ minHeight: 44 }} />
+              className="input" placeholder="Preenchido pelo CEP" maxLength={100} style={{ minHeight: 44 }} />
+          </div>
+          <div>
+            <label style={lbl}>Cidade</label>
+            <input value={form.cidade} onChange={e => setForm({ ...form, cidade: e.target.value })}
+              ref={el => { fieldRefs.current[11] = el; }}
+              onKeyDown={e => onEnter(e, 12)}
+              className="input" placeholder="Cidade" maxLength={100} style={{ minHeight: 44 }} />
           </div>
           <div style={isMobile ? {} : { gridColumn: "span 2" }}>
             <label style={lbl}>Observações</label>
             <textarea value={form.observacoes} onChange={e => setForm({ ...form, observacoes: e.target.value })}
-              ref={el => { fieldRefs.current[11] = el as HTMLTextAreaElement; }}
+              ref={el => { fieldRefs.current[12] = el as HTMLTextAreaElement; }}
               className="input" rows={2} style={{ height: "auto", paddingTop: "8px", minHeight: 88 }}
               placeholder="Anotações sobre o cliente..." />
           </div>

@@ -101,7 +101,8 @@ export function PaymentBadge({ forma, banco, parcelas, size = "md", iconOnly = f
         alt={labelText}
         width={s.ls}
         height={s.ls}
-        style={{ objectFit: "contain", flexShrink: 0 }}
+        // Tamanho também no style: o CSS global (img { height: auto }) mudava só uma dimensão
+        style={{ objectFit: "contain", flexShrink: 0, width: s.ls, height: s.ls }}
         unoptimized
       />
       {!iconOnly && (
@@ -117,5 +118,5 @@ export function PaymentBadge({ forma, banco, parcelas, size = "md", iconOnly = f
 export function BankLogo({ banco, height = 18 }: { banco: string; height?: number }) {
   const src = getBankLogo(banco);
   if (!src) return <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600 }}>{banco}</span>;
-  return <Image src={src} alt={banco} width={height * 2.5} height={height} style={{ objectFit: "contain" }} unoptimized />;
+  return <Image src={src} alt={banco} width={height * 2.5} height={height} style={{ objectFit: "contain", width: height * 2.5, height }} unoptimized />;
 }

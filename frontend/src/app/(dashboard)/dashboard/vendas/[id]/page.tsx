@@ -14,6 +14,7 @@ import {
   Hash, MapPin, Wrench, ShieldCheck,
 } from "lucide-react";
 import { salesApi, vehiclesApi, authApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
 import { Sale, PAYMENT_TYPE_LABELS } from "@/types";
 import { PaymentBadge } from "@/components/PaymentBadge";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -81,7 +82,7 @@ export default function VendaDetailPage({ params }: { params: Promise<{ id: stri
       }
     },
     onError: (err: unknown) => {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Erro ao alterar status";
+      const msg = mensagemErro(err, "Erro ao alterar status");
       alert(msg);
     },
   });

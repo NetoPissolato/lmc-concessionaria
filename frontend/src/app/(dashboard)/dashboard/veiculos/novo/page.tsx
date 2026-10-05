@@ -11,6 +11,8 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Car, FileText, DollarSign, Check, Loader2, AlertCircle, Lightbulb, ImagePlus, Trash2, Star, Upload } from "lucide-react";
 import { vehiclesApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
+import { reduzirFoto } from "@/lib/imagem";
 import { toast } from "@/lib/toast";
 import { maskPhone, maskPlaca, maskChassi, maskRENAVAM, validatePlaca, maskCurrency, parseCurrency, maskKM } from "@/lib/masks";
 import { AutocompleteInput } from "@/components/AutocompleteInput";
@@ -18,7 +20,7 @@ import { Select } from "@/components/Select";
 import { useFIPE } from "@/hooks/useFIPE";
 
 
-// ?"--? Schema ?"------------------------------------------------------------------?
+// ─── Schema ────────────────────────────────────────────────────────────────────
 const vehicleSchema = z.object({
   marca: z.string().min(1, "Marca obrigatória"),
   modelo: z.string().min(1, "Modelo obrigatório"),
@@ -43,7 +45,7 @@ const vehicleSchema = z.object({
 
 type VehicleFormData = z.infer<typeof vehicleSchema>;
 
-// ?"--? Steps ?"-------------------------------------------------------------------?
+// ─── Steps ─────────────────────────────────────────────────────────────────────
 const STEPS = [
   { title: "Dados Básicos", icon: Car,        description: "Identificação e características" },
   { title: "Compra",        icon: FileText,    description: "Origem e documentação" },
@@ -51,7 +53,7 @@ const STEPS = [
   { title: "Fotos",         icon: ImagePlus,   description: "Imagens do veículo" },
 ];
 
-// ?"--? Field Component ?"---------------------------------------------------------?
+// ─── Field Component ───────────────────────────────────────────────────────────
 function Field({
   label,
   error,
@@ -86,7 +88,7 @@ function Field({
   );
 }
 
-// ?"--? New Vehicle Form ?"--------------------------------------------------------?
+// ─── New Vehicle Form ──────────────────────────────────────────────────────────
 export default function NovoVeiculoPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -174,13 +176,7 @@ export default function NovoVeiculoPage() {
     },
     onError: (err: unknown) => {
       console.error("[Cadastro erro]", err);
-      const resp = (err as { response?: { data?: { detail?: unknown } } })?.response?.data;
-      let msg = "Erro ao cadastrar veículo";
-      if (resp?.detail) {
-        if (typeof resp.detail === "string") msg = resp.detail;
-        else if (Array.isArray(resp.detail)) msg = resp.detail.map((e: {msg?: string}) => e.msg).join(", ");
-        else msg = JSON.stringify(resp.detail);
-      }
+      const msg = mensagemErro(err, "Erro ao cadastrar veículo");
       toast.error(msg);
     },
   });
@@ -188,17 +184,18 @@ export default function NovoVeiculoPage() {
   const handleUploadPhoto = async (file: File) => {
     if (!createdVehicleId) return;
     if (!file.type.startsWith("image/")) { toast.error("Apenas imagens são permitidas"); return; }
-    if (file.size > 8 * 1024 * 1024) { toast.error("Imagem muito grande (máx. 8MB)"); return; }
+    if (file.size > 25 * 1024 * 1024) { toast.error("Imagem muito grande (máx. 25 MB)"); return; }
     setUploadingPhoto(true);
     try {
-      const photo = await vehiclesApi.uploadPhoto(createdVehicleId, file);
+      // Reduzida no navegador antes de subir (foto de celular de 8 MB vira ~600 KB)
+      const photo = await vehiclesApi.uploadPhoto(createdVehicleId, await reduzirFoto(file));
       setUploadedPhotos(prev => {
         const updated = [...prev, photo];
         // Auto-set first photo as main
         if (prev.length === 0) return updated.map((p, i) => ({ ...p, is_main: i === 0 }));
         return updated;
       });
-    } catch { toast.error("Erro ao enviar foto"); }
+    } catch (e) { toast.error(mensagemErro(e, "Erro ao enviar foto")); }
     finally { setUploadingPhoto(false); }
   };
 
@@ -665,7 +662,7 @@ export default function NovoVeiculoPage() {
                   <p style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
                     {uploadingPhoto ? "Enviando fotos..." : "Clique ou arraste para adicionar fotos"}
                   </p>
-                  <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>JPG, PNG, WEBP - máx. 8MB por foto - pode selecionar várias</p>
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>JPG, PNG ou WebP — pode selecionar várias (a foto é reduzida antes de enviar)</p>
                 </div>
 
                 {/* Photo grid - click to select as main */}

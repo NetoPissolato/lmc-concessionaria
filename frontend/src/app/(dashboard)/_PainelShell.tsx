@@ -712,6 +712,7 @@ function Header({
 
   // Fetch recent sales for notifications — polls every 30s
   const fetchPending = useCallback(() => {
+    if (!authApi.isAuthenticated()) return; // sem login: o shell já está mandando para /login
     salesApi.list({ limit: 8 }).then((data: unknown[]) => {
       setRecentSales(
         (data as {id: string; vehicle_info: string | null; cliente_nome: string | null; data_venda: string; status: string}[])
@@ -1248,6 +1249,12 @@ export default function PainelShell({ children }: { children: React.ReactNode })
 
   if (!mounted) return null;
 
+  // Tela só de admin aberta por funcionário (link antigo, URL digitada): não monta a página
+  // enquanto o redirecionamento acontece — antes ela disparava chamadas que voltavam 403.
+  const rotaBloqueada = authApi.getUser()?.role !== "admin" &&
+    ADMIN_ONLY_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/"));
+  const semLogin = !authApi.isAuthenticated();
+
   return (
     <div style={{ display: "flex", height: "100dvh", background: "var(--background)", overflow: "hidden" }}>
       {/* Sidebar - sticky on desktop, fixed drawer on mobile/tablet */}
@@ -1282,7 +1289,7 @@ export default function PainelShell({ children }: { children: React.ReactNode })
         >
           {/* Max-width wrapper for ultrawide screens - keeps content readable */}
           <div className="dashboard-main-content" style={{ margin: "0 auto" }}>
-            {children}
+            {rotaBloqueada || semLogin ? null : children}
           </div>
         </main>
       </div>

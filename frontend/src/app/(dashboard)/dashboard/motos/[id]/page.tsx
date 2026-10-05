@@ -13,6 +13,7 @@ import {
   Hash, Zap,
 } from "lucide-react";
 import { vehiclesApi, authApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
 import {
   Vehicle, VehicleExpense, CostCenter,
   VEHICLE_STATUS_LABELS, FUEL_LABELS, TRANSMISSION_LABELS,
@@ -419,19 +420,19 @@ export default function MotoDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
       setPendingStatus(null);
     },
-    onError: () => toast.error("Erro ao atualizar status"),
+    onError: (e: unknown) => toast.error(mensagemErro(e, "Erro ao atualizar status")),
   });
 
   const deleteExpenseMutation = useMutation({
     mutationFn: (expenseId: string) => vehiclesApi.deleteExpense(id, expenseId),
     onSuccess: () => { toast.success("Despesa removida!"); queryClient.invalidateQueries({ queryKey: ["vehicle-expenses", id] }); queryClient.invalidateQueries({ queryKey: ["vehicle-cost", id] }); },
-    onError: () => toast.error("Erro ao remover despesa"),
+    onError: (e: unknown) => toast.error(mensagemErro(e, "Erro ao remover despesa")),
   });
 
   const payFinesMutation = useMutation({
     mutationFn: () => vehiclesApi.payFines(id),
     onSuccess: () => { toast.success("Multas pagas!"); queryClient.invalidateQueries({ queryKey: ["vehicle", id] }); queryClient.invalidateQueries({ queryKey: ["vehicle-cost", id] }); },
-    onError: () => toast.error("Erro ao registrar pagamento"),
+    onError: (e: unknown) => toast.error(mensagemErro(e, "Erro ao registrar pagamento")),
   });
 
   const deleteMotoMutation = useMutation({
@@ -448,7 +449,7 @@ export default function MotoDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["sales-motos-page"] });
       router.replace("/dashboard/motos");
     },
-    onError: () => toast.error("Erro ao excluir moto"),
+    onError: (e: unknown) => toast.error(mensagemErro(e, "Erro ao excluir moto")),
   });
 
   const refreshExpenses = () => { queryClient.invalidateQueries({ queryKey: ["vehicle-expenses", id] }); queryClient.invalidateQueries({ queryKey: ["vehicle-cost", id] }); };

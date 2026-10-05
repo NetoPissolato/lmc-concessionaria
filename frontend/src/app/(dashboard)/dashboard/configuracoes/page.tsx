@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 
 import { settingsApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
 
 // Pelo cliente da API: renova o token sozinho (o fetch próprio quebrava ao vencer)
 const loadSettings = (_token: string) => settingsApi.get();
@@ -11,16 +12,19 @@ const saveSettings = (_token: string, data: object) => settingsApi.update(data a
 interface FormState {
   whatsapp: string; telefone: string; email_contato: string;
   instagram: string; facebook: string; youtube: string;
-  nome_loja: string; cnpj: string;
+  nome_loja: string; cnpj: string; slogan: string;
   endereco: string; cidade: string; estado: string; cep: string; horario: string;
+  hero_titulo: string; hero_subtitulo: string;
   stat_clientes: number; stat_anos: number; stat_satisfacao: number;
+  max_fotos_veiculo: number;
   modo_manutencao: boolean;
   ga_id: string; pixel_id: string;
 }
 const EMPTY: FormState = {
   whatsapp:"",telefone:"",email_contato:"",instagram:"",facebook:"",youtube:"",
-  nome_loja:"",cnpj:"",endereco:"",cidade:"",estado:"",cep:"",horario:"",
-  stat_clientes:0,stat_anos:0,stat_satisfacao:98,modo_manutencao:false,
+  nome_loja:"",cnpj:"",slogan:"",endereco:"",cidade:"",estado:"",cep:"",horario:"",
+  hero_titulo:"",hero_subtitulo:"",
+  stat_clientes:0,stat_anos:0,stat_satisfacao:98,max_fotos_veiculo:20,modo_manutencao:false,
   ga_id:"",pixel_id:"",
 };
 
@@ -38,19 +42,20 @@ const lbl: React.CSSProperties = {
   color:"var(--text-muted)", marginBottom:7,
 };
 
-function Inp({ val, set, ph, type="text" }: { val:string|number; set:(v:string)=>void; ph?:string; type?:string }) {
+// maxLength = tamanho do campo no banco (antes um texto longo derrubava o salvar)
+function Inp({ val, set, ph, type="text", max }: { val:string|number; set:(v:string)=>void; ph?:string; type?:string; max?:number }) {
   const [focus, setFocus] = React.useState(false);
   return (
-    <input type={type} value={val} onChange={e=>set(e.target.value)}
+    <input type={type} value={val ?? ""} onChange={e=>set(e.target.value)} maxLength={max}
       onFocus={()=>setFocus(true)} onBlur={()=>setFocus(false)}
       placeholder={ph}
       style={{ ...inp, borderColor: focus ? "var(--brand)" : "rgba(255,255,255,0.09)", background: focus ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.04)" }} />
   );
 }
-function NumInp({ val, set, ph }: { val:number; set:(v:number)=>void; ph?:string }) {
+function NumInp({ val, set, ph, min=0, max }: { val:number; set:(v:number)=>void; ph?:string; min?:number; max?:number }) {
   const [focus, setFocus] = React.useState(false);
   return (
-    <input type="number" value={val} onChange={e=>set(Number(e.target.value))}
+    <input type="number" value={val ?? 0} min={min} max={max} onChange={e=>set(Number(e.target.value))}
       onFocus={()=>setFocus(true)} onBlur={()=>setFocus(false)}
       placeholder={ph}
       style={{ ...inp, borderColor: focus ? "var(--brand)" : "rgba(255,255,255,0.09)", background: focus ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.04)" }} />
@@ -92,7 +97,7 @@ function Field({ label, children }: { label:string; children:React.ReactNode }) 
 const TABS = [
   { id:"contato", label:"Contato & Redes",  icon:<IcoPhone /> },
   { id:"loja",    label:"Dados da Loja",    icon:<IcoBuild /> },
-  { id:"site",    label:"Site Publico",     icon:<IcoBar /> },
+  { id:"site",    label:"Site público",     icon:<IcoBar /> },
   { id:"sistema", label:"Sistema",          icon:<IcoCog /> },
 ];
 
@@ -108,7 +113,7 @@ export default function ConfiguracoesPage() {
 
   const load = useCallback(async () => {
     try { setLoading(true); setError(null); const d = await loadSettings(token); setForm({...EMPTY,...d}); }
-    catch { setError("Nao foi possivel carregar as configuracoes."); }
+    catch (e) { setError(mensagemErro(e, "Não foi possível carregar as configurações.")); }
     finally { setLoading(false); }
   }, [token]);
 
@@ -123,14 +128,14 @@ export default function ConfiguracoesPage() {
       setSaved(true);
       setTimeout(()=>setSaved(false), 3000);
     }
-    catch { setError("Erro ao salvar. Verifique sua conexao e tente novamente."); }
+    catch (e) { setError(mensagemErro(e, "Não foi possível salvar. Tente novamente.")); }
     finally { setSaving(false); }
   };
 
   if (loading) return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:320, gap:16 }}>
       <div style={{ width:36, height:36, borderRadius:"50%", border:"3px solid rgba(245,166,35,0.20)", borderTop:"3px solid var(--brand)", animation:"spin 0.8s linear infinite" }} />
-      <span style={{ fontSize:13, color:"var(--text-muted)" }}>Carregando configuracoes...</span>
+      <span style={{ fontSize:13, color:"var(--text-muted)" }}>Carregando configurações...</span>
       <style>{"@keyframes spin { to { transform: rotate(360deg); } }"}</style>
     </div>
   );
@@ -139,8 +144,8 @@ export default function ConfiguracoesPage() {
     <div style={{ maxWidth:860, margin:"0 auto", paddingBottom:60 }}>
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:32, gap:16, flexWrap:"wrap" }}>
         <div>
-          <h1 style={{ fontSize:24, fontWeight:900, color:"var(--text-primary)", letterSpacing:"-0.5px", marginBottom:4 }}>Configuracoes</h1>
-          <p style={{ fontSize:13, color:"var(--text-muted)" }}>Gerencie as informacoes da sua loja - mudancas aparecem no site imediatamente apos salvar.</p>
+          <h1 style={{ fontSize:24, fontWeight:900, color:"var(--text-primary)", letterSpacing:"-0.5px", marginBottom:4 }}>Configurações</h1>
+          <p style={{ fontSize:13, color:"var(--text-muted)" }}>Informações da loja. As mudanças aparecem no site em até 1 minuto depois de salvar.</p>
         </div>
         <button onClick={handleSave} disabled={saving}
           style={{
@@ -154,7 +159,7 @@ export default function ConfiguracoesPage() {
             whiteSpace:"nowrap",
           }}>
           <IcoSave />
-          {saving ? "Salvando..." : saved ? "Salvo com sucesso!" : "Salvar alteracoes"}
+          {saving ? "Salvando..." : saved ? "Salvo com sucesso!" : "Salvar alterações"}
         </button>
       </div>
 
@@ -183,66 +188,76 @@ export default function ConfiguracoesPage() {
       </div>
 
       {tab==="contato" && <>
-        <Section title="Contato" subtitle="Telefone, WhatsApp e e-mail exibidos no site e no topbar" icon={<IcoPhone />}>
+        <Section title="Contato" subtitle="Telefone, WhatsApp e e-mail exibidos no site" icon={<IcoPhone />}>
           <Row>
-            <Field label="WhatsApp (somente numeros)"><Inp val={form.whatsapp} set={v=>set("whatsapp",v)} ph="5511999999999" /></Field>
-            <Field label="Telefone fixo"><Inp val={form.telefone} set={v=>set("telefone",v)} ph="(11) 3456-7890" /></Field>
+            <Field label="WhatsApp (com DDD, só números)"><Inp val={form.whatsapp} set={v=>set("whatsapp",v.replace(/\D/g, ""))} ph="5511999999999" max={20} /></Field>
+            <Field label="Telefone fixo"><Inp val={form.telefone} set={v=>set("telefone",v)} ph="(11) 3456-7890" max={20} /></Field>
           </Row>
-          <Field label="E-mail de contato"><Inp val={form.email_contato} set={v=>set("email_contato",v)} ph="contato@lmcveiculos.com.br" type="email" /></Field>
+          <Field label="E-mail de contato"><Inp val={form.email_contato} set={v=>set("email_contato",v)} ph="contato@lmcveiculos.com.br" type="email" max={120} /></Field>
         </Section>
-        <Section title="Redes Sociais" subtitle="Links exibidos no topbar, rodape e pagina de contato" icon={<IcoShare />}>
+        <Section title="Redes sociais" subtitle="Links exibidos no rodapé e na página de contato" icon={<IcoShare />}>
           <Row cols="1fr 1fr 1fr">
-            <Field label="Instagram"><Inp val={form.instagram} set={v=>set("instagram",v)} ph="https://instagram.com/sua" /></Field>
-            <Field label="Facebook"><Inp val={form.facebook} set={v=>set("facebook",v)} ph="https://facebook.com/sua" /></Field>
-            <Field label="YouTube"><Inp val={form.youtube} set={v=>set("youtube",v)} ph="https://youtube.com/@sua" /></Field>
+            <Field label="Instagram"><Inp val={form.instagram} set={v=>set("instagram",v)} ph="https://instagram.com/sua" max={200} /></Field>
+            <Field label="Facebook"><Inp val={form.facebook} set={v=>set("facebook",v)} ph="https://facebook.com/sua" max={200} /></Field>
+            <Field label="YouTube"><Inp val={form.youtube} set={v=>set("youtube",v)} ph="https://youtube.com/@sua" max={200} /></Field>
           </Row>
-          <div style={{ padding:"12px 16px", background:"rgba(245,166,35,0.07)", border:"1px solid rgba(245,166,35,0.15)", borderRadius:10, fontSize:12, color:"rgba(255,255,255,0.55)" }}>
-            Deixe em branco os campos que voce nao usa - os icones nao aparecerao no site.
+          <div style={{ padding:"12px 16px", background:"rgba(245,166,35,0.07)", border:"1px solid rgba(245,166,35,0.15)", borderRadius:10, fontSize:12, color:"var(--text-secondary)" }}>
+            Deixe em branco as redes que você não usa: o ícone não aparece no site.
           </div>
         </Section>
       </>}
 
       {tab==="loja" && <>
-        <Section title="Identidade da Loja" subtitle="Nome e CNPJ da concessionaria" icon={<IcoBuild />}>
+        <Section title="Identidade da loja" subtitle="Nome, CNPJ e slogan" icon={<IcoBuild />}>
           <Row>
-            <Field label="Nome da loja"><Inp val={form.nome_loja} set={v=>set("nome_loja",v)} ph="LMC Veiculos" /></Field>
-            <Field label="CNPJ"><Inp val={form.cnpj} set={v=>set("cnpj",v)} ph="00.000.000/0001-00" /></Field>
+            <Field label="Nome da loja"><Inp val={form.nome_loja} set={v=>set("nome_loja",v)} ph="LMC Veículos" max={100} /></Field>
+            <Field label="CNPJ"><Inp val={form.cnpj} set={v=>set("cnpj",v)} ph="00.000.000/0001-00" max={20} /></Field>
           </Row>
+          <Field label="Slogan (rodapé do site)"><Inp val={form.slogan} set={v=>set("slogan",v)} ph="Seminovos com procedência e documentação em dia" max={200} /></Field>
         </Section>
-        <Section title="Endereco e Horario" subtitle="Endereco fisico e horario de atendimento exibidos no site" icon={<IcoMap />}>
+        <Section title="Endereço e horário" subtitle="Endereço e horário de atendimento exibidos no site" icon={<IcoMap />}>
           <div style={{ marginBottom:14 }}>
-            <Field label="Endereco completo"><Inp val={form.endereco} set={v=>set("endereco",v)} ph="Rua das Flores, 123 - Bairro" /></Field>
+            <Field label="Endereço (rua, número e bairro)"><Inp val={form.endereco} set={v=>set("endereco",v)} ph="Rua das Flores, 123 - Centro" max={200} /></Field>
           </div>
           <Row cols="1fr 80px 130px">
-            <Field label="Cidade"><Inp val={form.cidade} set={v=>set("cidade",v)} ph="Sao Paulo" /></Field>
-            <Field label="UF"><Inp val={form.estado} set={v=>set("estado",v)} ph="SP" /></Field>
-            <Field label="CEP"><Inp val={form.cep} set={v=>set("cep",v)} ph="00000-000" /></Field>
+            <Field label="Cidade"><Inp val={form.cidade} set={v=>set("cidade",v)} ph="São Paulo" max={100} /></Field>
+            <Field label="UF"><Inp val={form.estado} set={v=>set("estado",v.toUpperCase())} ph="SP" max={2} /></Field>
+            <Field label="CEP"><Inp val={form.cep} set={v=>set("cep",v)} ph="00000-000" max={10} /></Field>
           </Row>
-          <Field label="Horario de atendimento (texto exibido no topbar)">
-            <Inp val={form.horario} set={v=>set("horario",v)} ph="Seg-Sex: 8h-18h | Sab: 8h-13h" />
+          <Field label="Horário de atendimento">
+            <Inp val={form.horario} set={v=>set("horario",v)} ph="Seg–Sex: 8h–18h | Sáb: 8h–13h" max={300} />
           </Field>
         </Section>
       </>}
 
       {tab==="site" && <>
-        <Section title="Estatisticas da Home" subtitle="Numeros exibidos na secao de destaques da pagina inicial" icon={<IcoBar />}>
-          <Row cols="1fr 1fr 1fr">
-            <Field label="Clientes atendidos"><NumInp val={form.stat_clientes} set={v=>set("stat_clientes",v)} ph="500" /></Field>
-            <Field label="Anos de mercado"><NumInp val={form.stat_anos} set={v=>set("stat_anos",v)} ph="10" /></Field>
-            <Field label="Satisfacao (%)"><NumInp val={form.stat_satisfacao} set={v=>set("stat_satisfacao",v)} ph="98" /></Field>
-          </Row>
-          <div style={{ padding:"12px 16px", background:"rgba(99,102,241,0.06)", border:"1px solid rgba(99,102,241,0.15)", borderRadius:10, fontSize:12, color:"rgba(255,255,255,0.50)" }}>
-            Titulo e subtitulo do hero sao editados diretamente no codigo-fonte do site.
+        <Section title="Chamada da página inicial" subtitle="Título e texto grandes do topo do site" icon={<IcoBar />}>
+          <div style={{ marginBottom:14 }}>
+            <Field label="Título"><Inp val={form.hero_titulo} set={v=>set("hero_titulo",v)} ph="Seu próximo veículo está aqui." max={200} /></Field>
           </div>
+          <Field label="Subtítulo"><Inp val={form.hero_subtitulo} set={v=>set("hero_subtitulo",v)} ph="Estoque revisado, documentação em dia e negociação direta com a loja." max={300} /></Field>
+        </Section>
+        <Section title="Números da loja" subtitle="Exibidos na página inicial e em Sobre. Zero = o número não aparece." icon={<IcoBar />}>
+          <Row cols="1fr 1fr 1fr">
+            <Field label="Clientes atendidos"><NumInp val={form.stat_clientes} set={v=>set("stat_clientes",v)} ph="500" max={10000000} /></Field>
+            <Field label="Anos de mercado"><NumInp val={form.stat_anos} set={v=>set("stat_anos",v)} ph="10" max={200} /></Field>
+            <Field label="Satisfação (%)"><NumInp val={form.stat_satisfacao} set={v=>set("stat_satisfacao",v)} ph="98" max={100} /></Field>
+          </Row>
         </Section>
       </>}
 
       {tab==="sistema" && (<>
-        <Section title="Modo Manutencao" subtitle="Quando ativo, o site publico exibe uma pagina de aviso" icon={<IcoCog />}>
+        <Section title="Fotos dos veículos" subtitle="Quantas fotos cada carro ou moto pode ter" icon={<IcoCog />}>
+          <Row cols="160px 1fr">
+            <Field label="Máximo por veículo"><NumInp val={form.max_fotos_veiculo} set={v=>set("max_fotos_veiculo",v)} ph="20" min={1} max={40} /></Field>
+            <p style={{ fontSize:12, color:"var(--text-muted)", alignSelf:"end", paddingBottom:12 }}>Entre 1 e 40. Mais fotos deixam a página do veículo mais pesada.</p>
+          </Row>
+        </Section>
+        <Section title="Modo manutenção" subtitle="Quando ativo, o site público exibe uma página de aviso" icon={<IcoCog />}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
             <div>
-              <p style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", marginBottom:4 }}>Modo manutencao</p>
-              <p style={{ fontSize:12, color:"var(--text-muted)" }}>Ativa a pagina de manutencao no site publico. O dashboard continua funcionando normalmente.</p>
+              <p style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", marginBottom:4 }}>Modo manutenção</p>
+              <p style={{ fontSize:12, color:"var(--text-muted)" }}>Mostra um aviso no lugar do site público. O painel continua funcionando normalmente.</p>
             </div>
             <button type="button" onClick={()=>set("modo_manutencao",!form.modo_manutencao)}
               style={{ flexShrink:0, width:50, height:28, borderRadius:14, border:"none", cursor:"pointer",
@@ -252,21 +267,21 @@ export default function ConfiguracoesPage() {
           </div>
           {form.modo_manutencao && (
             <div style={{ marginTop:16, padding:"12px 16px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.20)", borderRadius:10, fontSize:13, color:"#ef4444" }}>
-              O site publico esta em modo manutencao. Visitantes veem uma pagina de aviso.
+              O site público está em modo manutenção: visitantes veem a página de aviso.
             </div>
           )}
         </Section>
-        <Section title="Analytics" subtitle="Rastreamento de visitas e conversoes" icon={<IcoBar />}>
+        <Section title="Analytics" subtitle="Medição de visitas e conversões (só roda depois que o visitante aceita os cookies)" icon={<IcoBar />}>
           <Row>
             <Field label="Google Analytics 4 ID">
-              <Inp val={form.ga_id} set={v=>set("ga_id",v)} ph="G-XXXXXXXXXX" />
+              <Inp val={form.ga_id} set={v=>set("ga_id",v.trim())} ph="G-XXXXXXXXXX" max={50} />
             </Field>
             <Field label="Meta Pixel ID">
-              <Inp val={form.pixel_id} set={v=>set("pixel_id",v)} ph="1234567890" />
+              <Inp val={form.pixel_id} set={v=>set("pixel_id",v.trim())} ph="1234567890" max={50} />
             </Field>
           </Row>
           <div style={{ padding:"12px 16px", background:"rgba(59,130,246,0.06)", border:"1px solid rgba(59,130,246,0.15)", borderRadius:10, fontSize:12, color:"rgba(255,255,255,0.50)" }}>
-            Os scripts sao injetados automaticamente no site apos salvar. Deixe em branco para desativar.
+            Deixe em branco para desativar. Código em formato errado é ignorado pelo site.
           </div>
         </Section>
       </>)}

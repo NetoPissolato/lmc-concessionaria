@@ -32,7 +32,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    // data-scroll-behavior: o Next 16 pede o aviso explícito quando o CSS usa scroll suave
+    <html lang="pt-BR" className={inter.variable} data-scroll-behavior="smooth">
       <body className={inter.className}>
         {children}
       </body>

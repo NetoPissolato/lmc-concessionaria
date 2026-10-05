@@ -54,6 +54,36 @@ const processQueue = (error: unknown, token: string | null) => {
   failedQueue = [];
 };
 
+/**
+ * Renova o access token. O refresh é ROTATIVO (cada uso queima o anterior), então duas
+ * abas renovando juntas faziam a segunda usar um refresh já queimado e ser jogada para o
+ * login — a cada 30 min, com o painel aberto em mais de uma aba. Agora:
+ * - um cadeado entre abas (Web Locks) deixa só uma renovar por vez;
+ * - quem chega depois vê que o token já mudou e aproveita o novo, sem gastar o refresh.
+ */
+async function renovarToken(tokenQueFalhou: string | null): Promise<string> {
+  const executar = async (): Promise<string> => {
+    const atual = TokenStorage.getAccess();
+    if (atual && atual !== tokenQueFalhou) return atual; // outra aba já renovou
+    const refreshToken = TokenStorage.getRefresh();
+    if (!refreshToken) throw new Error("Sem refresh token");
+    try {
+      const { data } = await axios.post(`${API_BASE}/auth/refresh`, { refresh_token: refreshToken });
+      TokenStorage.setTokens(data.access_token, data.refresh_token ?? refreshToken);
+      return data.access_token as string;
+    } catch (e) {
+      // Navegador sem Web Locks: a outra aba pode ter renovado no meio do caminho
+      const depois = TokenStorage.getAccess();
+      if (depois && depois !== tokenQueFalhou && TokenStorage.getRefresh() !== refreshToken) return depois;
+      throw e;
+    }
+  };
+  if (typeof navigator !== "undefined" && navigator.locks?.request) {
+    return navigator.locks.request("lmc-renovar-token", executar);
+  }
+  return executar();
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -78,20 +108,16 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = TokenStorage.getRefresh();
-      if (!refreshToken) {
+      if (!TokenStorage.getRefresh()) {
+        isRefreshing = false;
         TokenStorage.clear();
         window.location.href = "/login";
         return Promise.reject(error);
       }
 
       try {
-        const { data } = await axios.post(`${API_BASE}/auth/refresh`, {
-          refresh_token: refreshToken,
-        });
-        const newToken = data.access_token;
-        // O refresh é rotativo: cada uso devolve um novo e o antigo deixa de valer
-        TokenStorage.setTokens(newToken, data.refresh_token ?? refreshToken);
+        const enviado = String(originalRequest.headers?.Authorization ?? "").replace(/^Bearer\s+/i, "") || null;
+        const newToken = await renovarToken(enviado);
         processQueue(null, newToken);
         if (originalRequest.headers) originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
@@ -156,8 +182,9 @@ export const vehiclesApi = {
   uploadPhoto: (id: string, file: File) => {
     const form = new FormData();
     form.append("file", file);
+    // Foto pelo 4G do pátio passa fácil de 15 s (o limite padrão): upload tem 2 min
     return api.post(`/vehicles/${id}/photos`, form, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": "multipart/form-data" }, timeout: 120_000,
     }).then((r) => r.data);
   },
   setMainPhoto: (id: string, photoId: string) =>
@@ -229,6 +256,8 @@ export const alertsApi = {
 
 export const settingsApi = {
   get: () => api.get("/settings").then((r) => r.data),
+  /** Campos públicos (inclui o limite de fotos por veículo) — qualquer usuário logado lê */
+  publicas: () => api.get("/public/settings").then((r) => r.data as { max_fotos_veiculo?: number }),
   update: (data: Record<string, unknown>) => api.put("/settings", data).then((r) => r.data),
 };
 
@@ -261,7 +290,7 @@ export const usersApi = {
     const form = new FormData();
     form.append("file", file);
     return api.post(`/users/${id}/avatar`, form, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": "multipart/form-data" }, timeout: 120_000,
     }).then((r) => r.data);
   },
   deleteAvatar: (id: string) => api.delete(`/users/${id}/avatar`).then((r) => r.data),
@@ -291,7 +320,7 @@ export const modelosDestaqueApi = {
     const form = new FormData();
     form.append("file", file);
     return api.post(`/modelos-destaque/${id}/imagem`, form, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": "multipart/form-data" }, timeout: 120_000,
     }).then((r) => r.data);
   },
   removeImagem: (id: string) => api.delete(`/modelos-destaque/${id}/imagem`).then((r) => r.data),

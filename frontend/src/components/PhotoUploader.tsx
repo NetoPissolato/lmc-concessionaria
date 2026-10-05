@@ -8,12 +8,15 @@ import "react-image-crop/dist/ReactCrop.css";
 import {
   Upload, Trash2, Star, ImagePlus, AlertTriangle, X, Loader2, Crop as CropIcon, CheckCircle
 } from "lucide-react";
-import { vehiclesApi } from "@/lib/api";
+import { vehiclesApi, settingsApi } from "@/lib/api";
+import { reduzirFoto } from "@/lib/imagem";
+import { mensagemErro } from "@/lib/erros";
 import { VehiclePhoto } from "@/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const ACCEPTED = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-const MAX_MB = 10;
+// Arquivo original até 25 MB: a foto é reduzida no navegador antes de subir (ver lib/imagem)
+const MAX_MB = 25;
 
 interface PhotoUploaderProps { vehicleId: string; }
 
@@ -99,16 +102,35 @@ export function PhotoUploader({ vehicleId }: PhotoUploaderProps) {
     queryKey: ["vehicle-photos", vehicleId],
     queryFn: () => vehiclesApi.getPhotos(vehicleId),
   });
+  // Limite configurado na loja (antes a tela dizia 20 e o servidor cortava em 10)
+  const { data: cfg } = useQuery({ queryKey: ["config-publica"], queryFn: settingsApi.publicas, staleTime: 5 * 60_000 });
+  const limite = cfg?.max_fotos_veiculo ?? 20;
 
+  const enviadasRef = useRef(0);
   const uploadMutation = useMutation({
-    mutationFn: async (files: File[]) => { for (const file of files) await vehiclesApi.uploadPhoto(vehicleId, file); },
+    mutationFn: async (files: File[]) => {
+      enviadasRef.current = 0;
+      for (const file of files) {
+        await vehiclesApi.uploadPhoto(vehicleId, await reduzirFoto(file));
+        enviadasRef.current++;
+      }
+    },
     onSuccess: () => {
       setPreviews([]); setUploadError(null); setUploadSuccess(true);
       setTimeout(() => setUploadSuccess(false), 2500);
       queryClient.invalidateQueries({ queryKey: ["vehicle-photos", vehicleId] });
       queryClient.invalidateQueries({ queryKey: ["vehicle", vehicleId] });
     },
-    onError: (err: unknown) => { setUploadError((err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Erro ao enviar foto"); },
+    onError: (err: unknown) => {
+      // As que já subiram saem da fila: tentar de novo não pode duplicar foto
+      const n = enviadasRef.current;
+      if (n > 0) {
+        setPreviews(prev => { prev.slice(0, n).forEach(p => URL.revokeObjectURL(p.previewUrl)); return prev.slice(n); });
+        queryClient.invalidateQueries({ queryKey: ["vehicle-photos", vehicleId] });
+        queryClient.invalidateQueries({ queryKey: ["vehicle", vehicleId] });
+      }
+      setUploadError(mensagemErro(err, "Erro ao enviar foto") + (n ? ` (${n} foto${n > 1 ? "s" : ""} já enviada${n > 1 ? "s" : ""})` : ""));
+    },
   });
 
   const setMainMutation = useMutation({
@@ -123,7 +145,7 @@ export function PhotoUploader({ vehicleId }: PhotoUploaderProps) {
 
   const processFiles = useCallback((files: FileList | null) => {
     if (!files) return;
-    const remaining = 20 - photos.length;
+    const remaining = limite - photos.length;
     const valid: { file: File; previewUrl: string }[] = [];
     let err: string | null = null; let count = 0;
     Array.from(files).forEach(file => {
@@ -134,7 +156,7 @@ export function PhotoUploader({ vehicleId }: PhotoUploaderProps) {
     });
     if (err) setUploadError(err); else setUploadError(null);
     setPreviews(prev => [...prev, ...valid]);
-  }, [photos.length]);
+  }, [photos.length, limite]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setDragOver(false); processFiles(e.dataTransfer.files);
@@ -150,7 +172,7 @@ export function PhotoUploader({ vehicleId }: PhotoUploaderProps) {
     setCropSrc(null);
   };
 
-  const remaining = 20 - photos.length;
+  const remaining = limite - photos.length;
   const canUpload = previews.length > 0 && !uploadMutation.isPending;
 
   return (
@@ -166,13 +188,13 @@ export function PhotoUploader({ vehicleId }: PhotoUploaderProps) {
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 3 }}>
-            {remaining > 0 ? "Clique ou arraste fotos aqui" : "Limite de 20 fotos atingido"}
+            {remaining > 0 ? "Clique ou arraste fotos aqui" : `Limite de ${limite} fotos atingido`}
           </p>
-          <p style={{ fontSize: 12, color: "var(--text-muted)" }}>JPG, PNG, WEBP - Max {MAX_MB}MB por foto</p>
+          <p style={{ fontSize: 12, color: "var(--text-muted)" }}>JPG, PNG ou WebP — a foto é reduzida antes de enviar</p>
         </div>
         <div style={{ flexShrink: 0, textAlign: "right" }}>
           <p style={{ fontSize: 22, fontWeight: 800, color: remaining > 5 ? "#22c55e" : remaining > 0 ? "#f59e0b" : "#ef4444", lineHeight: 1 }}>
-            {photos.length}<span style={{ fontSize: 12, fontWeight: 400, color: "var(--text-muted)" }}>/20</span>
+            {photos.length}<span style={{ fontSize: 12, fontWeight: 400, color: "var(--text-muted)" }}>/{limite}</span>
           </p>
           <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{remaining} vaga{remaining !== 1 ? "s" : ""}</p>
         </div>
@@ -236,7 +258,7 @@ export function PhotoUploader({ vehicleId }: PhotoUploaderProps) {
         </div>
       ) : photos.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Fotos salvas ({photos.length}/20)</p>
+          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Fotos salvas ({photos.length}/{limite})</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
             {photos.map(photo => (
               <motion.div key={photo.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
@@ -277,6 +299,8 @@ export function PhotoUploader({ vehicleId }: PhotoUploaderProps) {
 
       <style>{`
         .upld-prev:hover .upld-actions { opacity: 1 !important; }
+        /* Celular/tablet não tem "passar o mouse": botões de capa, recorte e excluir sempre visíveis */
+        @media (hover: none) { .upld-actions, .photo-overlay { opacity: 1 !important; } }
         .photo-card:hover .photo-overlay { opacity: 1 !important; }
         .photo-card:hover .photo-img { transform: scale(1.05); }
         @keyframes spin { to { transform: rotate(360deg); } }

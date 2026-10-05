@@ -89,15 +89,17 @@ export function DaysChip({ days }: { days: number | null }) {
   const color = days < 30 ? "#22c55e" : days < 60 ? "#f59e0b" : "#ef4444";
   const bg    = days < 30 ? "rgba(34,197,94,0.08)" : days < 60 ? "rgba(245,158,11,0.08)" : "rgba(239,68,68,0.08)";
   const label = days === 0 ? "Hoje" : days === 1 ? "1 dia" : `${days} dias`;
+  // <span> e não <div>: o selo aparece dentro de parágrafos (div dentro de p é HTML
+  // inválido e gerava erro de hidratação nas páginas de detalhe)
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: "4px",
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: "4px",
       fontSize: "11.5px", fontWeight: "700", color, background: bg,
       border: `1px solid ${color}28`, padding: "3px 8px", borderRadius: "20px", flexShrink: 0,
       whiteSpace: "nowrap",
     }}>
       <Clock size={9} />{label}
-    </div>
+    </span>
   );
 }
 

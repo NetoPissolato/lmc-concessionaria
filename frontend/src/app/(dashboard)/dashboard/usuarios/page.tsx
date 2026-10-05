@@ -16,6 +16,7 @@ import {
   Clock, Calendar, AtSign, Check, Upload,
 } from "lucide-react";
 import { usersApi, authApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
 import { toast } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Select } from "@/components/Select";
@@ -258,8 +259,7 @@ function UserFormModal({ user, onClose }: { user?: UserItem; onClose: () => void
       qc.invalidateQueries({ queryKey: ["users"] });
       onClose();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      toast.error(msg ?? "Erro ao salvar");
+      toast.error(mensagemErro(err, "Erro ao salvar o funcionário"));
     } finally {
       setLoading(false);
     }
@@ -555,7 +555,7 @@ export default function UsuariosPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => usersApi.delete(id),
     onSuccess: () => { toast.success("Funcionário excluído"); qc.invalidateQueries({ queryKey: ["users"] }); setConfirmDelete(null); },
-    onError: (e: unknown) => toast.error((e as { response?: { data?: { detail?: string } } })?.response?.data?.detail ?? "Erro ao excluir"),
+    onError: (e: unknown) => toast.error(mensagemErro(e, "Erro ao excluir")),
   });
 
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });

@@ -12,13 +12,15 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Bike, FileText, DollarSign, Check, Loader2, AlertCircle, Lightbulb, ImagePlus, Trash2, Star, Upload } from "lucide-react";
 import { vehiclesApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
+import { reduzirFoto } from "@/lib/imagem";
 import { toast } from "@/lib/toast";
 import { maskPhone, maskPlaca, maskChassi, maskRENAVAM, validatePlaca, maskCurrency, parseCurrency, maskKM } from "@/lib/masks";
 import { AutocompleteInput } from "@/components/AutocompleteInput";
 import { Select } from "@/components/Select";
 import { useFIPE } from "@/hooks/useFIPE";
 
-// ?"--? Schema ?"------------------------------------------------------------------?
+// ─── Schema ────────────────────────────────────────────────────────────────────
 const motoSchema = z.object({
   marca:             z.string().min(1, "Marca obrigatória"),
   modelo:            z.string().min(1, "Modelo obrigatório"),
@@ -44,7 +46,7 @@ const motoSchema = z.object({
 
 type MotoFormData = z.infer<typeof motoSchema>;
 
-// ?"--? Steps ?"-------------------------------------------------------------------?
+// ─── Steps ─────────────────────────────────────────────────────────────────────
 const STEPS = [
   { title: "Dados da Moto", icon: Bike,       description: "Identificação e características" },
   { title: "Documentação",  icon: FileText,   description: "Origem e documentos" },
@@ -54,7 +56,7 @@ const STEPS = [
 
 const TIPOS_MOTO = ["Sport", "Trail", "Naked", "Scooter", "Chopper", "Elétra", "Custom", "Touring"];
 
-// ?"--? Field Component ?"---------------------------------------------------------?
+// ─── Field Component ───────────────────────────────────────────────────────────
 function Field({ label, error, required, children }: {
   label: string; error?: string; required?: boolean; children: React.ReactNode;
 }) {
@@ -76,7 +78,7 @@ function Field({ label, error, required, children }: {
   );
 }
 
-// ?"--? Nova Moto Form ?"----------------------------------------------------------?
+// ─── Nova Moto Form ────────────────────────────────────────────────────────────
 export default function NovaMotoPage() {
   const router      = useRouter();
   const queryClient = useQueryClient();
@@ -145,18 +147,12 @@ export default function NovaMotoPage() {
     },
     onError: (err: unknown) => {
       console.error("[Cadastro moto erro]", err);
-      const resp = (err as { response?: { data?: { detail?: unknown } } })?.response?.data;
-      let msg = "Erro ao cadastrar moto";
-      if (resp?.detail) {
-        if (typeof resp.detail === "string") msg = resp.detail;
-        else if (Array.isArray(resp.detail)) msg = resp.detail.map((e: { msg?: string }) => e.msg).join(", ");
-        else msg = JSON.stringify(resp.detail);
-      }
+      const msg = mensagemErro(err, "Erro ao cadastrar moto");
       toast.error(msg);
     },
   });
 
-  // ?"--? Step submit (Valores) ?"--------------------------------------------------?
+  // ─── Step submit (Valores) ─────────────────────────────────────────────────────
   const onSubmitStep2 = async () => {
     const valid = await trigger(["valor_compra"]);
     if (!valid) return;
@@ -172,16 +168,17 @@ export default function NovaMotoPage() {
     mutation.mutate(data);
   };
 
-  // ?"--? Photo handlers ?"---------------------------------------------------------?
+  // ─── Fotos ───────────────────────────────────────────────────────────────────
   const handleUploadPhoto = async (file: File) => {
     if (!createdMotoId) return;
     if (!file.type.startsWith("image/")) { toast.error("Apenas imagens são permitidas"); return; }
-    if (file.size > 8 * 1024 * 1024) { toast.error("Imagem muito grande (máx. 8MB)"); return; }
+    if (file.size > 25 * 1024 * 1024) { toast.error("Imagem muito grande (máx. 25 MB)"); return; }
     setUploadingPhoto(true);
     try {
-      const photo = await vehiclesApi.uploadPhoto(createdMotoId, file);
+      // Reduzida no navegador antes de subir (foto de celular de 8 MB vira ~600 KB)
+      const photo = await vehiclesApi.uploadPhoto(createdMotoId, await reduzirFoto(file));
       setUploadedPhotos(prev => [...prev, photo]);
-    } catch { toast.error("Erro ao enviar foto"); }
+    } catch (e) { toast.error(mensagemErro(e, "Erro ao enviar foto")); }
     finally { setUploadingPhoto(false); }
   };
 
@@ -207,7 +204,7 @@ export default function NovaMotoPage() {
     Array.from(e.dataTransfer.files).forEach(handleUploadPhoto);
   };
 
-  // ?"--? Next step ?"--------------------------------------------------------------?
+  // ─── Next step ─────────────────────────────────────────────────────────────────
   const nextStep = async () => {
     const fieldsPerStep: (keyof MotoFormData)[][] = [
       ["marca", "modelo", "ano", "cor", "combustivel", "cambio", "quilometragem"],
@@ -430,7 +427,7 @@ export default function NovaMotoPage() {
               </div>
             )}
 
-            {/* ?"--? Step 4: Fotos ?"--? */}
+            {/* ─── Passo 4: fotos ─── */}
             {step === 3 && (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {/* Upload zone */}
@@ -445,7 +442,7 @@ export default function NovaMotoPage() {
                   <p style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
                     {uploadingPhoto ? "Enviando..." : "Arraste fotos ou clique para selecionar"}
                   </p>
-                  <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>JPG, PNG, WEBP - máx. 8MB por foto</p>
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>JPG, PNG ou WebP (a foto é reduzida antes de enviar)</p>
                 </div>
 
                 {/* Preview grid */}

@@ -4,7 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Star, CheckCircle, XCircle, Trash2, RefreshCw, MessageSquare, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 
-import { reviewsApi } from "@/lib/api";
+import { reviewsApi, authApi } from "@/lib/api";
+import { toast } from "@/lib/toast";
+import { mensagemErro } from "@/lib/erros";
 
 const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("lmc_access_token") ?? "" : "");
 const PAGE_SIZE = 20;
@@ -99,6 +101,8 @@ export default function ReviewsPage() {
     try {
       await reviewsApi.update(id, { aprovado: true });
       setReviews(r => r.map(x => x.id === id ? { ...x, aprovado: true } : x));
+    } catch (e) {
+      toast.error(mensagemErro(e, "Não foi possível publicar a avaliação"));
     } finally { setActing(null); }
   }
 
@@ -107,6 +111,8 @@ export default function ReviewsPage() {
     try {
       await reviewsApi.update(id, { aprovado: false });
       setReviews(r => r.map(x => x.id === id ? { ...x, aprovado: false } : x));
+    } catch (e) {
+      toast.error(mensagemErro(e, "Não foi possível despublicar a avaliação"));
     } finally { setActing(null); }
   }
 
@@ -116,8 +122,12 @@ export default function ReviewsPage() {
     try {
       await reviewsApi.delete(id);
       setReviews(r => r.filter(x => x.id !== id));
+    } catch (e) {
+      toast.error(mensagemErro(e, "Não foi possível excluir a avaliação"));
     } finally { setActing(null); }
   }
+  // Excluir é irreversível: só o administrador (funcionário pode publicar/despublicar)
+  const podeExcluir = authApi.getUser()?.role === "admin";
 
   const pending  = reviews.filter(r => !r.aprovado).length;
   const approved = reviews.filter(r => r.aprovado).length;
@@ -130,7 +140,7 @@ export default function ReviewsPage() {
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       {confirmDelete && (
         <ConfirmModal
-          message="Esta avaliacao sera removida permanentemente."
+          message="Esta avaliação será removida permanentemente."
           onConfirm={() => doDelete(confirmDelete)}
           onCancel={() => setConfirmDelete(null)}
         />
@@ -160,8 +170,8 @@ export default function ReviewsPage() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 12, flexWrap: "wrap" }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Avaliacoes</h1>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Gerencie e publique as avaliacoes dos clientes</p>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Avaliações</h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>Gerencie e publique as avaliações dos clientes</p>
         </div>
         <button onClick={fetchReviews} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
           <RefreshCw size={13} /> Atualizar
@@ -193,7 +203,7 @@ export default function ReviewsPage() {
             <MessageSquare size={22} color="var(--text-muted)" strokeWidth={1.5} />
           </div>
           <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
-            {filter ? "Nenhuma avaliacao com este status" : "Nenhuma avaliacao ainda"}
+            {filter ? "Nenhuma avaliação com este status" : "Nenhuma avaliação ainda"}
           </p>
           <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
             As avaliacoes enviadas pelos clientes aparecerao aqui.
@@ -245,13 +255,13 @@ export default function ReviewsPage() {
                           <XCircle size={13} strokeWidth={2} /> Despublicar
                         </button>
                       )}
-                      <button
+                      {podeExcluir && <button
                         onClick={(e) => e.shiftKey ? doDelete(review.id) : deleteReview(review.id)}
                         disabled={acting === review.id}
-                        title="Excluir avaliacao (Shift+clique para excluir sem confirmação)"
+                        title="Excluir avaliação (Shift+clique para excluir sem confirmação)"
                         className="av-icon-btn" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#ef4444", opacity: acting === review.id ? 0.5 : 1 }}>
                         <Trash2 size={13} />
-                      </button>
+                      </button>}
                     </div>
                   </div>
                 </div>

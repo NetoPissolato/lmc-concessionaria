@@ -12,6 +12,7 @@ import {
   UserCheck, Sparkles, Tag,
 } from "lucide-react";
 import { vehiclesApi, customersApi, salesApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
 import { Vehicle, Customer } from "@/types";
 import { toast } from "@/lib/toast";
 import { maskCurrency, parseCurrency, maskPhone, maskCPFOrCNPJ, validateCPF, validateCNPJ, unmask } from "@/lib/masks";
@@ -358,7 +359,7 @@ export default function NovaVendaPage() {
   const [newClientErrors, setNewClientErrors] = useState<Record<string, string>>({});
   const [newClient, setNewClient] = useState({
     nome: "", cpf_cnpj: "", telefone: "", whatsapp: "",
-    email: "", cep: "", rua: "", numero: "", complemento: "",
+    email: "", cep: "", rua: "", numero: "", complemento: "", bairro: "",
     cidade: "", estado: "", observacoes: "",
   });
   const [cepLoading, setCepLoading] = useState(false);
@@ -428,7 +429,7 @@ export default function NovaVendaPage() {
       router.push(destino);
     },
     onError: (err: unknown) => {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Erro ao registrar venda";
+      const msg = mensagemErro(err, "Erro ao registrar venda");
       toast.error(msg);
     },
   });
@@ -443,11 +444,11 @@ export default function NovaVendaPage() {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       setSelectedClient(created);
       setShowNewClient(false);
-      setNewClient({ nome: "", cpf_cnpj: "", telefone: "", whatsapp: "", email: "", cep: "", rua: "", numero: "", complemento: "", cidade: "", estado: "", observacoes: "" });
+      setNewClient({ nome: "", cpf_cnpj: "", telefone: "", whatsapp: "", email: "", cep: "", rua: "", numero: "", complemento: "", bairro: "", cidade: "", estado: "", observacoes: "" });
       setCepOk(false); setCepError("");
     },
     onError: (err: unknown) => {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Erro ao cadastrar cliente";
+      const msg = mensagemErro(err, "Erro ao cadastrar cliente");
       toast.error(msg);
     },
   });
@@ -466,7 +467,7 @@ export default function NovaVendaPage() {
       const data = await res.json();
       if (data.erro) { setCepError("CEP não encontrado"); }
       else {
-        setNewClient(f => ({ ...f, rua: `${data.logradouro}${data.bairro ? ", " + data.bairro : ""}`, cidade: data.localidade, estado: data.uf }));
+        setNewClient(f => ({ ...f, rua: data.logradouro || f.rua, bairro: data.bairro || f.bairro, cidade: data.localidade, estado: data.uf }));
         setCepOk(true);
       }
     } catch { setCepError("Erro ao buscar CEP"); }
@@ -478,17 +479,22 @@ export default function NovaVendaPage() {
     if (!newClient.nome.trim()) errs.nome = "Nome obrigatório";
     setNewClientErrors(errs);
     if (Object.keys(errs).length > 0) return;
-    const endereco = [newClient.rua, newClient.numero, newClient.complemento].filter(Boolean).join(", ");
+    // Cada parte do endereço na sua coluna (antes iam juntas e o CEP se perdia)
+    const v = (x: string) => x.trim() || undefined;
     newClientMutation.mutate({
-      nome: newClient.nome,
-      cpf_cnpj: newClient.cpf_cnpj || undefined,
-      telefone: newClient.telefone || undefined,
-      whatsapp: newClient.whatsapp || undefined,
-      email: newClient.email || undefined,
-      endereco: endereco || undefined,
-      cidade: newClient.cidade || undefined,
-      estado: newClient.estado || undefined,
-      observacoes: newClient.observacoes || undefined,
+      nome: newClient.nome.trim(),
+      cpf_cnpj: v(newClient.cpf_cnpj),
+      telefone: v(newClient.telefone),
+      whatsapp: v(newClient.whatsapp),
+      email: v(newClient.email),
+      cep: v(newClient.cep),
+      endereco: v(newClient.rua),
+      numero: v(newClient.numero),
+      complemento: v(newClient.complemento),
+      bairro: v(newClient.bairro),
+      cidade: v(newClient.cidade),
+      estado: v(newClient.estado),
+      observacoes: v(newClient.observacoes),
     });
   };
 
@@ -499,7 +505,8 @@ export default function NovaVendaPage() {
     if (step === 2) {
       if (!valorVenda || valorVenda <= 0) errs.valorVenda = "Informe o valor de venda";
       if (!dataVenda) errs.dataVenda = "Informe a data de venda";
-      if (Math.abs(remainder) > 0.5) errs.payment = `Faltam ${fmt(remainder)} para totalizar o valor de venda`;
+      // Mesma tolerância do servidor (1 centavo): com 0,50 aqui o servidor recusava depois
+      if (Math.abs(remainder) > 0.01) errs.payment = `Faltam ${fmt(remainder)} para totalizar o valor de venda`;
       else if (totalPago - valorVenda > 0.01) errs.payment = `As formas de pagamento somam ${fmt(totalPago)}, mais que o valor da venda (${fmt(valorVenda)})`;
       const pct = Number(comissaoPct.replace(",", ".") || 0);
       if (Number.isNaN(pct) || pct < 0 || pct > 20) errs.comissao = "Comissão entre 0% e 20%";
@@ -639,6 +646,12 @@ export default function NovaVendaPage() {
 
                           {/* Photo area */}
                           <div style={{ position: "relative", width: "100%", height: isMobile ? 100 : 130, background: "#080808", overflow: "hidden" }}>
+                            {v.status === "reservado" && (
+                              <span title="Reservado: se houver venda pendente deste veículo, conclua ou cancele aquela venda"
+                                style={{ position: "absolute", top: 6, left: 6, zIndex: 1, fontSize: 11, fontWeight: 800, padding: "2px 8px", borderRadius: 6, background: "rgba(245,158,11,0.92)", color: "#111" }}>
+                                Reservado
+                              </span>
+                            )}
                             {photoUrl ? (
                               <img src={photoUrl} alt={`${v.marca} ${v.modelo}`}
                                 style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", transition: "transform 0.35s" }}
@@ -821,16 +834,16 @@ export default function NovaVendaPage() {
                         </div>
                         {/* Logradouro */}
                         <div style={isMobile ? {} : { gridColumn: "span 2" }}>
-                          <Field label="Logradouro e Bairro">
+                          <Field label="Rua / Avenida">
                             <input value={newClient.rua} onChange={e => setNewClient(f => ({ ...f, rua: e.target.value }))}
-                              className="input" placeholder="Rua, Bairro (preenchido pelo CEP)" style={{ borderColor: "rgba(167,139,250,0.35)" }} />
+                              className="input" placeholder="Preenchida pelo CEP" maxLength={255} style={{ borderColor: "rgba(167,139,250,0.35)" }} />
                           </Field>
                         </div>
                         {/* Número */}
                         <div>
                           <Field label="Número">
                             <input value={newClient.numero} onChange={e => setNewClient(f => ({ ...f, numero: e.target.value }))}
-                              className="input" placeholder="123" inputMode="numeric" style={{ borderColor: "rgba(167,139,250,0.35)" }} />
+                              className="input" placeholder="123" maxLength={10} style={{ borderColor: "rgba(167,139,250,0.35)" }} />
                           </Field>
                         </div>
                         {/* Complemento */}
@@ -840,11 +853,18 @@ export default function NovaVendaPage() {
                               className="input" placeholder="Apto, Casa..." style={{ borderColor: "rgba(167,139,250,0.35)" }} />
                           </Field>
                         </div>
+                        {/* Bairro */}
+                        <div>
+                          <Field label="Bairro">
+                            <input value={newClient.bairro} onChange={e => setNewClient(f => ({ ...f, bairro: e.target.value }))}
+                              className="input" placeholder="Preenchido pelo CEP" maxLength={100} style={{ borderColor: "rgba(167,139,250,0.35)" }} />
+                          </Field>
+                        </div>
                         {/* Cidade */}
-                        <div style={isMobile ? {} : { gridColumn: "span 2" }}>
+                        <div>
                           <Field label="Cidade">
                             <input value={newClient.cidade} onChange={e => setNewClient(f => ({ ...f, cidade: e.target.value }))}
-                              className="input" placeholder="Cidade" style={{ borderColor: "rgba(167,139,250,0.35)" }} />
+                              className="input" placeholder="Cidade" maxLength={100} style={{ borderColor: "rgba(167,139,250,0.35)" }} />
                           </Field>
                         </div>
                         {/* Observações */}

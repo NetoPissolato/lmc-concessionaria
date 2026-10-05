@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, Save, Loader2, AlertCircle, Lightbulb, Bike } from "lucide-react";
 import { vehiclesApi } from "@/lib/api";
+import { mensagemErro } from "@/lib/erros";
 import { Vehicle, VehicleStatus, FuelType, TransmissionType } from "@/types";
 import { toast } from "@/lib/toast";
 import {
@@ -124,7 +125,7 @@ export default function EditarMotoPage() {
       router.push(`/dashboard/motos/${id}`);
     },
     onError: (err: unknown) => {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Erro ao atualizar";
+      const msg = mensagemErro(err, "Erro ao salvar as alterações");
       toast.error(msg);
     },
   });
