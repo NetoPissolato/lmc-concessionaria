@@ -2,6 +2,7 @@ import os
 import uuid
 from pathlib import Path
 from fastapi import APIRouter, Depends, Query, Path as FPath, UploadFile, File, HTTPException, Response
+from starlette.concurrency import run_in_threadpool
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -288,7 +289,7 @@ async def update_expense(
     if tinha_lancamento:
         await financeiro_service.estornar(
             db, FinancialEntry.expense_id == expense_id,
-            motivo="despesa corrigida", usuario_id=user["sub"],
+            motivo="despesa corrigida", usuario_id=user["sub"], na_data_original=True,
         )
         vehicle = await VehicleRepository(db).get_by_id(vehicle_id)
         db.add(FinancialEntry(
@@ -326,7 +327,7 @@ async def delete_expense(
 
     await financeiro_service.estornar(
         db, FinancialEntry.expense_id == expense_id,
-        motivo="despesa removida", usuario_id=user["sub"],
+        motivo="despesa removida", usuario_id=user["sub"], na_data_original=True,
     )
     await AuditRepository(db).log(
         usuario_id=user["sub"], acao="DELETE", entidade="VehicleExpense", entidade_id=expense_id,
@@ -371,8 +372,10 @@ async def pay_vehicle_fines(
     Creates a VehicleExpense (so total_despesas updates) + a FinancialEntry
     (global ledger), then clears valor_multas from the vehicle.
     """
-    repo = VehicleRepository(db)
-    vehicle = await repo.get_with_expenses(vehicle_id)
+    # FOR UPDATE: dois cliques seguidos em "Pagar" lançavam a multa duas vezes no caixa
+    vehicle = (await db.execute(
+        select(Vehicle).where(Vehicle.id == vehicle_id, Vehicle.is_deleted == False).with_for_update()  # noqa: E712
+    )).scalar_one_or_none()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
 
@@ -466,7 +469,9 @@ async def upload_photo(
     if count >= limite:
         raise HTTPException(status_code=400, detail=f"Limite de {limite} fotos por veículo atingido")
 
-    grande, miniatura = processar_foto_veiculo(await file.read())
+    # Fora do event loop: redimensionar uma foto de celular leva de 0,3 s a alguns segundos
+    # e, com 1 worker, a API inteira parava para todo mundo enquanto isso.
+    grande, miniatura = await run_in_threadpool(processar_foto_veiculo, await file.read())
 
     pasta = Path(settings.UPLOAD_DIR) / "vehicles" / vehicle_id
     pasta.mkdir(parents=True, exist_ok=True)

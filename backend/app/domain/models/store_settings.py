@@ -43,7 +43,7 @@ class StoreSettings(Base):
     stat_satisfacao = Column(Integer, nullable=False, default=98)
 
     # Sistema
-    max_fotos_veiculo = Column(Integer, nullable=False, default=10)
+    max_fotos_veiculo = Column(Integer, nullable=False, default=20, server_default="20")
     modo_manutencao   = Column(Boolean, nullable=False, default=False)
 
     # Analytics

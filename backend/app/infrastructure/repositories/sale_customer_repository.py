@@ -263,20 +263,25 @@ class CustomerRepository(BaseRepository[Customer]):
         return result.scalar_one_or_none()
 
     async def search(self, query: str, skip: int = 0, limit: int = 50) -> List[Customer]:
-        """Search customers by name, CPF, phone or email."""
+        """Busca por nome, CPF/CNPJ, telefone ou e-mail."""
         term = f"%{query}%"
+        condicoes = [
+            func.upper(Customer.nome).like(term.upper()),
+            Customer.cpf_cnpj.like(term),
+            Customer.telefone.like(term),
+            Customer.whatsapp.like(term),
+            func.lower(Customer.email).like(term.lower()),
+        ]
+        # CPF e telefone ficam gravados com máscara: "12345678900" não achava "123.456.789-00".
+        # Compara também só os dígitos.
+        digitos = "".join(ch for ch in query if ch.isdigit())
+        if len(digitos) >= 3:
+            so_digitos = f"%{digitos}%"
+            for coluna in (Customer.cpf_cnpj, Customer.telefone, Customer.whatsapp):
+                condicoes.append(func.regexp_replace(coluna, "[^0-9]", "", "g").like(so_digitos))
         result = await self.db.execute(
             select(Customer)
-            .where(
-                Customer.is_deleted == False,
-                or_(
-                    func.upper(Customer.nome).like(term.upper()),
-                    Customer.cpf_cnpj.like(term),
-                    Customer.telefone.like(term),
-                    Customer.whatsapp.like(term),
-                    Customer.email.like(term),
-                ),
-            )
+            .where(Customer.is_deleted == False, or_(*condicoes))
             .offset(skip)
             .limit(limit)
             .order_by(Customer.nome)

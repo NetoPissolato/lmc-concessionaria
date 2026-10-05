@@ -177,7 +177,8 @@ class Vehicle(Base, TimestampMixin, SoftDeleteMixin):
             loaded_expenses = object.__getattribute__(self, "__dict__").get("expenses") or []
             if not isinstance(loaded_expenses, list):
                 loaded_expenses = []
-            exp_sum = Decimal(str(sum(float(e.valor) for e in loaded_expenses)))
+            # Soma em Decimal: em float, 450,10 + 0,20 + 0,10 virava 450,40000000000003
+            exp_sum = sum((Decimal(str(e.valor)) for e in loaded_expenses), Decimal("0"))
         except Exception:
             exp_sum = Decimal("0")
         return self.valor_compra + (self.valor_multas or Decimal("0")) + exp_sum

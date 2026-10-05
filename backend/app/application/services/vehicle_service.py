@@ -14,6 +14,8 @@ from app.application.schemas.vehicle import VehicleCreate, VehicleUpdate, Vehicl
 from app.application.schemas.expense import ExpenseCreate, ExpenseUpdate
 from app.application.services import financeiro_service
 from app.domain.models.financial import FinancialEntry
+from app.domain.models.sale import Sale, SaleStatus
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 # Nome da categoria como aparece no caixa e no painel
@@ -121,6 +123,15 @@ class VehicleService:
         # Re-fetch with eager-loaded photos to avoid MissingGreenlet on serialization
         return await self.vehicle_repo.get_by_id(vehicle.id)
 
+    async def _venda_pendente(self, vehicle_id: str) -> Optional[Sale]:
+        return (await self.db.execute(
+            select(Sale).where(
+                Sale.vehicle_id == vehicle_id,
+                Sale.is_deleted == False,  # noqa: E712
+                Sale.status == SaleStatus.PENDENTE,
+            ).limit(1)
+        )).scalar_one_or_none()
+
     async def update_vehicle(
         self, vehicle_id: str, data: VehicleUpdate, updated_by: str
     ) -> Vehicle:
@@ -138,37 +149,66 @@ class VehicleService:
                 detail="Não é possível editar um veículo vendido.",
             )
 
+        update_data = data.model_dump(exclude_none=True)
+
+        # Com venda pendente o status é da venda: marcar "disponível" à mão punha no site
+        # um carro já reservado. Para liberar, cancele a venda.
+        if "status" in update_data and update_data["status"] != vehicle.status:
+            if await self._venda_pendente(vehicle_id):
+                raise HTTPException(
+                    status_code=409,
+                    detail="Este veículo tem uma venda pendente. Conclua ou cancele a venda em Vendas para mudar o status.",
+                )
+
+        # Preço mínimo acima do anunciado é erro de digitação (vale com o valor que já estava)
+        minimo = update_data.get("valor_minimo", vehicle.valor_minimo)
+        anunciado = update_data.get("valor_anunciado", vehicle.valor_anunciado)
+        if minimo and anunciado and minimo > anunciado:
+            raise HTTPException(status_code=422, detail="O preço mínimo não pode ser maior que o preço anunciado.")
+
+        # Placa/chassi corrigidos não podem bater com outro veículo do estoque
+        if "placa" in update_data and update_data["placa"] != vehicle.placa:
+            outro = await self.vehicle_repo.get_by_placa(update_data["placa"])
+            if outro and outro.id != vehicle_id:
+                raise HTTPException(status_code=409, detail=f"Placa '{update_data['placa']}' já está cadastrada em outro veículo.")
+        if "chassi" in update_data and update_data["chassi"] != vehicle.chassi:
+            outro = await self.vehicle_repo.get_by_chassi(update_data["chassi"])
+            if outro and outro.id != vehicle_id:
+                raise HTTPException(status_code=409, detail=f"Chassi '{update_data['chassi']}' já está cadastrado em outro veículo.")
+
         # Track changes for audit
         old_valor_compra = vehicle.valor_compra
+        old_data_compra = vehicle.data_compra
         old_data = {
             k: str(getattr(vehicle, k)) if getattr(vehicle, k) is not None else None
-            for k in data.model_dump(exclude_none=True).keys()
+            for k in update_data.keys()
         }
-
-        update_data = data.model_dump(exclude_none=True)
         try:
             updated = await self.vehicle_repo.update(vehicle, **update_data)
         except IntegrityError:
             await self.db.rollback()
             raise HTTPException(status_code=409, detail="Placa ou chassi já cadastrados em outro veículo do estoque.")
 
-        # Valor de compra mudou: estorna o lançamento antigo e lança o novo (o caixa guarda
-        # o histórico da correção em vez de sobrescrever o valor em silêncio).
-        if "valor_compra" in update_data and update_data["valor_compra"] != old_valor_compra:
-            new_valor = update_data["valor_compra"]
-            await financeiro_service.estornar(
+        # Valor ou data de compra mudou: estorna o lançamento antigo (na data dele) e lança o
+        # novo (o caixa guarda o histórico da correção em vez de sobrescrever em silêncio).
+        mudou_valor = "valor_compra" in update_data and update_data["valor_compra"] != old_valor_compra
+        mudou_data = "data_compra" in update_data and update_data["data_compra"] != old_data_compra
+        if mudou_valor or mudou_data:
+            estornados = await financeiro_service.estornar(
                 self.db,
                 FinancialEntry.vehicle_id == vehicle_id,
                 FinancialEntry.categoria == FinancialCategory.COMPRA_VEICULO,
-                motivo="valor de compra corrigido",
+                motivo="compra corrigida",
                 usuario_id=updated_by,
+                na_data_original=True,
             )
-            if new_valor and new_valor > 0:
+            # Relança se a compra estava no caixa (ou se o valor mudou para algo > 0)
+            if (estornados or mudou_valor) and vehicle.valor_compra and vehicle.valor_compra > 0:
                 await self.financial_repo.create(
                     tipo=EntryType.SAIDA,
                     categoria=FinancialCategory.COMPRA_VEICULO,
                     descricao=f"Compra de veículo — {vehicle.marca} {vehicle.modelo} {vehicle.ano} ({vehicle.placa})",
-                    valor=new_valor,
+                    valor=vehicle.valor_compra,
                     data=vehicle.data_compra,
                     vehicle_id=vehicle_id,
                     created_by=updated_by,
@@ -201,13 +241,21 @@ class VehicleService:
                 status_code=400,
                 detail="Não é possível excluir um veículo vendido.",
             )
+        # Excluir com venda pendente deixava a venda apontando para um veículo apagado
+        if await self._venda_pendente(vehicle_id):
+            raise HTTPException(
+                status_code=409,
+                detail="Este veículo tem uma venda pendente. Cancele a venda antes de excluir o veículo.",
+            )
 
-        # Estorna (não apaga) os lançamentos do veículo: compra, despesas, multas
+        # Estorna (não apaga) os lançamentos do veículo: compra, despesas, multas.
+        # Na data original: um cadastro excluído some dos meses em que tinha entrado.
         await financeiro_service.estornar(
             self.db,
             FinancialEntry.vehicle_id == vehicle_id,
             motivo="veículo excluído",
             usuario_id=deleted_by,
+            na_data_original=True,
         )
 
         await self.vehicle_repo.soft_delete(vehicle, deleted_by)
@@ -235,7 +283,7 @@ class VehicleService:
         if not vehicle:
             raise HTTPException(status_code=404, detail="Veículo não encontrado")
 
-        total_despesas = sum(e.valor for e in vehicle.expenses)
+        total_despesas = sum((e.valor for e in vehicle.expenses), Decimal("0"))
         custo_total = vehicle.valor_compra + (vehicle.valor_multas or 0) + total_despesas
 
         lucro_bruto = None

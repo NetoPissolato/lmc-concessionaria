@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, field_validator
 import json
 
 from app.core.database import get_db
-from app.domain.models.vehicle import Vehicle, VehicleStatus, VehicleType
+from app.domain.models.vehicle import Vehicle, VehicleStatus, VehicleType, TransmissionType, FuelType
 from app.domain.models.vehicle_photo import VehiclePhoto
 from app.domain.models.lead import Lead, LeadStatus
 from app.domain.models.review import Review
@@ -85,7 +85,7 @@ async def get_public_settings(db: AsyncSession = Depends(get_db)):
     """
     s = (await db.execute(select(StoreSettings).limit(1))).scalar_one_or_none()
     if not s:
-        return {"nome_loja": "LMC Veículos", "modo_manutencao": False}
+        return {"nome_loja": "LMC Veículos", "modo_manutencao": False, "max_fotos_veiculo": 20}
     ga = (s.ga_id or "").strip().upper()
     pixel = (s.pixel_id or "").strip()
     return {
@@ -109,6 +109,7 @@ async def get_public_settings(db: AsyncSession = Depends(get_db)):
         "stat_anos":       s.stat_anos or None,
         "stat_satisfacao": s.stat_satisfacao or None,
         "modo_manutencao": bool(s.modo_manutencao),
+        "max_fotos_veiculo": s.max_fotos_veiculo or 20,
         "ga_id":           ga if _GA_ID.match(ga) else None,
         "pixel_id":        pixel if _PIXEL_ID.match(pixel) else None,
     }
@@ -218,11 +219,12 @@ async def list_public_vehicles(
     if modelo:
         stmt = stmt.where(Vehicle.modelo.ilike(f"%{modelo}%"))
 
-    if cambio:
-        stmt = stmt.where(Vehicle.cambio == cambio.lower())
+    # Valor fora da lista é ignorado (antes ia direto para o enum do banco e dava erro 500)
+    if cambio and cambio.lower() in {t.value for t in TransmissionType}:
+        stmt = stmt.where(Vehicle.cambio == TransmissionType(cambio.lower()))
 
-    if combustivel:
-        stmt = stmt.where(Vehicle.combustivel == combustivel.lower())
+    if combustivel and combustivel.lower() in {t.value for t in FuelType}:
+        stmt = stmt.where(Vehicle.combustivel == FuelType(combustivel.lower()))
 
     if carroceria:
         stmt = stmt.where(Vehicle.carroceria == carroceria.lower())

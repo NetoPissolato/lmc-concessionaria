@@ -40,7 +40,9 @@ class Settings(BaseSettings):
     # Security
     MAX_LOGIN_ATTEMPTS: int = 5
     LOCKOUT_DURATION_MINUTES: int = 15
-    RATE_LIMIT_PER_MINUTE: int = 60
+    # Por usuário logado (ou por IP, se anônimo). Uma tela do painel faz 5–10 chamadas e quem
+    # navega rápido passa de 60/min sozinho; o nginx segura abuso antes (30 req/s por IP).
+    RATE_LIMIT_PER_MINUTE: int = 300
     RATE_LIMIT_ENABLED: bool = True
 
     # Upload

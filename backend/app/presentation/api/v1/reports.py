@@ -11,6 +11,7 @@ from typing import Optional
 from datetime import date
 
 from app.core.database import get_db
+from app.core.tempo import hoje_loja
 from app.presentation.dependencies.auth import require_admin
 from app.domain.models.vehicle import Vehicle, VehicleType
 from app.domain.models.vehicle_expense import VehicleExpense
@@ -138,7 +139,6 @@ async def report_vendas(
         val_financiado= _m(s.valor_financiado)
         com_pct       = _m(s.comissao_percentual)
         com_val       = _m(s.comissao_valor)
-        lucro_bruto   = val_venda - val_entrada  # entrada = custo aproximado (se disponível)
 
         rows.append({
             # Veículo
@@ -228,7 +228,7 @@ async def report_estoque(
         # Dias em estoque
         if v.data_compra:
             dc = v.data_compra if isinstance(v.data_compra, date) else date.fromisoformat(str(v.data_compra)[:10])
-            dias_estoque = (date.today() - dc).days
+            dias_estoque = (hoje_loja() - dc).days
         else:
             dias_estoque = 0
 
@@ -277,7 +277,7 @@ async def report_estoque(
             "vendidos":             cnt(todos, "vendido"),
             "valor_total_estoque":  round(sum(r["valor_anunciado"] or r["custo_total"] for r in todos if r["status"] != "vendido"), 2),
             "custo_total_estoque":  round(sum(r["custo_total"]    for r in todos if r["status"] != "vendido"), 2),
-            "media_dias_estoque":   round(sum(r["dias_estoque"]   for r in todos if r["status"] != "vendido") / max(cnt(todos, "disponivel") + cnt(todos, "reservado") + cnt(todos, "em_preparacao"), 1), 0),
+            "media_dias_estoque":   round(sum(r["dias_estoque"] for r in todos if r["status"] != "vendido") / max(len([r for r in todos if r["status"] != "vendido"]), 1), 0),
         },
         "carros": carros,
         "motos":  motos,
@@ -569,7 +569,8 @@ async def report_comissoes(
     rows = []
 
     for s in sales:
-        if s.status.value == "cancelada":
+        # Pendente ainda pode virar desistência: comissão só conta com a venda concluída
+        if s.status.value != "concluida":
             continue
         dt = s.data_venda
         if isinstance(dt, str):

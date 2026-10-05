@@ -14,6 +14,7 @@ from app.infrastructure.repositories.financial_repository import FinancialReposi
 from app.infrastructure.repositories.audit_repository import AuditRepository
 from app.domain.models.sale import Sale, SaleStatus, PaymentType
 from app.domain.models.user import User, UserRole
+from app.domain.models.customer import Customer
 from app.domain.models.vehicle import Vehicle, VehicleStatus
 from app.domain.models.financial import FinancialEntry, EntryType, FinancialCategory
 from app.application.schemas.sale_customer import SaleCreate
@@ -96,6 +97,11 @@ class SaleService:
     async def create_sale(self, data: SaleCreate, created_by: str) -> Sale:
         if data.status == SaleStatus.CANCELADA:
             raise HTTPException(status_code=422, detail="Uma venda nova não pode nascer cancelada.")
+
+        # Cliente inexistente dava erro 500 (chave estrangeira); excluído era aceito
+        cliente = await self.db.get(Customer, data.cliente_id)
+        if not cliente or cliente.is_deleted:
+            raise HTTPException(status_code=422, detail="Cliente não encontrado. Selecione ou cadastre o cliente de novo.")
 
         vehicle = await self._veiculo_travado(data.vehicle_id)
         await self._garantir_veiculo_livre(vehicle)

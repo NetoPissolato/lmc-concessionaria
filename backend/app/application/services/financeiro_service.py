@@ -6,6 +6,14 @@ removida, veículo excluído), cria-se um ESTORNO — lançamento com o mesmo ti
 categoria e valor NEGATIVO, apontando para o original em `estorno_de_id`. Assim:
 - o histórico continua auditável (quem lançou, quando, quem estornou);
 - os totais por categoria e por mês se anulam sozinhos, sem caso especial nos relatórios.
+
+Data do estorno:
+- CORREÇÃO de cadastro (valor de compra errado, despesa corrigida/removida, veículo
+  excluído): na data do lançamento original. Foi um erro de digitação, então o mês certo
+  é o do lançamento. Antes o estorno caía no mês atual: corrigir em outubro um carro
+  comprado em setembro deixava setembro com a compra em dobro e outubro com uma
+  "saída negativa".
+- CANCELAMENTO de venda: hoje (o dinheiro volta agora; o mês fechado não muda).
 """
 from decimal import Decimal
 from typing import Optional
@@ -32,10 +40,12 @@ async def estornar(
     *condicoes,
     motivo: str,
     usuario_id: Optional[str],
+    na_data_original: bool = False,
 ) -> int:
     """
     Estorna os lançamentos ORIGINAIS que casam com `condicoes` e ainda têm saldo.
     Idempotente: estornar duas vezes não gera estorno duplicado.
+    `na_data_original=True` para correções (ver docstring do módulo).
     Devolve quantos estornos foram criados.
     """
     originais = (await db.execute(
@@ -52,7 +62,7 @@ async def estornar(
             categoria=original.categoria,
             descricao=f"Estorno ({motivo}): {original.descricao}"[:255],
             valor=-saldo,
-            data=hoje_loja(),
+            data=original.data if na_data_original else hoje_loja(),
             venda_id=original.venda_id,
             vehicle_id=original.vehicle_id,
             expense_id=original.expense_id,

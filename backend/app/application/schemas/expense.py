@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from decimal import Decimal
 from datetime import date, datetime
@@ -8,14 +8,14 @@ from app.domain.models.vehicle_expense import ExpenseCategory, PaymentMethod
 class ExpenseCreate(BaseModel):
     data: date
     categoria: ExpenseCategory
-    descricao: str
-    valor: Decimal
+    descricao: str = Field(max_length=255)
+    valor: Decimal = Field(max_digits=10, decimal_places=2)  # Numeric(10,2) no banco
     forma_pagamento: PaymentMethod
-    parcelas: Optional[int] = None
-    responsavel: Optional[str] = None
-    fornecedor: Optional[str] = None
-    observacoes: Optional[str] = None
-    km_atual: Optional[int] = None
+    parcelas: Optional[int] = Field(None, ge=1, le=120)
+    responsavel: Optional[str] = Field(None, max_length=120)
+    fornecedor: Optional[str] = Field(None, max_length=120)
+    observacoes: Optional[str] = Field(None, max_length=5000)
+    km_atual: Optional[int] = Field(None, ge=0, le=3_000_000)
 
     @field_validator("valor")
     @classmethod
@@ -35,14 +35,15 @@ class ExpenseCreate(BaseModel):
 class ExpenseUpdate(BaseModel):
     data: Optional[date] = None
     categoria: Optional[ExpenseCategory] = None
-    descricao: Optional[str] = None
-    valor: Optional[Decimal] = None
+    descricao: Optional[str] = Field(None, min_length=1, max_length=255)
+    # Corrigir para zero ou negativo lançava uma "saída negativa" no caixa
+    valor: Optional[Decimal] = Field(None, gt=0, max_digits=10, decimal_places=2)
     forma_pagamento: Optional[PaymentMethod] = None
-    parcelas: Optional[int] = None
-    responsavel: Optional[str] = None
-    fornecedor: Optional[str] = None
-    observacoes: Optional[str] = None
-    km_atual: Optional[int] = None
+    parcelas: Optional[int] = Field(None, ge=1, le=120)
+    responsavel: Optional[str] = Field(None, max_length=120)
+    fornecedor: Optional[str] = Field(None, max_length=120)
+    observacoes: Optional[str] = Field(None, max_length=5000)
+    km_atual: Optional[int] = Field(None, ge=0, le=3_000_000)
 
 
 class ExpenseResponse(BaseModel):

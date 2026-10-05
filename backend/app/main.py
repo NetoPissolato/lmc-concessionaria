@@ -4,6 +4,7 @@ Backend FastAPI com Clean Architecture
 """
 
 import logging
+import mimetypes
 import os
 import time
 from contextlib import asynccontextmanager
@@ -17,12 +18,13 @@ from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from app.core.config import settings
 from app.core import contexto
 from app.core.rate_limit import limiter
 from app.core.database import engine
-from app.core.redis import get_redis, close_redis
+from app.core.redis import get_redis, close_redis, RedisKeys
 from app.domain.models import *  # Import all models so Alembic can discover them
 from app.presentation.api.v1 import auth, vehicles, customers_sales, financial, users, reports, ws, public
 from app.presentation.api.v1 import settings as settings_router_module
@@ -36,6 +38,11 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("lmc-erp")
+
+# As fotos são gravadas em WebP. Em sistemas sem esse tipo registrado (Windows, imagens
+# Docker mínimas) o /uploads respondia "application/octet-stream" — com o nosniff ligado,
+# alguns navegadores se recusam a exibir.
+mimetypes.add_type("image/webp", ".webp")
 
 
 # ─── Lifespan ─────────────────────────────────────────────────────────────────
@@ -52,12 +59,13 @@ async def lifespan(app: FastAPI):
     logger.info(f"✅ Diretório de uploads: {settings.UPLOAD_DIR}")
 
     # Test Redis connection
-    try:
-        redis = await get_redis()
-        await redis.ping()
+    # get_redis() nunca falha: sem Redis devolve um substituto que não bloqueia nada.
+    # Antes o log dizia "Redis conectado" mesmo nesse caso.
+    redis = await get_redis()
+    if RedisKeys.is_noop(redis):
+        logger.error("❌ Redis INDISPONÍVEL: bloqueio de login e revogação de sessão desligados")
+    else:
         logger.info("✅ Redis conectado")
-    except Exception as e:
-        logger.warning(f"⚠️  Redis não disponível: {e}")
 
     # Verifica conexao com o banco (schema gerenciado pelo Alembic)
     from sqlalchemy import text
@@ -132,6 +140,34 @@ async def log_requests(request: Request, call_next):
 
 
 # ─── Exception Handlers ───────────────────────────────────────────────────────
+# Última barreira para dado inválido que passou pela validação: em vez de "erro interno"
+# (500), a tela recebe uma mensagem que diz o que fazer.
+@app.exception_handler(IntegrityError)
+async def integridade_handler(request: Request, exc: IntegrityError):
+    msg = str(exc.orig).lower()
+    logger.warning("Integridade recusada em %s %s: %s", request.method, request.url.path, msg[:200])
+    if "foreign key" in msg:
+        return JSONResponse(status_code=422, content={
+            "detail": "Um dos registros ligados a esta operação não existe mais (cliente, veículo ou usuário)."})
+    return JSONResponse(status_code=409, content={"detail": "Já existe um registro com esses dados."})
+
+
+@app.exception_handler(DBAPIError)
+async def dado_invalido_handler(request: Request, exc: DBAPIError):
+    msg = str(exc.orig).lower()
+    if "value too long" in msg:
+        detalhe = "Algum campo passou do tamanho permitido. Encurte o texto e tente de novo."
+    elif "out of range" in msg or "overflow" in msg:
+        detalhe = "Algum número está fora do limite permitido."
+    elif "invalid input" in msg:
+        detalhe = "Algum valor enviado não é válido para este campo."
+    else:
+        logger.error(f"Erro de banco não tratado: {exc}", exc_info=True)
+        return JSONResponse(status_code=500, content={"detail": "Erro interno do servidor. Tente novamente."})
+    logger.warning("Dado recusado pelo banco em %s %s: %s", request.method, request.url.path, msg[:200])
+    return JSONResponse(status_code=422, content={"detail": detalhe})
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception: {exc}", exc_info=True)

@@ -10,7 +10,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from app.core.database import get_db
-from app.presentation.dependencies.auth import get_current_user_payload
+from app.presentation.dependencies.auth import get_current_user_payload, require_admin
 from app.domain.models.review import Review
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
@@ -82,7 +82,7 @@ async def update_review(
 async def delete_review(
     review_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_payload),
+    current_user: dict = Depends(require_admin),
 ):
     result = await db.execute(select(Review).where(Review.id == review_id))
     review = result.scalar_one_or_none()

@@ -122,15 +122,19 @@ async def upload_modelo_imagem(
     if len(content) > 8 * 1024 * 1024:
         raise HTTPException(status_code=422, detail="Imagem muito grande (máx. 8MB)")
 
-    # Valida o conteúdo, descarta EXIF e grava em WebP
-    try:
+    # Valida o conteúdo, descarta EXIF e grava em WebP (fora do event loop)
+    def _converter(dados: bytes) -> bytes:
         from PIL import Image, ImageOps
-        Image.open(io.BytesIO(content)).verify()
-        img = ImageOps.exif_transpose(Image.open(io.BytesIO(content))).convert("RGB")
+        Image.open(io.BytesIO(dados)).verify()
+        img = ImageOps.exif_transpose(Image.open(io.BytesIO(dados))).convert("RGB")
         img.thumbnail((1200, 800), Image.LANCZOS)
         out = io.BytesIO()
         img.save(out, format="WEBP", quality=84, method=5)
-        final_bytes = out.getvalue()
+        return out.getvalue()
+
+    try:
+        from starlette.concurrency import run_in_threadpool
+        final_bytes = await run_in_threadpool(_converter, content)
     except Exception:
         raise HTTPException(status_code=422, detail="Imagem inválida ou corrompida")
 

@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
 from app.core.database import get_db
@@ -21,30 +21,36 @@ router = APIRouter(prefix="/settings", tags=["Configurações"])
 
 # ─── Schema ──────────────────────────────────────────────────────────────────
 
+# Limites = tamanho das colunas de store_settings (texto maior virava erro 500)
 class SettingsUpdate(BaseModel):
-    whatsapp:         Optional[str] = None
-    telefone:         Optional[str] = None
-    email_contato:    Optional[str] = None
-    instagram:        Optional[str] = None
-    facebook:         Optional[str] = None
-    youtube:          Optional[str] = None
-    nome_loja:        Optional[str] = None
-    slogan:           Optional[str] = None
-    endereco:         Optional[str] = None
-    cidade:           Optional[str] = None
-    estado:           Optional[str] = None
-    cep:              Optional[str] = None
-    cnpj:             Optional[str] = None
-    horario:          Optional[str] = None
-    hero_titulo:      Optional[str] = None
-    hero_subtitulo:   Optional[str] = None
-    stat_clientes:    Optional[int] = None
-    stat_anos:        Optional[int] = None
-    stat_satisfacao:  Optional[int] = None
-    max_fotos_veiculo: Optional[int] = None
+    whatsapp:         Optional[str] = Field(None, max_length=20)
+    telefone:         Optional[str] = Field(None, max_length=20)
+    email_contato:    Optional[str] = Field(None, max_length=120)
+    instagram:        Optional[str] = Field(None, max_length=200)
+    facebook:         Optional[str] = Field(None, max_length=200)
+    youtube:          Optional[str] = Field(None, max_length=200)
+    nome_loja:        Optional[str] = Field(None, max_length=100)
+    slogan:           Optional[str] = Field(None, max_length=200)
+    endereco:         Optional[str] = Field(None, max_length=200)
+    cidade:           Optional[str] = Field(None, max_length=100)
+    estado:           Optional[str] = Field(None, max_length=2)
+    cep:              Optional[str] = Field(None, max_length=10)
+    cnpj:             Optional[str] = Field(None, max_length=20)
+    horario:          Optional[str] = Field(None, max_length=300)
+    hero_titulo:      Optional[str] = Field(None, max_length=200)
+    hero_subtitulo:   Optional[str] = Field(None, max_length=300)
+    stat_clientes:    Optional[int] = Field(None, ge=0, le=10_000_000)
+    stat_anos:        Optional[int] = Field(None, ge=0, le=200)
+    stat_satisfacao:  Optional[int] = Field(None, ge=0, le=100)
+    max_fotos_veiculo: Optional[int] = Field(None, ge=1, le=40)
     modo_manutencao:  Optional[bool] = None
-    ga_id:            Optional[str] = None
-    pixel_id:         Optional[str] = None
+    ga_id:            Optional[str] = Field(None, max_length=50)
+    pixel_id:         Optional[str] = Field(None, max_length=50)
+
+    @field_validator("estado")
+    @classmethod
+    def uf_maiuscula(cls, v: Optional[str]) -> Optional[str]:
+        return v.strip().upper() if v else v
 
 
 # ─── Helper: get or create singleton ────────────────────────────────────────

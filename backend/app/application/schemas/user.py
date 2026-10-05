@@ -1,18 +1,26 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from datetime import datetime, date
 from app.domain.models.user import UserRole
 
 
 class UserCreate(BaseModel):
-    nome: str
-    email: EmailStr
-    senha: str
+    # Limites = tamanho das colunas: texto maior virava erro 500 do banco
+    nome: str = Field(max_length=120)
+    email: EmailStr = Field(max_length=200)
+    senha: str = Field(max_length=128)
     usuario: Optional[str] = None
-    telefone: Optional[str] = None
+    telefone: Optional[str] = Field(None, max_length=20)
     role: UserRole = UserRole.FUNCIONARIO
-    cargo: Optional[str] = None
+    cargo: Optional[str] = Field(None, max_length=120)
     data_contratacao: Optional[date] = None
+
+    @field_validator("email")
+    @classmethod
+    def email_minusculo(cls, v: str) -> str:
+        # O login procura o e-mail em minúsculas. Gravado "Joao@loja.com", o usuário
+        # nunca conseguia entrar pelo e-mail (só pelo nome de usuário).
+        return v.strip().lower()
 
     @field_validator("senha")
     @classmethod
@@ -45,11 +53,11 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    nome: Optional[str] = None
+    nome: Optional[str] = Field(None, max_length=120)
     usuario: Optional[str] = None
-    telefone: Optional[str] = None
+    telefone: Optional[str] = Field(None, max_length=20)
     ativo: Optional[bool] = None
-    cargo: Optional[str] = None
+    cargo: Optional[str] = Field(None, max_length=120)
     data_contratacao: Optional[date] = None
     # NOTE: role change is allowed only via explicit admin endpoint — never via mass-assignment here
 
@@ -61,6 +69,8 @@ class UserUpdate(BaseModel):
         v = v.strip().lower()
         if len(v) < 3:
             raise ValueError("Usuário deve ter no mínimo 3 caracteres")
+        if len(v) > 60:
+            raise ValueError("Usuário deve ter no máximo 60 caracteres")
         import re
         if not re.match(r"^[a-z0-9._-]+$", v):
             raise ValueError("Usuário inválido")
@@ -91,9 +101,9 @@ class UserMe(UserResponse):
 
 class ChangePasswordRequest(BaseModel):
     """User changes their own password (requires current password)."""
-    senha_atual: str
-    nova_senha: str
-    confirmar_senha: str
+    senha_atual: str = Field(max_length=128)
+    nova_senha: str = Field(max_length=128)
+    confirmar_senha: str = Field(max_length=128)
 
     @field_validator("nova_senha")
     @classmethod
@@ -112,7 +122,7 @@ class ChangePasswordRequest(BaseModel):
 
 class AdminChangePasswordRequest(BaseModel):
     """Admin sets a new password for any user (no current password required)."""
-    nova_senha: str
+    nova_senha: str = Field(max_length=128)
 
     @field_validator("nova_senha")
     @classmethod

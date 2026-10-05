@@ -1,6 +1,6 @@
 import re
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List
 from decimal import Decimal
 from datetime import date, datetime
@@ -9,24 +9,25 @@ from app.domain.models.sale import SaleStatus, PaymentType
 
 class PaymentMethodItem(BaseModel):
     """One entry in a split payment (e.g. PIX R$150k + Dinheiro R$100k)."""
-    forma: str      # pix | dinheiro | cartao | financiamento | consorcio | permuta | transferencia
-    valor: Decimal
-    parcelas: Optional[int] = None
-    banco: Optional[str] = None
-    taxa: Optional[Decimal] = None
+    forma: str = Field(max_length=30)  # pix | dinheiro | cartao | financiamento | consorcio | permuta | transferencia
+    valor: Decimal = Field(max_digits=12, decimal_places=2)
+    parcelas: Optional[int] = Field(None, ge=1, le=600)
+    banco: Optional[str] = Field(None, max_length=100)
+    taxa: Optional[Decimal] = Field(None, ge=0, le=100)
 
 
 class SaleCreate(BaseModel):
     cliente_id: str
     vehicle_id: str
     vendedor_id: Optional[str] = None   # auto-filled from JWT if not provided
-    valor_venda: Decimal
-    valor_entrada: Decimal = Decimal("0")
-    valor_financiado: Decimal = Decimal("0")
-    parcelas: Optional[int] = None
+    # Numeric(12,2) no banco: acima de 9.999.999.999,99 o Postgres recusava com erro 500
+    valor_venda: Decimal = Field(max_digits=12, decimal_places=2)
+    valor_entrada: Decimal = Field(Decimal("0"), max_digits=12, decimal_places=2)
+    valor_financiado: Decimal = Field(Decimal("0"), max_digits=12, decimal_places=2)
+    parcelas: Optional[int] = Field(None, ge=1, le=600)
     taxa_juros: Optional[Decimal] = None
     forma_pagamento: PaymentType
-    banco_financiamento: Optional[str] = None
+    banco_financiamento: Optional[str] = Field(None, max_length=100)
     comissao_percentual: Decimal = Decimal("0")
     comissao_valor: Optional[Decimal] = None
     data_venda: date
@@ -48,6 +49,16 @@ class SaleCreate(BaseModel):
     def valores_nao_negativos(cls, v: Decimal) -> Decimal:
         if v < 0:
             raise ValueError("Valores de entrada e financiamento não podem ser negativos")
+        return v
+
+    @field_validator("data_venda")
+    @classmethod
+    def venda_nao_futura(cls, v: date) -> date:
+        # Venda datada no futuro caía num mês futuro do caixa e do dashboard
+        from datetime import timedelta
+        from app.core.tempo import hoje_loja
+        if v > hoje_loja() + timedelta(days=1):
+            raise ValueError("A data da venda não pode estar no futuro")
         return v
 
     @field_validator("comissao_percentual")
@@ -142,20 +153,21 @@ def normalizar_cpf_cnpj(v: Optional[str]) -> Optional[str]:
     raise ValueError("CPF/CNPJ inválido")
 
 
+# Limites = tamanho das colunas em customers (texto maior virava erro 500 do banco)
 class CustomerCreate(BaseModel):
-    nome: str
-    cpf_cnpj: Optional[str] = None
-    telefone: Optional[str] = None
-    whatsapp: Optional[str] = None
-    email: Optional[str] = None
-    cep: Optional[str] = None
-    endereco: Optional[str] = None
-    numero: Optional[str] = None
-    complemento: Optional[str] = None
-    bairro: Optional[str] = None
-    cidade: Optional[str] = None
-    estado: Optional[str] = None
-    observacoes: Optional[str] = None
+    nome: str = Field(max_length=120)
+    cpf_cnpj: Optional[str] = Field(None, max_length=18)
+    telefone: Optional[str] = Field(None, max_length=20)
+    whatsapp: Optional[str] = Field(None, max_length=20)
+    email: Optional[str] = Field(None, max_length=255)
+    cep: Optional[str] = Field(None, max_length=9)
+    endereco: Optional[str] = Field(None, max_length=255)
+    numero: Optional[str] = Field(None, max_length=10)
+    complemento: Optional[str] = Field(None, max_length=100)
+    bairro: Optional[str] = Field(None, max_length=100)
+    cidade: Optional[str] = Field(None, max_length=100)
+    estado: Optional[str] = Field(None, max_length=2)
+    observacoes: Optional[str] = Field(None, max_length=5000)
 
     @field_validator("nome")
     @classmethod
@@ -169,27 +181,37 @@ class CustomerCreate(BaseModel):
     def cpf_cnpj_valido(cls, v: Optional[str]) -> Optional[str]:
         return normalizar_cpf_cnpj(v)
 
+    @field_validator("estado")
+    @classmethod
+    def uf_maiuscula(cls, v: Optional[str]) -> Optional[str]:
+        return v.strip().upper() or None if v else v
+
 
 class CustomerUpdate(BaseModel):
-    nome: Optional[str] = None
-    cpf_cnpj: Optional[str] = None
+    nome: Optional[str] = Field(None, max_length=120)
+    cpf_cnpj: Optional[str] = Field(None, max_length=18)
 
     @field_validator("cpf_cnpj")
     @classmethod
     def cpf_cnpj_valido(cls, v: Optional[str]) -> Optional[str]:
         return normalizar_cpf_cnpj(v)
 
-    telefone: Optional[str] = None
-    whatsapp: Optional[str] = None
-    email: Optional[str] = None
-    cep: Optional[str] = None
-    endereco: Optional[str] = None
-    numero: Optional[str] = None
-    complemento: Optional[str] = None
-    bairro: Optional[str] = None
-    cidade: Optional[str] = None
-    estado: Optional[str] = None
-    observacoes: Optional[str] = None
+    @field_validator("estado")
+    @classmethod
+    def uf_maiuscula(cls, v: Optional[str]) -> Optional[str]:
+        return v.strip().upper() or None if v else v
+
+    telefone: Optional[str] = Field(None, max_length=20)
+    whatsapp: Optional[str] = Field(None, max_length=20)
+    email: Optional[str] = Field(None, max_length=255)
+    cep: Optional[str] = Field(None, max_length=9)
+    endereco: Optional[str] = Field(None, max_length=255)
+    numero: Optional[str] = Field(None, max_length=10)
+    complemento: Optional[str] = Field(None, max_length=100)
+    bairro: Optional[str] = Field(None, max_length=100)
+    cidade: Optional[str] = Field(None, max_length=100)
+    estado: Optional[str] = Field(None, max_length=2)
+    observacoes: Optional[str] = Field(None, max_length=5000)
 
 
 class CustomerResponse(BaseModel):
@@ -201,7 +223,13 @@ class CustomerResponse(BaseModel):
     telefone: Optional[str]
     whatsapp: Optional[str]
     email: Optional[str]
+    # CEP, número, bairro e complemento eram gravados mas nunca devolvidos: a tela de
+    # edição abria com esses campos vazios
+    cep: Optional[str] = None
     endereco: Optional[str]
+    numero: Optional[str] = None
+    complemento: Optional[str] = None
+    bairro: Optional[str] = None
     cidade: Optional[str]
     estado: Optional[str]
     observacoes: Optional[str]
